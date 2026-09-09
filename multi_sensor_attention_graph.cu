@@ -17,6 +17,7 @@ enum {
   STATISTIC_COUNT = 4,
   REDUCTION_THREADS = 32,
   ATTENTION_THREADS = 256,
+  GRAPH_REPLAYS = 5000,
 };
 
 #define CUDA_CHECK(call)                                                     \
@@ -337,8 +338,12 @@ int main() {
                              cudaMemcpyDeviceToHost, audio_stream));
   CUDA_CHECK(cudaStreamEndCapture(audio_stream, &graph));
   CUDA_CHECK(cudaGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
-
   CUDA_CHECK(cudaGraphLaunch(graph_exec, audio_stream));
+  CUDA_CHECK(cudaStreamSynchronize(audio_stream));
+
+  for (int replay = 0; replay < GRAPH_REPLAYS; ++replay) {
+    CUDA_CHECK(cudaGraphLaunch(graph_exec, audio_stream));
+  }
   CUDA_CHECK(cudaStreamSynchronize(audio_stream));
 
   for (size_t index = 0; index < feature_elements; ++index) {
