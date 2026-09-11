@@ -31,7 +31,7 @@ enum {
   } while (0)
 
 __global__ void project_audio_kernel(
-    const float* input, float* output) {
+    const float* __restrict__ input, float* __restrict__ output) {
   const int item = blockIdx.x * blockDim.x + threadIdx.x;
   const int total_items = BATCH_COUNT * TOKEN_COUNT;
   if (item >= total_items)
@@ -51,7 +51,7 @@ __global__ void project_audio_kernel(
 }
 
 __global__ void project_imu_kernel(
-    const float* input, float* output) {
+    const float* __restrict__ input, float* __restrict__ output) {
   const int item = blockIdx.x * blockDim.x + threadIdx.x;
   const int total_items = BATCH_COUNT * CONTEXT_COUNT;
   if (item >= total_items)
@@ -74,7 +74,8 @@ __global__ void project_imu_kernel(
 // One block handles one query row. Threads cooperate over the full context
 // length for the max, softmax denominator, and weighted value reductions.
 __global__ void fuse_attention_kernel(
-    const float* query, const float* key_value, float* output) {
+    const float* __restrict__ query, const float* __restrict__ key_value,
+    float* __restrict__ output) {
   __shared__ float query_shared[FEATURE_LANE_COUNT];
   __shared__ float max_partials[ATTENTION_THREADS];
   __shared__ float sum_partials[ATTENTION_THREADS];
@@ -94,9 +95,10 @@ __global__ void fuse_attention_kernel(
   for (int column = tid; column < CONTEXT_COUNT;
        column += ATTENTION_THREADS) {
     float dot = 0.0f;
-    const int key_base = context_base + column * FEATURE_LANE_COUNT;
-    for (int lane = 0; lane < FEATURE_LANE_COUNT; ++lane)
-      dot += query_shared[lane] * key_value[key_base + lane];
+    const float4 key = reinterpret_cast<const float4*>(key_value)[
+        context_base / FEATURE_LANE_COUNT + column];
+    dot += query_shared[0] * key.x + query_shared[1] * key.y +
+           query_shared[2] * key.z + query_shared[3] * key.w;
     maximum = fmaxf(maximum, dot * 0.5f);
   }
   max_partials[tid] = maximum;
@@ -112,9 +114,10 @@ __global__ void fuse_attention_kernel(
   for (int column = tid; column < CONTEXT_COUNT;
        column += ATTENTION_THREADS) {
     float dot = 0.0f;
-    const int key_base = context_base + column * FEATURE_LANE_COUNT;
-    for (int lane = 0; lane < FEATURE_LANE_COUNT; ++lane)
-      dot += query_shared[lane] * key_value[key_base + lane];
+    const float4 key = reinterpret_cast<const float4*>(key_value)[
+        context_base / FEATURE_LANE_COUNT + column];
+    dot += query_shared[0] * key.x + query_shared[1] * key.y +
+           query_shared[2] * key.z + query_shared[3] * key.w;
     denominator += expf(dot * 0.5f - row_maximum);
   }
   sum_partials[tid] = denominator;
@@ -131,10 +134,12 @@ __global__ void fuse_attention_kernel(
     for (int column = tid; column < CONTEXT_COUNT;
          column += ATTENTION_THREADS) {
       float dot = 0.0f;
-      const int key_base = context_base + column * FEATURE_LANE_COUNT;
-      for (int feature = 0; feature < FEATURE_LANE_COUNT; ++feature)
-        dot += query_shared[feature] * key_value[key_base + feature];
-      value += expf(dot * 0.5f - row_maximum) * key_value[key_base + lane];
+      const float4 key = reinterpret_cast<const float4*>(key_value)[
+          context_base / FEATURE_LANE_COUNT + column];
+      dot += query_shared[0] * key.x + query_shared[1] * key.y +
+             query_shared[2] * key.z + query_shared[3] * key.w;
+      const float* key_lanes = reinterpret_cast<const float*>(&key);
+      value += expf(dot * 0.5f - row_maximum) * key_lanes[lane];
     }
     value_partials[lane][tid] = value;
   }
@@ -151,8 +156,9 @@ __global__ void fuse_attention_kernel(
 }
 
 __global__ void reduce_statistics_kernel(
-    const float* projected_audio, const float* attention, float* output,
-    float* statistics) {
+    const float* __restrict__ projected_audio,
+    const float* __restrict__ attention, float* __restrict__ output,
+    float* __restrict__ statistics) {
   if (blockIdx.x >= BATCH_COUNT)
     return;
 
