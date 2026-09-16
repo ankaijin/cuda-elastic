@@ -21,7 +21,7 @@ profile_nsys() {
 }
 profile_ncu() {
   require_tool ncu; ensure_bin; mkdir -p "$OUT_DIR"
-  ncu --set basic --launch-skip 0 --launch-count 9 --replay-mode kernel \
+  ncu --set basic --launch-skip 0 --launch-count 21 --replay-mode kernel \
     --graph-profiling node --target-processes application-only \
     --export "$OUT_DIR/ncu-pagerank-$STAMP" --force-overwrite "$BIN"
 }

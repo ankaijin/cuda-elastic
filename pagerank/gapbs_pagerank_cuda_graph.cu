@@ -63,7 +63,7 @@ int main() {
     for (int edge = 0; edge < kEdgesPerVertex; ++edge)
       h_columns[dst * kEdgesPerVertex + edge] =
           (dst * 17 + edge * 104729) & (kVertices - 1);
-  float h_result[kVertices] = {};
+  std::vector<float> h_result(kVertices);
 
   int *d_row_offsets = nullptr, *d_columns = nullptr, *d_out_degrees = nullptr;
   float *d_scores_a = nullptr, *d_scores_b = nullptr;
@@ -119,13 +119,14 @@ int main() {
   CUDA_CHECK(cudaStreamWaitEvent(compute_stream, columns_ready, 0));
   CUDA_CHECK(cudaStreamWaitEvent(compute_stream, degrees_ready, 0));
 
-  initialize_scores<<<1, 32, 0, compute_stream>>>(d_scores_a, kVertices);
+  const int blocks = (kVertices + 31) / 32;
+  initialize_scores<<<blocks, 32, 0, compute_stream>>>(d_scores_a, kVertices);
   CUDA_CHECK(cudaGetLastError());
 
   float* previous = d_scores_a;
   float* next = d_scores_b;
   for (int iteration = 0; iteration < kIterations; ++iteration) {
-    pagerank_update<<<1, 32, 0, compute_stream>>>(
+    pagerank_update<<<blocks, 32, 0, compute_stream>>>(
         d_row_offsets, d_columns, d_out_degrees, previous, next, kVertices,
         kDamping);
     CUDA_CHECK(cudaGetLastError());
@@ -139,12 +140,32 @@ int main() {
                              cudaMemcpyDeviceToHost, compute_stream));
   CUDA_CHECK(cudaStreamEndCapture(compute_stream, &graph));
   CUDA_CHECK(cudaGraphInstantiate(&executable, graph, nullptr, nullptr, 0));
-  CUDA_CHECK(cudaGraphLaunch(executable, compute_stream));
+  int graph_replays = 0;
+  if (const char* value = std::getenv("GRAPH_REPLAYS"))
+    graph_replays = std::atoi(value);
+  if (graph_replays <= 0) {
+    cudaEvent_t start = nullptr, stop = nullptr;
+    CUDA_CHECK(cudaEventCreate(&start));
+    CUDA_CHECK(cudaEventCreate(&stop));
+    CUDA_CHECK(cudaEventRecord(start, compute_stream));
+    CUDA_CHECK(cudaGraphLaunch(executable, compute_stream));
+    CUDA_CHECK(cudaEventRecord(stop, compute_stream));
+    CUDA_CHECK(cudaEventSynchronize(stop));
+    float replay_ms = 0.0f;
+    CUDA_CHECK(cudaEventElapsedTime(&replay_ms, start, stop));
+    graph_replays = replay_ms > 0.0f
+                        ? static_cast<int>(10000.0f / replay_ms) + 1
+                        : 1;
+    CUDA_CHECK(cudaEventDestroy(stop));
+    CUDA_CHECK(cudaEventDestroy(start));
+  }
+  for (int replay = 0; replay < graph_replays; ++replay)
+    CUDA_CHECK(cudaGraphLaunch(executable, compute_stream));
   CUDA_CHECK(cudaStreamSynchronize(compute_stream));
 
-  std::printf("PageRank scores after %d iterations:", kIterations);
-  for (float value : h_result) std::printf(" %.6f", value);
-  std::printf("\n");
+  std::printf("PageRank scores after %d iterations (replays=%d): %.6f %.6f %.6f %.6f\n",
+              kIterations, graph_replays, h_result[0], h_result[1],
+              h_result[2], h_result[3]);
 
   CUDA_CHECK(cudaGraphExecDestroy(executable));
   CUDA_CHECK(cudaGraphDestroy(graph));

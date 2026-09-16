@@ -1,4 +1,0 @@
-Throw location unknown (consider using BOOST_THROW_EXCEPTION)
-Dynamic exception type: boost::wrapexcept<boost::system::system_error>
-std::exception::what: open: Operation not permitted [system:1]
-
