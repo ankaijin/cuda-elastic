@@ -1,0 +1,5 @@
+Illegal --force-overwrite option-argument '--output'.
+Possible --force-overwrite option-arguments are 'true' and 'false'.
+
+usage: nsys profile [<args>] [application] [<application args>]
+Try 'nsys profile --help' for more information.

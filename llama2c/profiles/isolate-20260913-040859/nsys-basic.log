@@ -1,0 +1,8 @@
+normalized: 0.365148 0.730296 1.095444 1.460593
+softmax: 0.032059 0.087144 0.236883 0.643914
+matmul: 5.000000 5.000000
+Collecting data...
+Generating '/tmp/nsys-report-46d3.qdstrm'
+[1/1] [0%                          ] nsys-basic.nsys-rep[1/1] [0%                          ] nsys-basic.nsys-rep[1/1] [==========49%               ] nsys-basic.nsys-rep[1/1] [========================97% ] nsys-basic.nsys-rep[1/1] [========================100%] nsys-basic.nsys-rep[1/1] [========================100%] nsys-basic.nsys-rep
+Generated:
+	/home/ankai/cuda/llama2c/profiles/isolate-20260913-040859/nsys-basic.nsys-rep

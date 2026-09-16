@@ -1,0 +1,5 @@
+nsys-basic: exit=1
+nsys-graph: exit=1
+ncu-basic: exit=0
+ncu-replay: exit=0
+ncu-graph: exit=0
