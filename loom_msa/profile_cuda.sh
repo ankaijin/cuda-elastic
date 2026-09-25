@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BIN="./multi_sensor_attention_graph"
+# Override to profile another variant, e.g. BIN=build/msa_optimized ./profile_cuda.sh
+BIN="${BIN:-./multi_sensor_attention_graph}"
 OUT_DIR="profiles"
-STAMP="$(date +%Y%m%d-%H%M%S)"
+STAMP="$(basename "$BIN")-$(date +%Y%m%d-%H%M%S)"
 
 mkdir -p "$OUT_DIR"
 
