@@ -1,12 +1,23 @@
 # Variants: main.c reference (4x4), frozen CUDA baseline, optimized CUDA.
-# The *_4x4 builds reproduce main.c's shape and check its hard-coded constants.
+#
+# Every comparison build pins shape AND replay count explicitly, so neither
+# binary depends on its source's defaults (msa_optimized.cu defaults to the
+# large shape, the harness to the medium one):
+#   *_4x4     main.c's shape; also checks main.c's hard-coded constants
+#   *_medium  1000 x 50000, the original workload and tuning point
+#   *_large   25000 x 250000, production scale
 NVCC ?= nvcc
 CC ?= cc
-NVCCFLAGS ?= -O3 -std=c++17 -arch=sm_86 -lineinfo
+NVCCFLAGS ?= -O3 -std=c++17 -arch=sm_86 -lineinfo -Xcompiler -fopenmp
 BUILD := build
 
-CUDA_TARGETS := $(BUILD)/msa_baseline $(BUILD)/msa_optimized \
-                $(BUILD)/msa_baseline_4x4 $(BUILD)/msa_optimized_4x4
+SHAPE_4x4 := -DTOKEN_COUNT=4 -DCONTEXT_COUNT=4 -DGRAPH_REPLAYS=5000
+SHAPE_medium := -DTOKEN_COUNT=1000 -DCONTEXT_COUNT=50000 -DGRAPH_REPLAYS=5000
+SHAPE_large := -DTOKEN_COUNT=25000 -DCONTEXT_COUNT=250000 -DGRAPH_REPLAYS=50
+
+VARIANTS := baseline optimized
+SHAPES := 4x4 medium large
+CUDA_TARGETS := $(foreach v,$(VARIANTS),$(foreach s,$(SHAPES),$(BUILD)/msa_$(v)_$(s)))
 
 all: $(BUILD)/reference $(CUDA_TARGETS)
 
@@ -16,11 +27,11 @@ $(BUILD):
 $(BUILD)/reference: main.c | $(BUILD)
 	$(CC) -O2 -std=c11 -o $@ $< -lm
 
-$(BUILD)/msa_%: msa_%.cu msa_harness.cuh | $(BUILD)
-	$(NVCC) $(NVCCFLAGS) -o $@ $<
-
-$(BUILD)/msa_%_4x4: msa_%.cu msa_harness.cuh | $(BUILD)
-	$(NVCC) $(NVCCFLAGS) -DTOKEN_COUNT=4 -DCONTEXT_COUNT=4 -o $@ $<
+define shape_rule
+$(BUILD)/msa_%_$(1): msa_%.cu msa_harness.cuh | $(BUILD)
+	$$(NVCC) $$(NVCCFLAGS) $$(SHAPE_$(1)) -o $$@ $$<
+endef
+$(foreach s,$(SHAPES),$(eval $(call shape_rule,$(s))))
 
 check: all
 	./$(BUILD)/reference
@@ -30,7 +41,15 @@ check: all
 	  done; \
 	done
 
+compare-large: $(BUILD)/msa_baseline_large $(BUILD)/msa_optimized_large
+	./$(BUILD)/msa_baseline_large
+	./$(BUILD)/msa_optimized_large
+
+# Repeated, interleaved runs of every shape and input set; median and spread.
+benchmark: all
+	python3 benchmark.py
+
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all check clean
+.PHONY: all check compare-large benchmark clean

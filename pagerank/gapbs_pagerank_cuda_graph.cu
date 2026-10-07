@@ -1,15 +1,26 @@
-// CUDA Graph representation of the small GAPBS PageRank smoke workload.
+// CUDA Graph representation of the GAPBS PageRank workload.
 //
 // This is an executable example of the dataflow represented by
 // externals/gapbs/src/pr.cc and gapbs_pagerank_kernel(...).  It is not a
 // replacement for Loom's source-level application or its generated kernels.
-// The graph is specialized to the smoke fixture: four vertices, eight fixed
-// PageRank iterations, and a small CSR graph.
+// The benchmark graph is specialized to a generated regular CSR fixture:
+// 2^20 vertices, sixteen incoming and outgoing edges per vertex, and twenty
+// fixed PageRank iterations.
+//
+// PAGERANK_MODE selects what runs: "validate" checks captured graphs against
+// a CPU reference, "bench" replays the benchmark graph, and "all" (the
+// default) validates first and benchmarks only if validation passes.
+// PAGERANK_BLOCK_SIZE, PAGERANK_PIN_HOST and PAGERANK_UPLOAD_CHUNKS override
+// the defaults in Settings; validation runs with the same settings.
 
 #include <cuda_runtime.h>
 
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <string>
 #include <vector>
 
 #define CUDA_CHECK(call)                                                       \
@@ -26,161 +37,615 @@ constexpr int kEdgesPerVertex = 16;
 constexpr int kEdges = kVertices * kEdgesPerVertex;
 constexpr int kIterations = 20;
 constexpr float kDamping = 0.85f;
+// Threads per block for every kernel; PAGERANK_BLOCK_SIZE overrides it.
+// With gathered contributions, 32 through 512 measure within ~4% of each
+// other (0.234-0.247 ms per iteration; 1024 is ~25% slower) because the
+// kernel is bound by L2 bandwidth for the random contribution reads, not by
+// occupancy.  32 was marginally fastest.
+constexpr int kDefaultBlockSize = 32;
 
-// One thread owns one destination vertex.  Each update reads the previous
-// score vector and writes a distinct element of the next vector, so no atomic
-// operation (and no artificial cross-vertex dependency) is required.
+// A score passes when |gpu - reference| <= abs + rel * |reference|.  Scores
+// are O(1/V), so the absolute floor is scaled by 1/V.
+constexpr double kRelTolerance = 1e-4;
+constexpr double kAbsToleranceScale = 1e-6;
+
+// What each outgoing edge of a vertex carries: its score divided by its
+// out-degree.  Dangling vertices (out-degree zero) are never read as sources,
+// so they get zero instead of a division by zero.
+__device__ float contribution(float score, int out_degree) {
+  return out_degree > 0 ? score / out_degree : 0.0f;
+}
+
+// One thread owns one destination vertex.  Each update gathers the previous
+// iteration's contributions and writes a distinct element of the score vector
+// and of the next contribution vector, so no atomic operation (and no
+// artificial cross-vertex dependency) is required.  Dividing once per vertex
+// here, instead of once per edge in the next iteration, leaves one gathered
+// array per edge instead of two.  A launch covers destinations
+// [vertex_begin, vertex_end), so the first iteration can run one upload chunk
+// at a time.
 __global__ void pagerank_update(const int* row_offsets, const int* columns,
-                                const int* out_degrees,
-                                const float* previous, float* next,
-                                int vertices, float damping) {
-  int dst = blockIdx.x * blockDim.x + threadIdx.x;
-  if (dst >= vertices) return;
+                                const int* out_degrees, const float* contributions,
+                                float* scores, float* next_contributions,
+                                int vertex_begin, int vertex_end, int vertices,
+                                float damping) {
+  int dst = vertex_begin + blockIdx.x * blockDim.x + threadIdx.x;
+  if (dst >= vertex_end) return;
 
   float incoming = 0.0f;
-  for (int edge = row_offsets[dst]; edge < row_offsets[dst + 1]; ++edge) {
-    const int source = columns[edge];
-    incoming += previous[source] / out_degrees[source];
-  }
-  next[dst] = (1.0f - damping) / vertices + damping * incoming;
+  for (int edge = row_offsets[dst]; edge < row_offsets[dst + 1]; ++edge)
+    incoming += contributions[columns[edge]];
+  const float score = (1.0f - damping) / vertices + damping * incoming;
+  scores[dst] = score;
+  next_contributions[dst] = contribution(score, out_degrees[dst]);
 }
 
-__global__ void initialize_scores(float* scores, int vertices) {
+// Starts every score at 1/V when `uniform` is set, otherwise keeps the scores
+// already copied in, and computes the first contributions from them.
+__global__ void initialize_scores(float* scores, float* contributions,
+                                  const int* out_degrees, int vertices, bool uniform) {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
-  if (i < vertices) scores[i] = 1.0f / vertices;
+  if (i >= vertices) return;
+  const float score = uniform ? 1.0f / vertices : scores[i];
+  if (uniform) scores[i] = score;
+  contributions[i] = contribution(score, out_degrees[i]);
 }
 
-int main() {
-  // Generated regular CSR fixture: every destination has sixteen incoming
-  // edges.  The graph is large enough to exercise the RTX 3090, while the
-  // deterministic pattern keeps runs reproducible.
-  std::vector<int> h_row_offsets(kVertices + 1);
-  std::vector<int> h_columns(kEdges);
-  std::vector<int> h_out_degrees(kVertices, kEdgesPerVertex);
+struct SplitMix64 {
+  uint64_t state;
+  uint64_t next() {
+    uint64_t z = (state += 0x9e3779b97f4a7c15ull);
+    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ull;
+    z = (z ^ (z >> 27)) * 0x94d049bb133111ebull;
+    return z ^ (z >> 31);
+  }
+};
+
+// CSR over incoming edges: row_offsets/columns are indexed by destination and
+// columns holds each edge's source vertex.
+struct HostGraph {
+  int vertices = 0;
+  std::vector<int> row_offsets;
+  std::vector<int> columns;
+  std::vector<int> out_degrees;
+};
+
+// Generated regular CSR fixture: every destination has sixteen incoming
+// edges.  17 is odd, so each edge slot maps destinations to sources one to
+// one and every vertex also has exactly sixteen outgoing edges.  That makes
+// the uniform start the stationary distribution, so a uniform-start run
+// cannot tell a correct update from one that reads the wrong edges.
+HostGraph make_benchmark_fixture() {
+  HostGraph graph;
+  graph.vertices = kVertices;
+  graph.row_offsets.resize(kVertices + 1);
+  graph.columns.resize(kEdges);
+  graph.out_degrees.assign(kVertices, kEdgesPerVertex);
   for (int vertex = 0; vertex <= kVertices; ++vertex)
-    h_row_offsets[vertex] = vertex * kEdgesPerVertex;
+    graph.row_offsets[vertex] = vertex * kEdgesPerVertex;
   for (int dst = 0; dst < kVertices; ++dst)
     for (int edge = 0; edge < kEdgesPerVertex; ++edge)
-      h_columns[dst * kEdgesPerVertex + edge] =
+      graph.columns[dst * kEdgesPerVertex + edge] =
           (dst * 17 + edge * 104729) & (kVertices - 1);
-  std::vector<float> h_result(kVertices);
+  return graph;
+}
 
-  int *d_row_offsets = nullptr, *d_columns = nullptr, *d_out_degrees = nullptr;
-  float *d_scores_a = nullptr, *d_scores_b = nullptr;
-  CUDA_CHECK(cudaMalloc(&d_row_offsets, h_row_offsets.size() * sizeof(int)));
-  CUDA_CHECK(cudaMalloc(&d_columns, h_columns.size() * sizeof(int)));
-  CUDA_CHECK(cudaMalloc(&d_out_degrees, h_out_degrees.size() * sizeof(int)));
-  CUDA_CHECK(cudaMalloc(&d_scores_a, sizeof(float) * kVertices));
-  CUDA_CHECK(cudaMalloc(&d_scores_b, sizeof(float) * kVertices));
+// Small irregular graph for validation: skewed in-degrees including a few
+// heavy rows, vertices with no incoming edges, dangling vertices with no
+// outgoing edges, and a vertex count that is not a multiple of any block
+// size.  Duplicate edges and self loops are allowed; both count towards
+// degree like any other edge.
+HostGraph make_irregular_graph(int vertices, uint64_t seed) {
+  HostGraph graph;
+  graph.vertices = vertices;
+  graph.row_offsets.assign(vertices + 1, 0);
+  SplitMix64 rng{seed};
+  for (int dst = 0; dst < vertices; ++dst) {
+    int degree;
+    if (dst % 11 == 0)
+      degree = 0;
+    else if (dst % 997 == 1)
+      degree = 500 + static_cast<int>(rng.next() % 2500);
+    else if (rng.next() % 32 == 0)
+      degree = 32 + static_cast<int>(rng.next() % 200);
+    else
+      degree = static_cast<int>(rng.next() % 24);
+    graph.row_offsets[dst + 1] = graph.row_offsets[dst] + degree;
+  }
+  graph.columns.resize(graph.row_offsets[vertices]);
+  graph.out_degrees.assign(vertices, 0);
+  for (int& source : graph.columns) {
+    // Vertices with source % 7 == 3 are never sources, so they dangle.
+    source = static_cast<int>(rng.next() % vertices);
+    if (source % 7 == 3) source = (source + 1) % vertices;
+    ++graph.out_degrees[source];
+  }
+  return graph;
+}
 
-  cudaStream_t compute_stream = nullptr;
-  cudaStream_t offsets_stream = nullptr;
-  cudaStream_t columns_stream = nullptr;
-  cudaStream_t degrees_stream = nullptr;
-  CUDA_CHECK(cudaStreamCreateWithFlags(&compute_stream, cudaStreamNonBlocking));
-  CUDA_CHECK(cudaStreamCreateWithFlags(&offsets_stream, cudaStreamNonBlocking));
-  CUDA_CHECK(cudaStreamCreateWithFlags(&columns_stream, cudaStreamNonBlocking));
-  CUDA_CHECK(cudaStreamCreateWithFlags(&degrees_stream, cudaStreamNonBlocking));
-  cudaEvent_t capture_start = nullptr;
-  cudaEvent_t offsets_ready = nullptr, columns_ready = nullptr, degrees_ready = nullptr;
-  CUDA_CHECK(cudaEventCreateWithFlags(&capture_start, cudaEventDisableTiming));
-  CUDA_CHECK(cudaEventCreateWithFlags(&offsets_ready, cudaEventDisableTiming));
-  CUDA_CHECK(cudaEventCreateWithFlags(&columns_ready, cudaEventDisableTiming));
-  CUDA_CHECK(cudaEventCreateWithFlags(&degrees_ready, cudaEventDisableTiming));
+// Deterministic, uneven starting scores normalized to sum to one.
+std::vector<float> make_skewed_scores(int vertices, uint64_t seed) {
+  SplitMix64 rng{seed};
+  std::vector<double> weights(vertices);
+  double total = 0.0;
+  for (double& weight : weights) {
+    weight = 1.0 + static_cast<double>(rng.next() % 1000);
+    total += weight;
+  }
+  std::vector<float> scores(vertices);
+  for (int v = 0; v < vertices; ++v)
+    scores[v] = static_cast<float>(weights[v] / total);
+  return scores;
+}
 
+// Returns an empty string when the CSR arrays are well formed and every
+// stored out-degree matches the number of edges that vertex is a source of.
+std::string check_graph(const HostGraph& graph) {
+  const int vertices = graph.vertices;
+  if (graph.row_offsets.size() != static_cast<size_t>(vertices) + 1 ||
+      graph.out_degrees.size() != static_cast<size_t>(vertices))
+    return "array sizes do not match the vertex count";
+  if (graph.row_offsets[0] != 0 ||
+      graph.row_offsets[vertices] != static_cast<int>(graph.columns.size()))
+    return "row offsets do not span the column array";
+  for (int v = 0; v < vertices; ++v)
+    if (graph.row_offsets[v + 1] < graph.row_offsets[v])
+      return "row offsets decrease at vertex " + std::to_string(v);
+  std::vector<int> counted(vertices, 0);
+  for (int source : graph.columns) {
+    if (source < 0 || source >= vertices)
+      return "column " + std::to_string(source) + " is out of range";
+    ++counted[source];
+  }
+  for (int v = 0; v < vertices; ++v)
+    if (counted[v] != graph.out_degrees[v])
+      return "out_degrees[" + std::to_string(v) + "] is " +
+             std::to_string(graph.out_degrees[v]) + " but the vertex is the source of " +
+             std::to_string(counted[v]) + " edges";
+  return {};
+}
+
+// Plain double-precision Jacobi PageRank with the same semantics as
+// pagerank_update.  As in GAPBS, rank held by dangling vertices is not
+// redistributed.
+std::vector<double> reference_pagerank(const HostGraph& graph,
+                                       const std::vector<float>& initial,
+                                       int iterations) {
+  const int vertices = graph.vertices;
+  std::vector<double> previous(initial.begin(), initial.end());
+  std::vector<double> next(vertices);
+  for (int iteration = 0; iteration < iterations; ++iteration) {
+    for (int dst = 0; dst < vertices; ++dst) {
+      double incoming = 0.0;
+      for (int edge = graph.row_offsets[dst]; edge < graph.row_offsets[dst + 1]; ++edge) {
+        const int source = graph.columns[edge];
+        incoming += previous[source] / graph.out_degrees[source];
+      }
+      next[dst] = (1.0 - kDamping) / vertices + kDamping * incoming;
+    }
+    previous.swap(next);
+  }
+  return previous;
+}
+
+struct DeviceGraph {
+  int *row_offsets = nullptr, *columns = nullptr, *out_degrees = nullptr;
+  float* scores = nullptr;
+  // Read and written alternately by successive iterations.
+  float *contributions_a = nullptr, *contributions_b = nullptr;
+};
+
+DeviceGraph allocate_device_graph(const HostGraph& host) {
+  DeviceGraph device;
+  CUDA_CHECK(cudaMalloc(&device.row_offsets, host.row_offsets.size() * sizeof(int)));
+  CUDA_CHECK(cudaMalloc(&device.columns, host.columns.size() * sizeof(int)));
+  CUDA_CHECK(cudaMalloc(&device.out_degrees, host.out_degrees.size() * sizeof(int)));
+  CUDA_CHECK(cudaMalloc(&device.scores, sizeof(float) * host.vertices));
+  CUDA_CHECK(cudaMalloc(&device.contributions_a, sizeof(float) * host.vertices));
+  CUDA_CHECK(cudaMalloc(&device.contributions_b, sizeof(float) * host.vertices));
+  return device;
+}
+
+void free_device_graph(DeviceGraph& device) {
+  CUDA_CHECK(cudaFree(device.contributions_b));
+  CUDA_CHECK(cudaFree(device.contributions_a));
+  CUDA_CHECK(cudaFree(device.scores));
+  CUDA_CHECK(cudaFree(device.columns));
+  CUDA_CHECK(cudaFree(device.out_degrees));
+  CUDA_CHECK(cudaFree(device.row_offsets));
+  device = DeviceGraph{};
+}
+
+struct Streams {
+  cudaStream_t compute = nullptr, upload = nullptr;
+  cudaEvent_t capture_start = nullptr, metadata_ready = nullptr;
+};
+
+Streams create_streams() {
+  Streams s;
+  CUDA_CHECK(cudaStreamCreateWithFlags(&s.compute, cudaStreamNonBlocking));
+  CUDA_CHECK(cudaStreamCreateWithFlags(&s.upload, cudaStreamNonBlocking));
+  CUDA_CHECK(cudaEventCreateWithFlags(&s.capture_start, cudaEventDisableTiming));
+  CUDA_CHECK(cudaEventCreateWithFlags(&s.metadata_ready, cudaEventDisableTiming));
+  return s;
+}
+
+void destroy_streams(Streams& s) {
+  CUDA_CHECK(cudaEventDestroy(s.metadata_ready));
+  CUDA_CHECK(cudaEventDestroy(s.capture_start));
+  CUDA_CHECK(cudaStreamDestroy(s.upload));
+  CUDA_CHECK(cudaStreamDestroy(s.compute));
+  s = Streams{};
+}
+
+// Run-wide settings, read from the environment in main.
+struct Settings {
+  int block_size = kDefaultBlockSize;  // PAGERANK_BLOCK_SIZE
+  // PAGERANK_PIN_HOST: page-lock the host buffers the graph copies from and
+  // to, so the copies run by DMA instead of through the driver's pageable
+  // staging buffer.  Measured 22.5 GB/s against 13-14 GB/s pageable.
+  bool pin_host = true;
+  // PAGERANK_UPLOAD_CHUNKS: how many pieces the column upload is split into;
+  // the first iteration starts on each piece as soon as it arrives.  8 and 32
+  // both saved ~0.2 ms per replay against 1 (about one iteration hidden
+  // behind the copy); more chunks add nodes without saving more.
+  int upload_chunks = 8;
+};
+
+// Page-locks the host buffers that a captured graph copies from and to, when
+// settings.pin_host is set.  Returns the registered pointers for unpinning.
+std::vector<void*> pin_host_buffers(const Settings& settings, const HostGraph& graph,
+                                    const std::vector<float>* initial,
+                                    std::vector<float>& result) {
+  std::vector<void*> pinned;
+  if (!settings.pin_host) return pinned;
+  const auto pin = [&](const void* data, size_t bytes) {
+    if (bytes == 0) return;
+    void* pointer = const_cast<void*>(data);
+    CUDA_CHECK(cudaHostRegister(pointer, bytes, cudaHostRegisterDefault));
+    pinned.push_back(pointer);
+  };
+  pin(graph.row_offsets.data(), graph.row_offsets.size() * sizeof(int));
+  pin(graph.columns.data(), graph.columns.size() * sizeof(int));
+  pin(graph.out_degrees.data(), graph.out_degrees.size() * sizeof(int));
+  if (initial) pin(initial->data(), initial->size() * sizeof(float));
+  pin(result.data(), result.size() * sizeof(float));
+  return pinned;
+}
+
+void unpin_host_buffers(std::vector<void*>& pinned) {
+  for (void* pointer : pinned) CUDA_CHECK(cudaHostUnregister(pointer));
+  pinned.clear();
+}
+
+struct CaptureOptions {
+  // nullptr starts the scores uniform (initialize_scores, as in the
+  // benchmark); otherwise they are copied from the host.
+  const float* initial_scores = nullptr;
+  int iterations = kIterations;
+  int block_size = kDefaultBlockSize;
+  // false leaves out the graph upload and result download, for timing the
+  // computation alone against data already on the device.
+  bool include_transfers = true;
+  int upload_chunks = 1;
+};
+
+// Splits the vertices into at most `chunks` contiguous ranges holding about
+// equal numbers of incoming edges, and returns the range boundaries.
+std::vector<int> split_by_edges(const HostGraph& graph, int chunks) {
+  std::vector<int> bounds{0};
+  const long long edges = static_cast<long long>(graph.columns.size());
+  for (int chunk = 1; chunk < chunks; ++chunk) {
+    const int target = static_cast<int>(edges * chunk / chunks);
+    const int vertex = static_cast<int>(
+        std::lower_bound(graph.row_offsets.begin(), graph.row_offsets.end(), target) -
+        graph.row_offsets.begin());
+    if (vertex > bounds.back() && vertex < graph.vertices) bounds.push_back(vertex);
+  }
+  bounds.push_back(graph.vertices);
+  return bounds;
+}
+
+// Captures the upload, initialization, the updates and the result download
+// into one executable graph.  Validation and the benchmark share this
+// function so validation exercises the same graph that is timed.
+cudaGraphExec_t capture_pagerank(const Streams& s, const HostGraph& host,
+                                 const DeviceGraph& device,
+                                 const CaptureOptions& options, float* result) {
+  const int vertices = host.vertices;
   cudaGraph_t graph = nullptr;
   cudaGraphExec_t executable = nullptr;
 
-  // Begin capture on the compute stream.  Each independent H2D copy runs on
-  // its own stream; the three event/wait pairs join those branches into this
-  // capture and allow the copies to overlap on capable hardware.  The waits
-  // are the only edges needed before initialization.  PageRank iterations
-  // remain serial because iteration i+1 depends on iteration i's score vector.
-  CUDA_CHECK(cudaStreamBeginCapture(compute_stream, cudaStreamCaptureModeGlobal));
-  CUDA_CHECK(cudaEventRecord(capture_start, compute_stream));
-  // Waiting on an event recorded by the capturing stream joins each transfer
-  // stream to the same graph capture before its independent copy is issued.
-  CUDA_CHECK(cudaStreamWaitEvent(offsets_stream, capture_start, 0));
-  CUDA_CHECK(cudaStreamWaitEvent(columns_stream, capture_start, 0));
-  CUDA_CHECK(cudaStreamWaitEvent(degrees_stream, capture_start, 0));
-  CUDA_CHECK(cudaMemcpyAsync(d_row_offsets, h_row_offsets.data(),
-                             h_row_offsets.size() * sizeof(int),
-                             cudaMemcpyHostToDevice, offsets_stream));
-  CUDA_CHECK(cudaEventRecord(offsets_ready, offsets_stream));
-  CUDA_CHECK(cudaMemcpyAsync(d_columns, h_columns.data(),
-                             h_columns.size() * sizeof(int),
-                             cudaMemcpyHostToDevice, columns_stream));
-  CUDA_CHECK(cudaEventRecord(columns_ready, columns_stream));
-  CUDA_CHECK(cudaMemcpyAsync(d_out_degrees, h_out_degrees.data(),
-                             h_out_degrees.size() * sizeof(int),
-                             cudaMemcpyHostToDevice, degrees_stream));
-  CUDA_CHECK(cudaEventRecord(degrees_ready, degrees_stream));
-  CUDA_CHECK(cudaStreamWaitEvent(compute_stream, offsets_ready, 0));
-  CUDA_CHECK(cudaStreamWaitEvent(compute_stream, columns_ready, 0));
-  CUDA_CHECK(cudaStreamWaitEvent(compute_stream, degrees_ready, 0));
-
-  const int blocks = (kVertices + 31) / 32;
-  initialize_scores<<<blocks, 32, 0, compute_stream>>>(d_scores_a, kVertices);
-  CUDA_CHECK(cudaGetLastError());
-
-  float* previous = d_scores_a;
-  float* next = d_scores_b;
-  for (int iteration = 0; iteration < kIterations; ++iteration) {
-    pagerank_update<<<blocks, 32, 0, compute_stream>>>(
-        d_row_offsets, d_columns, d_out_degrees, previous, next, kVertices,
-        kDamping);
+  const int block_size = options.block_size;
+  const auto launch_update = [&](int begin, int end, const float* contributions,
+                                 float* next_contributions) {
+    const int blocks = (end - begin + block_size - 1) / block_size;
+    pagerank_update<<<blocks, block_size, 0, s.compute>>>(
+        device.row_offsets, device.columns, device.out_degrees, contributions,
+        device.scores, next_contributions, begin, end, vertices, kDamping);
     CUDA_CHECK(cudaGetLastError());
-    float* temporary = previous;
-    previous = next;
-    next = temporary;
+  };
+
+  // Begin capture on the compute stream.  The GPU has one host-to-device
+  // copy engine, so all uploads go in order on one stream: row offsets and
+  // out-degrees first (initialization needs the degrees), then the columns
+  // in chunks of whole rows.  Each chunk's first-iteration update waits only
+  // for its own chunk, so it overlaps the copies of the chunks after it.
+  // Later iterations remain serial because iteration i+1 depends on every
+  // contribution written by iteration i.
+  const std::vector<int> bounds =
+      options.include_transfers ? split_by_edges(host, options.upload_chunks)
+                                : std::vector<int>{0, vertices};
+  std::vector<cudaEvent_t> chunk_ready(bounds.size() - 1);
+  CUDA_CHECK(cudaStreamBeginCapture(s.compute, cudaStreamCaptureModeGlobal));
+  if (options.include_transfers) {
+    // Waiting on an event recorded by the capturing stream joins the upload
+    // stream to the same graph capture.
+    CUDA_CHECK(cudaEventRecord(s.capture_start, s.compute));
+    CUDA_CHECK(cudaStreamWaitEvent(s.upload, s.capture_start, 0));
+    CUDA_CHECK(cudaMemcpyAsync(device.row_offsets, host.row_offsets.data(),
+                               host.row_offsets.size() * sizeof(int),
+                               cudaMemcpyHostToDevice, s.upload));
+    CUDA_CHECK(cudaMemcpyAsync(device.out_degrees, host.out_degrees.data(),
+                               host.out_degrees.size() * sizeof(int),
+                               cudaMemcpyHostToDevice, s.upload));
+    CUDA_CHECK(cudaEventRecord(s.metadata_ready, s.upload));
+    for (size_t chunk = 0; chunk < chunk_ready.size(); ++chunk) {
+      const int first_edge = host.row_offsets[bounds[chunk]];
+      const int last_edge = host.row_offsets[bounds[chunk + 1]];
+      if (last_edge > first_edge)
+        CUDA_CHECK(cudaMemcpyAsync(device.columns + first_edge,
+                                   host.columns.data() + first_edge,
+                                   sizeof(int) * (last_edge - first_edge),
+                                   cudaMemcpyHostToDevice, s.upload));
+      CUDA_CHECK(cudaEventCreateWithFlags(&chunk_ready[chunk], cudaEventDisableTiming));
+      CUDA_CHECK(cudaEventRecord(chunk_ready[chunk], s.upload));
+    }
+    CUDA_CHECK(cudaStreamWaitEvent(s.compute, s.metadata_ready, 0));
   }
 
-  // The final copy is ordered after all eight dependent update nodes.
-  CUDA_CHECK(cudaMemcpyAsync(h_result.data(), previous, h_result.size() * sizeof(float),
-                             cudaMemcpyDeviceToHost, compute_stream));
-  CUDA_CHECK(cudaStreamEndCapture(compute_stream, &graph));
-  CUDA_CHECK(cudaGraphInstantiate(&executable, graph, nullptr, nullptr, 0));
+  if (options.initial_scores)
+    CUDA_CHECK(cudaMemcpyAsync(device.scores, options.initial_scores,
+                               sizeof(float) * vertices, cudaMemcpyHostToDevice,
+                               s.compute));
+  initialize_scores<<<(vertices + block_size - 1) / block_size, block_size, 0, s.compute>>>(
+      device.scores, device.contributions_a, device.out_degrees, vertices,
+      options.initial_scores == nullptr);
+  CUDA_CHECK(cudaGetLastError());
+
+  float* contributions = device.contributions_a;
+  float* next_contributions = device.contributions_b;
+  for (int iteration = 0; iteration < options.iterations; ++iteration) {
+    if (iteration == 0) {
+      for (size_t chunk = 0; chunk + 1 < bounds.size(); ++chunk) {
+        if (options.include_transfers)
+          CUDA_CHECK(cudaStreamWaitEvent(s.compute, chunk_ready[chunk], 0));
+        launch_update(bounds[chunk], bounds[chunk + 1], contributions, next_contributions);
+      }
+    } else {
+      launch_update(0, vertices, contributions, next_contributions);
+    }
+    float* temporary = contributions;
+    contributions = next_contributions;
+    next_contributions = temporary;
+  }
+  // With no iterations the chunks still have to rejoin the capture.
+  if (options.include_transfers && options.iterations == 0)
+    for (cudaEvent_t event : chunk_ready) CUDA_CHECK(cudaStreamWaitEvent(s.compute, event, 0));
+
+  // The final copy is ordered after all dependent update nodes.
+  if (options.include_transfers)
+    CUDA_CHECK(cudaMemcpyAsync(result, device.scores, sizeof(float) * vertices,
+                               cudaMemcpyDeviceToHost, s.compute));
+  CUDA_CHECK(cudaStreamEndCapture(s.compute, &graph));
+  // The captured graph keeps the dependencies, not the events.
+  for (cudaEvent_t event : chunk_ready)
+    if (event) CUDA_CHECK(cudaEventDestroy(event));
+  CUDA_CHECK(cudaGraphInstantiate(&executable, graph, 0));
+  CUDA_CHECK(cudaGraphDestroy(graph));
+  return executable;
+}
+
+// Runs one captured graph and compares every score with the CPU reference.
+// The score sum is a secondary check.  "spread" is (max - min) / mean of the
+// expected scores; near zero means the case cannot detect wrong edges.
+bool validate_case(const Streams& streams, const Settings& settings, const char* name,
+                   const HostGraph& graph, const std::vector<float>* initial,
+                   int iterations) {
+  const std::string graph_error = check_graph(graph);
+  if (!graph_error.empty()) {
+    std::printf("FAIL %s: malformed graph: %s\n", name, graph_error.c_str());
+    return false;
+  }
+  const int vertices = graph.vertices;
+  std::vector<float> actual(vertices);
+  std::vector<void*> pinned = pin_host_buffers(settings, graph, initial, actual);
+  DeviceGraph device = allocate_device_graph(graph);
+  CaptureOptions options;
+  options.initial_scores = initial ? initial->data() : nullptr;
+  options.iterations = iterations;
+  options.block_size = settings.block_size;
+  options.upload_chunks = settings.upload_chunks;
+  cudaGraphExec_t executable =
+      capture_pagerank(streams, graph, device, options, actual.data());
+  CUDA_CHECK(cudaGraphLaunch(executable, streams.compute));
+  CUDA_CHECK(cudaStreamSynchronize(streams.compute));
+  CUDA_CHECK(cudaGraphExecDestroy(executable));
+  free_device_graph(device);
+  unpin_host_buffers(pinned);
+
+  const std::vector<double> expected = reference_pagerank(
+      graph, initial ? *initial : std::vector<float>(vertices, 1.0f / vertices), iterations);
+
+  const double abs_tolerance = kAbsToleranceScale / vertices;
+  double max_abs = 0.0, max_rel = 0.0, sum_actual = 0.0, sum_expected = 0.0;
+  double min_expected = expected[0], max_expected = expected[0];
+  int failures = 0, first_failure = -1;
+  for (int v = 0; v < vertices; ++v) {
+    const double want = expected[v];
+    const double error = std::fabs(static_cast<double>(actual[v]) - want);
+    // Written as !(<=) so NaN scores fail.
+    if (!(error <= abs_tolerance + kRelTolerance * std::fabs(want)) && failures++ == 0)
+      first_failure = v;
+    max_abs = std::max(max_abs, error);
+    if (want != 0.0) max_rel = std::max(max_rel, error / std::fabs(want));
+    sum_actual += actual[v];
+    sum_expected += want;
+    min_expected = std::min(min_expected, want);
+    max_expected = std::max(max_expected, want);
+  }
+  const bool sum_ok =
+      std::fabs(sum_actual - sum_expected) <= kRelTolerance * std::fabs(sum_expected);
+  const bool pass = failures == 0 && sum_ok;
+  const double spread = (max_expected - min_expected) / (sum_expected / vertices);
+
+  std::printf("%s  %-34s V=%-8d E=%-9zu iters=%-2d max_abs=%.2e max_rel=%.2e spread=%.3g\n",
+              pass ? "PASS" : "FAIL", name, vertices, graph.columns.size(), iterations,
+              max_abs, max_rel, spread);
+  if (failures > 0)
+    std::printf("      %d of %d scores outside tolerance; first at vertex %d: got %.9g, expected %.9g\n",
+                failures, vertices, first_failure, actual[first_failure],
+                expected[first_failure]);
+  if (!sum_ok)
+    std::printf("      score sum %.9g, expected %.9g\n", sum_actual, sum_expected);
+  return pass;
+}
+
+bool run_validation(const Streams& streams, const Settings& settings,
+                    const HostGraph& fixture) {
+  const HostGraph irregular = make_irregular_graph(100003, 0x5eed);
+  const std::vector<float> fixture_skewed = make_skewed_scores(fixture.vertices, 1);
+  const std::vector<float> irregular_skewed = make_skewed_scores(irregular.vertices, 2);
+
+  bool ok = true;
+  // The benchmark graph itself.  Its uniform start is already the fixture's
+  // stationary distribution, so this checks plumbing, not the update.
+  ok &= validate_case(streams, settings, "fixture, uniform start (benchmark)", fixture,
+                      nullptr, kIterations);
+  // Skewed starts make every edge matter, but the fixture mixes quickly: the
+  // spread of a skewed start falls below kRelTolerance after about six
+  // iterations, so longer fixture runs are no stronger than the uniform one.
+  // One and two iterations check a single update and a chained update that
+  // reads the contributions the first one wrote.
+  ok &= validate_case(streams, settings, "fixture, skewed start", fixture, &fixture_skewed,
+                      1);
+  ok &= validate_case(streams, settings, "fixture, skewed start", fixture, &fixture_skewed,
+                      2);
+  // The irregular graph has a nonuniform stationary distribution, so its
+  // full-length runs stay discriminating.
+  ok &= validate_case(streams, settings, "irregular, uniform start", irregular, nullptr,
+                      kIterations);
+  ok &= validate_case(streams, settings, "irregular, skewed start", irregular,
+                      &irregular_skewed, 1);
+  ok &= validate_case(streams, settings, "irregular, skewed start", irregular,
+                      &irregular_skewed, kIterations);
+  std::printf("validation %s (block_size=%d pin_host=%d upload_chunks=%d)\n",
+              ok ? "passed" : "FAILED", settings.block_size, settings.pin_host,
+              settings.upload_chunks);
+  return ok;
+}
+
+// Average milliseconds per launch over `replays` back-to-back launches.
+float time_replays(const Streams& streams, cudaGraphExec_t executable, int replays) {
+  cudaEvent_t start = nullptr, stop = nullptr;
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+  CUDA_CHECK(cudaEventRecord(start, streams.compute));
+  for (int replay = 0; replay < replays; ++replay)
+    CUDA_CHECK(cudaGraphLaunch(executable, streams.compute));
+  CUDA_CHECK(cudaEventRecord(stop, streams.compute));
+  CUDA_CHECK(cudaEventSynchronize(stop));
+  float elapsed_ms = 0.0f;
+  CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, start, stop));
+  CUDA_CHECK(cudaEventDestroy(stop));
+  CUDA_CHECK(cudaEventDestroy(start));
+  return elapsed_ms / replays;
+}
+
+// Times the benchmark graph (upload, twenty iterations, download) and a
+// compute-only graph (initialization and twenty iterations on data already
+// on the device).  The full graph runs first, so a profiler limited to the
+// first launches sees it and the compute-only graph finds the data uploaded.
+void run_benchmark(const Streams& streams, const Settings& settings,
+                   const HostGraph& fixture) {
+  std::vector<float> h_result(fixture.vertices);
+  std::vector<void*> pinned = pin_host_buffers(settings, fixture, nullptr, h_result);
+  DeviceGraph device = allocate_device_graph(fixture);
+  CaptureOptions options;
+  options.block_size = settings.block_size;
+  options.upload_chunks = settings.upload_chunks;
+  cudaGraphExec_t full = capture_pagerank(streams, fixture, device, options, h_result.data());
+  options.include_transfers = false;
+  cudaGraphExec_t compute_only = capture_pagerank(streams, fixture, device, options, nullptr);
+  // Uploading ahead keeps one-time graph setup out of the timings.
+  CUDA_CHECK(cudaGraphUpload(full, streams.compute));
+  CUDA_CHECK(cudaGraphUpload(compute_only, streams.compute));
+
   int graph_replays = 0;
   if (const char* value = std::getenv("GRAPH_REPLAYS"))
     graph_replays = std::atoi(value);
   if (graph_replays <= 0) {
-    cudaEvent_t start = nullptr, stop = nullptr;
-    CUDA_CHECK(cudaEventCreate(&start));
-    CUDA_CHECK(cudaEventCreate(&stop));
-    CUDA_CHECK(cudaEventRecord(start, compute_stream));
-    CUDA_CHECK(cudaGraphLaunch(executable, compute_stream));
-    CUDA_CHECK(cudaEventRecord(stop, compute_stream));
-    CUDA_CHECK(cudaEventSynchronize(stop));
-    float replay_ms = 0.0f;
-    CUDA_CHECK(cudaEventElapsedTime(&replay_ms, start, stop));
+    const float replay_ms = time_replays(streams, full, 1);
     graph_replays = replay_ms > 0.0f
                         ? static_cast<int>(10000.0f / replay_ms) + 1
                         : 1;
-    CUDA_CHECK(cudaEventDestroy(stop));
-    CUDA_CHECK(cudaEventDestroy(start));
   }
-  for (int replay = 0; replay < graph_replays; ++replay)
-    CUDA_CHECK(cudaGraphLaunch(executable, compute_stream));
-  CUDA_CHECK(cudaStreamSynchronize(compute_stream));
+  const float full_ms = time_replays(streams, full, graph_replays);
+  const float compute_ms = time_replays(streams, compute_only, graph_replays);
 
   std::printf("PageRank scores after %d iterations (replays=%d): %.6f %.6f %.6f %.6f\n",
               kIterations, graph_replays, h_result[0], h_result[1],
               h_result[2], h_result[3]);
+  std::printf("block_size=%d pin_host=%d upload_chunks=%d: %.3f ms per replay with "
+              "transfers, %.3f ms compute only (%.4f ms per iteration)\n",
+              settings.block_size, settings.pin_host, settings.upload_chunks, full_ms,
+              compute_ms, compute_ms / kIterations);
 
-  CUDA_CHECK(cudaGraphExecDestroy(executable));
-  CUDA_CHECK(cudaGraphDestroy(graph));
-  CUDA_CHECK(cudaEventDestroy(capture_start));
-  CUDA_CHECK(cudaEventDestroy(columns_ready));
-  CUDA_CHECK(cudaEventDestroy(degrees_ready));
-  CUDA_CHECK(cudaEventDestroy(offsets_ready));
-  CUDA_CHECK(cudaStreamDestroy(columns_stream));
-  CUDA_CHECK(cudaStreamDestroy(degrees_stream));
-  CUDA_CHECK(cudaStreamDestroy(offsets_stream));
-  CUDA_CHECK(cudaStreamDestroy(compute_stream));
-  CUDA_CHECK(cudaFree(d_scores_b));
-  CUDA_CHECK(cudaFree(d_scores_a));
-  CUDA_CHECK(cudaFree(d_columns));
-  CUDA_CHECK(cudaFree(d_out_degrees));
-  CUDA_CHECK(cudaFree(d_row_offsets));
-  return 0;
+  CUDA_CHECK(cudaGraphExecDestroy(compute_only));
+  CUDA_CHECK(cudaGraphExecDestroy(full));
+  free_device_graph(device);
+  unpin_host_buffers(pinned);
+}
+
+int main() {
+  const char* mode_value = std::getenv("PAGERANK_MODE");
+  const std::string mode = mode_value ? mode_value : "all";
+  if (mode != "all" && mode != "validate" && mode != "bench") {
+    std::fprintf(stderr, "PAGERANK_MODE must be all, validate or bench (got \"%s\")\n",
+                 mode.c_str());
+    return 2;
+  }
+  Settings settings;
+  const char* block_size_value = std::getenv("PAGERANK_BLOCK_SIZE");
+  if (block_size_value) settings.block_size = std::atoi(block_size_value);
+  if (settings.block_size < 32 || settings.block_size > 1024 || settings.block_size % 32 != 0) {
+    std::fprintf(stderr,
+                 "PAGERANK_BLOCK_SIZE must be a multiple of 32 from 32 to 1024 (got \"%s\")\n",
+                 block_size_value);
+    return 2;
+  }
+  if (const char* value = std::getenv("PAGERANK_PIN_HOST")) {
+    const std::string pin_host = value;
+    if (pin_host != "0" && pin_host != "1") {
+      std::fprintf(stderr, "PAGERANK_PIN_HOST must be 0 or 1 (got \"%s\")\n", value);
+      return 2;
+    }
+    settings.pin_host = pin_host == "1";
+  }
+  if (const char* value = std::getenv("PAGERANK_UPLOAD_CHUNKS")) {
+    settings.upload_chunks = std::atoi(value);
+    if (settings.upload_chunks < 1 || settings.upload_chunks > 1024) {
+      std::fprintf(stderr, "PAGERANK_UPLOAD_CHUNKS must be from 1 to 1024 (got \"%s\")\n",
+                   value);
+      return 2;
+    }
+  }
+
+  Streams streams = create_streams();
+  const HostGraph fixture = make_benchmark_fixture();
+  bool ok = true;
+  if (mode != "bench") ok = run_validation(streams, settings, fixture);
+  if (ok && mode != "validate") run_benchmark(streams, settings, fixture);
+  destroy_streams(streams);
+  return ok ? 0 : 1;
 }

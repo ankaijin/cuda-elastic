@@ -15,11 +15,24 @@
 //   so the stages remain separately measurable.
 #include <cuda_pipeline.h>
 
+// Problem shape for this variant. Defined before the harness so these replace
+// its defaults; still guarded so -D overrides (e.g. the 4x4 build) win.
+#ifndef TOKEN_COUNT
+#define TOKEN_COUNT 25000
+#endif
+#ifndef CONTEXT_COUNT
+#define CONTEXT_COUNT 250000
+#endif
+#ifndef GRAPH_REPLAYS
+#define GRAPH_REPLAYS 50
+#endif
+
 #include "msa_harness.cuh"
 
 // Attention tile configuration (overridable for tuning sweeps). Defaults are
-// the fastest measured on an RTX 3090 for 1000 x 50000: 63 query tiles x 8
-// context splits = 504 blocks of 128 threads, 90 registers per thread.
+// the fastest measured on an RTX 3090 for both 1000 x 50000 (63 query tiles x
+// 8 context splits = 504 blocks) and 25000 x 250000 (12504 blocks); 128
+// threads, 90 registers per thread.
 #ifndef ATTENTION_QUERIES_PER_BLOCK
 #define ATTENTION_QUERIES_PER_BLOCK 16
 #endif
@@ -444,7 +457,8 @@ __global__ void __launch_bounds__(kStatisticsThreads) reduce_statistics_kernel(
 // kernels differ.
 static int enqueue_pipeline(const PipelineBuffers& b,
                             cudaStream_t audio_stream,
-                            cudaStream_t imu_stream, cudaEvent_t imu_ready) {
+                            cudaStream_t imu_stream, cudaEvent_t imu_ready,
+                            const StageEvents& stages) {
   CUDA_CHECK(cudaMemcpyAsync(b.d_audio, b.h_audio,
                              kQuerySensorElements * sizeof(float),
                              cudaMemcpyHostToDevice, audio_stream));
@@ -468,6 +482,7 @@ static int enqueue_pipeline(const PipelineBuffers& b,
 
   CUDA_CHECK(cudaEventRecord(imu_ready, imu_stream));
   CUDA_CHECK(cudaStreamWaitEvent(audio_stream, imu_ready, 0));
+  CUDA_CHECK(record_stage(stages.attention_start, audio_stream));
   constexpr int attention_blocks =
       BATCH_COUNT * ((TOKEN_COUNT + ATTENTION_QUERIES_PER_BLOCK - 1) /
                      ATTENTION_QUERIES_PER_BLOCK);
@@ -480,12 +495,14 @@ static int enqueue_pipeline(const PipelineBuffers& b,
           reinterpret_cast<const float4*>(b.d_projected_imu),
           reinterpret_cast<float4*>(b.d_attention));
   CUDA_CHECK(cudaGetLastError());
+  CUDA_CHECK(record_stage(stages.attention_stop, audio_stream));
   reduce_statistics_kernel<<<BATCH_COUNT, kStatisticsThreads, 0,
                              audio_stream>>>(
       reinterpret_cast<const float4*>(b.d_projected_audio),
       reinterpret_cast<const float4*>(b.d_attention),
       reinterpret_cast<float4*>(b.d_output), b.d_statistics);
   CUDA_CHECK(cudaGetLastError());
+  CUDA_CHECK(record_stage(stages.statistics_stop, audio_stream));
   CUDA_CHECK(cudaMemcpyAsync(b.h_output, b.d_output,
                              kFeatureElements * sizeof(float),
                              cudaMemcpyDeviceToHost, audio_stream));

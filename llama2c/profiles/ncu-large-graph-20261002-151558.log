@@ -1,0 +1,13 @@
+==PROF== Connected to process 2011849 (/home/ankai/cuda/llama2c/llama2c_cuda_graph)
+==PROF== Profiling "rmsnorm_kernel" - 0 (1/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "softmax_kernel" - 1 (2/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "matmul_kernel" - 2 (3/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "rmsnorm_kernel" - 3 (4/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "softmax_kernel" - 4 (5/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "matmul_kernel" - 5 (6/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "rmsnorm_kernel" - 6 (7/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "softmax_kernel" - 7 (8/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "matmul_kernel" - 8 (9/9): 0%....50%....100% - 8 passes
+mode=graph launches=5 batch=512 size=16384 rows=8192 repeats=1 copies=1 warmup_ms=1 warmup_iterations=1 gpu_ms=998.719482 gpu_ms_per_iter=199.743896 wall_ms=998.727317 wall_ms_per_iter=199.745463 submit_us=986437.404 submit_us_per_iter=197287.481 graph_capture_ms=0.611429 graph_instantiate_ms=0.077878 graph_upload_ms=0.014868 valid=1
+==PROF== Disconnected from process 2011849
+==PROF== Report: /home/ankai/cuda/llama2c/profiles/ncu-large-graph-20261002-151558.ncu-rep

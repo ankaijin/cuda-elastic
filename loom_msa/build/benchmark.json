@@ -1,0 +1,1092 @@
+[
+  {
+    "shape": "1x4x4",
+    "replays": 5000,
+    "inputs": "random",
+    "repeats": 5,
+    "attention_flops": 320.0,
+    "summary": {
+      "baseline": {
+        "end_to_end_us": {
+          "median": 17.306,
+          "min": 17.0242,
+          "max": 17.4313
+        },
+        "attention_us": {
+          "median": 4.096,
+          "min": 4.096,
+          "max": 5.12
+        },
+        "through_statistics_us": {
+          "median": 7.168,
+          "min": 7.168,
+          "max": 8.192
+        }
+      },
+      "optimized": {
+        "end_to_end_us": {
+          "median": 17.6608,
+          "min": 17.5373,
+          "max": 17.6957
+        },
+        "attention_us": {
+          "median": 5.12,
+          "min": 5.12,
+          "max": 5.12
+        },
+        "through_statistics_us": {
+          "median": 8.544,
+          "min": 8.192,
+          "max": 9.216
+        }
+      }
+    },
+    "runs": {
+      "baseline": [
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.1877,
+          "attention_us": 4.096,
+          "through_statistics_us": 7.168,
+          "sm_clock_mhz": 1950.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 60
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.0242,
+          "attention_us": 4.096,
+          "through_statistics_us": 7.168,
+          "sm_clock_mhz": 1965.0,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 55
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.306,
+          "attention_us": 5.12,
+          "through_statistics_us": 8.192,
+          "sm_clock_mhz": 1965.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 55
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.4313,
+          "attention_us": 4.448,
+          "through_statistics_us": 8.064,
+          "sm_clock_mhz": 1965.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 55
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.3216,
+          "attention_us": 4.096,
+          "through_statistics_us": 7.168,
+          "sm_clock_mhz": 1965.0,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 55
+        }
+      ],
+      "optimized": [
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.6918,
+          "attention_us": 5.12,
+          "through_statistics_us": 8.192,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 56
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.6957,
+          "attention_us": 5.12,
+          "through_statistics_us": 8.544,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 55
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.5373,
+          "attention_us": 5.12,
+          "through_statistics_us": 8.192,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 55
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.6608,
+          "attention_us": 5.12,
+          "through_statistics_us": 9.216,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 55
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.6054,
+          "attention_us": 5.12,
+          "through_statistics_us": 9.056,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 56
+        }
+      ]
+    }
+  },
+  {
+    "shape": "1x4x4",
+    "replays": 5000,
+    "inputs": "repeat",
+    "repeats": 5,
+    "attention_flops": 320.0,
+    "summary": {
+      "baseline": {
+        "end_to_end_us": {
+          "median": 17.2499,
+          "min": 17.1768,
+          "max": 17.3778
+        },
+        "attention_us": {
+          "median": 4.096,
+          "min": 4.096,
+          "max": 5.088
+        },
+        "through_statistics_us": {
+          "median": 7.168,
+          "min": 7.168,
+          "max": 8.192
+        }
+      },
+      "optimized": {
+        "end_to_end_us": {
+          "median": 17.5543,
+          "min": 17.4411,
+          "max": 17.6504
+        },
+        "attention_us": {
+          "median": 5.12,
+          "min": 5.12,
+          "max": 5.12
+        },
+        "through_statistics_us": {
+          "median": 8.48,
+          "min": 8.416,
+          "max": 9.216
+        }
+      }
+    },
+    "runs": {
+      "baseline": [
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.3778,
+          "attention_us": 4.096,
+          "through_statistics_us": 7.168,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 56
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.2499,
+          "attention_us": 4.448,
+          "through_statistics_us": 7.168,
+          "sm_clock_mhz": 1965.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 56
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.2105,
+          "attention_us": 4.096,
+          "through_statistics_us": 7.168,
+          "sm_clock_mhz": 1965.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 56
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.1768,
+          "attention_us": 4.096,
+          "through_statistics_us": 8.192,
+          "sm_clock_mhz": 1965.0,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 56
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.3641,
+          "attention_us": 5.088,
+          "through_statistics_us": 8.16,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 57
+        }
+      ],
+      "optimized": [
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.6504,
+          "attention_us": 5.12,
+          "through_statistics_us": 9.216,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 56
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.5543,
+          "attention_us": 5.12,
+          "through_statistics_us": 8.416,
+          "sm_clock_mhz": 1965.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 56
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.4629,
+          "attention_us": 5.12,
+          "through_statistics_us": 9.216,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 56
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.4411,
+          "attention_us": 5.12,
+          "through_statistics_us": 8.448,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 57
+        },
+        {
+          "shape": "1x4x4",
+          "replays": 5000,
+          "flops": 320.0,
+          "end_to_end_us": 17.5672,
+          "attention_us": 5.12,
+          "through_statistics_us": 8.48,
+          "sm_clock_mhz": 1965,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 57
+        }
+      ]
+    }
+  },
+  {
+    "shape": "1x1000x50000",
+    "replays": 5000,
+    "inputs": "random",
+    "repeats": 5,
+    "attention_flops": 950004000.0,
+    "summary": {
+      "baseline": {
+        "end_to_end_us": {
+          "median": 699.643,
+          "min": 689.999,
+          "max": 705.064
+        },
+        "attention_us": {
+          "median": 649.216,
+          "min": 638.976,
+          "max": 652.288
+        },
+        "through_statistics_us": {
+          "median": 659.456,
+          "min": 649.216,
+          "max": 662.528
+        }
+      },
+      "optimized": {
+        "end_to_end_us": {
+          "median": 134.888,
+          "min": 132.391,
+          "max": 137.544
+        },
+        "attention_us": {
+          "median": 84.992,
+          "min": 84.064,
+          "max": 84.992
+        },
+        "through_statistics_us": {
+          "median": 93.184,
+          "min": 92.16,
+          "max": 93.184
+        }
+      }
+    },
+    "runs": {
+      "baseline": [
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 689.999,
+          "attention_us": 638.976,
+          "through_statistics_us": 649.216,
+          "sm_clock_mhz": 1725.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 69
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 696.389,
+          "attention_us": 645.12,
+          "through_statistics_us": 654.656,
+          "sm_clock_mhz": 1710,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 72
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 699.643,
+          "attention_us": 649.216,
+          "through_statistics_us": 659.456,
+          "sm_clock_mhz": 1695,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 74
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 703.515,
+          "attention_us": 650.24,
+          "through_statistics_us": 660.48,
+          "sm_clock_mhz": 1695,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 75
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 705.064,
+          "attention_us": 652.288,
+          "through_statistics_us": 662.528,
+          "sm_clock_mhz": 1695,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 76
+        }
+      ],
+      "optimized": [
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 132.391,
+          "attention_us": 84.064,
+          "through_statistics_us": 92.16,
+          "sm_clock_mhz": 1890.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 69
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 133.573,
+          "attention_us": 84.992,
+          "through_statistics_us": 92.16,
+          "sm_clock_mhz": 1875.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 72
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 134.888,
+          "attention_us": 84.992,
+          "through_statistics_us": 93.184,
+          "sm_clock_mhz": 1875.0,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 74
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 135.258,
+          "attention_us": 84.992,
+          "through_statistics_us": 93.184,
+          "sm_clock_mhz": 1875,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 75
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 137.544,
+          "attention_us": 84.992,
+          "through_statistics_us": 93.184,
+          "sm_clock_mhz": 1875.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 76
+        }
+      ]
+    }
+  },
+  {
+    "shape": "1x1000x50000",
+    "replays": 5000,
+    "inputs": "repeat",
+    "repeats": 5,
+    "attention_flops": 950004000.0,
+    "summary": {
+      "baseline": {
+        "end_to_end_us": {
+          "median": 685.111,
+          "min": 685.064,
+          "max": 685.615
+        },
+        "attention_us": {
+          "median": 630.784,
+          "min": 630.784,
+          "max": 631.808
+        },
+        "through_statistics_us": {
+          "median": 641.024,
+          "min": 641.024,
+          "max": 642.048
+        }
+      },
+      "optimized": {
+        "end_to_end_us": {
+          "median": 131.632,
+          "min": 130.95,
+          "max": 132.668
+        },
+        "attention_us": {
+          "median": 83.968,
+          "min": 83.968,
+          "max": 83.968
+        },
+        "through_statistics_us": {
+          "median": 92.16,
+          "min": 92.064,
+          "max": 92.16
+        }
+      }
+    },
+    "runs": {
+      "baseline": [
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 685.615,
+          "attention_us": 630.784,
+          "through_statistics_us": 641.024,
+          "sm_clock_mhz": 1740,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 76
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 685.399,
+          "attention_us": 630.784,
+          "through_statistics_us": 641.024,
+          "sm_clock_mhz": 1740,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 74
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 685.111,
+          "attention_us": 630.784,
+          "through_statistics_us": 641.024,
+          "sm_clock_mhz": 1740,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 74
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 685.064,
+          "attention_us": 630.784,
+          "through_statistics_us": 641.024,
+          "sm_clock_mhz": 1740,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 74
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 685.067,
+          "attention_us": 631.808,
+          "through_statistics_us": 642.048,
+          "sm_clock_mhz": 1740,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 74
+        }
+      ],
+      "optimized": [
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 131.006,
+          "attention_us": 83.968,
+          "through_statistics_us": 92.16,
+          "sm_clock_mhz": 1920.0,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 74
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 132.668,
+          "attention_us": 83.968,
+          "through_statistics_us": 92.16,
+          "sm_clock_mhz": 1920.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 74
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 130.95,
+          "attention_us": 83.968,
+          "through_statistics_us": 92.064,
+          "sm_clock_mhz": 1920.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 74
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 132.646,
+          "attention_us": 83.968,
+          "through_statistics_us": 92.128,
+          "sm_clock_mhz": 1920.0,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 74
+        },
+        {
+          "shape": "1x1000x50000",
+          "replays": 5000,
+          "flops": 950004000.0,
+          "end_to_end_us": 131.632,
+          "attention_us": 83.968,
+          "through_statistics_us": 92.16,
+          "sm_clock_mhz": 1920.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 74
+        }
+      ]
+    }
+  },
+  {
+    "shape": "1x25000x250000",
+    "replays": 50,
+    "inputs": "random",
+    "repeats": 5,
+    "attention_flops": 118750000000.0,
+    "summary": {
+      "baseline": {
+        "end_to_end_us": {
+          "median": 84747.8,
+          "min": 84545.1,
+          "max": 85311.2
+        },
+        "attention_us": {
+          "median": 84734.5,
+          "min": 84454.4,
+          "max": 84993.6
+        },
+        "through_statistics_us": {
+          "median": 84908.0,
+          "min": 84628.5,
+          "max": 85166.1
+        }
+      },
+      "optimized": {
+        "end_to_end_us": {
+          "median": 8870.14,
+          "min": 8863.03,
+          "max": 8886.48
+        },
+        "attention_us": {
+          "median": 8529.92,
+          "min": 8529.92,
+          "max": 8550.4
+        },
+        "through_statistics_us": {
+          "median": 8716.29,
+          "min": 8716.29,
+          "max": 8736.77
+        }
+      }
+    },
+    "runs": {
+      "baseline": [
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 85311.2,
+          "attention_us": 84993.6,
+          "through_statistics_us": 85166.1,
+          "sm_clock_mhz": 1665.0,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 77
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 84728.6,
+          "attention_us": 84581.4,
+          "through_statistics_us": 84753.9,
+          "sm_clock_mhz": 1665.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 75
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 85014.8,
+          "attention_us": 84734.5,
+          "through_statistics_us": 84908.0,
+          "sm_clock_mhz": 1665,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 74
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 84545.1,
+          "attention_us": 84929.5,
+          "through_statistics_us": 85100.5,
+          "sm_clock_mhz": 1665.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 75
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 84747.8,
+          "attention_us": 84454.4,
+          "through_statistics_us": 84628.5,
+          "sm_clock_mhz": 1672.5,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 75
+        }
+      ],
+      "optimized": [
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 8886.48,
+          "attention_us": 8550.4,
+          "through_statistics_us": 8736.77,
+          "sm_clock_mhz": 1620.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 73
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 8863.03,
+          "attention_us": 8529.92,
+          "through_statistics_us": 8716.29,
+          "sm_clock_mhz": 1635,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 72
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 8865.37,
+          "attention_us": 8529.92,
+          "through_statistics_us": 8716.29,
+          "sm_clock_mhz": 1620,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 72
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 8878.54,
+          "attention_us": 8529.92,
+          "through_statistics_us": 8716.29,
+          "sm_clock_mhz": 1635,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 72
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 8870.14,
+          "attention_us": 8529.92,
+          "through_statistics_us": 8716.29,
+          "sm_clock_mhz": 1620.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 72
+        }
+      ]
+    }
+  },
+  {
+    "shape": "1x25000x250000",
+    "replays": 50,
+    "inputs": "repeat",
+    "repeats": 5,
+    "attention_flops": 118750000000.0,
+    "summary": {
+      "baseline": {
+        "end_to_end_us": {
+          "median": 83980.8,
+          "min": 83388.4,
+          "max": 84071.4
+        },
+        "attention_us": {
+          "median": 83512.8,
+          "min": 83124.7,
+          "max": 83569.7
+        },
+        "through_statistics_us": {
+          "median": 83683.8,
+          "min": 83295.7,
+          "max": 83741.2
+        }
+      },
+      "optimized": {
+        "end_to_end_us": {
+          "median": 8793.84,
+          "min": 8788.44,
+          "max": 8796.89
+        },
+        "attention_us": {
+          "median": 8438.78,
+          "min": 8437.78,
+          "max": 8438.78
+        },
+        "through_statistics_us": {
+          "median": 8623.1,
+          "min": 8623.1,
+          "max": 8623.1
+        }
+      }
+    },
+    "runs": {
+      "baseline": [
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 84071.4,
+          "attention_us": 83569.7,
+          "through_statistics_us": 83741.2,
+          "sm_clock_mhz": 1695.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 70
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 83388.4,
+          "attention_us": 83562.5,
+          "through_statistics_us": 83733.5,
+          "sm_clock_mhz": 1680.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 69
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 83980.8,
+          "attention_us": 83124.7,
+          "through_statistics_us": 83295.7,
+          "sm_clock_mhz": 1695.0,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 69
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 84023.3,
+          "attention_us": 83512.8,
+          "through_statistics_us": 83683.8,
+          "sm_clock_mhz": 1695.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 69
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 83585.8,
+          "attention_us": 83400.7,
+          "through_statistics_us": 83570.7,
+          "sm_clock_mhz": 1665.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 70
+        }
+      ],
+      "optimized": [
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 8795.67,
+          "attention_us": 8438.78,
+          "through_statistics_us": 8623.1,
+          "sm_clock_mhz": 1635,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 68
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 8793.84,
+          "attention_us": 8438.26,
+          "through_statistics_us": 8623.1,
+          "sm_clock_mhz": 1650,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 67
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 8788.44,
+          "attention_us": 8438.78,
+          "through_statistics_us": 8623.1,
+          "sm_clock_mhz": 1635,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 68
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 8796.89,
+          "attention_us": 8437.78,
+          "through_statistics_us": 8623.1,
+          "sm_clock_mhz": 1635.0,
+          "pstates": [
+            "P2"
+          ],
+          "max_temperature_c": 68
+        },
+        {
+          "shape": "1x25000x250000",
+          "replays": 50,
+          "flops": 118750000000.0,
+          "end_to_end_us": 8793.7,
+          "attention_us": 8438.78,
+          "through_statistics_us": 8623.1,
+          "sm_clock_mhz": 1635.0,
+          "pstates": [
+            "P0",
+            "P2"
+          ],
+          "max_temperature_c": 68
+        }
+      ]
+    }
+  }
+]

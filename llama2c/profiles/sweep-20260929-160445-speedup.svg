@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="670" viewBox="0 0 1200 670" font-family="system-ui, sans-serif">
+<rect width="100%" height="100%" fill="#fcfcfb"/>
+<text x="80" y="30" font-size="18" font-weight="600" fill="#0b0b0b">CUDA Graph speedup across the size sweep</text>
+<text x="80" y="52" font-size="13" fill="#52514e">Above 1× the graph is faster. Dot = mean of trials; whisker = min–max trial. Numbers refer to the configuration key below.</text>
+<text x="80" y="88" font-size="14" font-weight="600" fill="#0b0b0b">GPU time per iteration: direct ÷ graph</text>
+<line x1="80" y1="451.3" x2="575.0" y2="451.3" stroke="#e6e5e1"/>
+<text x="72" y="455.3" text-anchor="end" font-size="12" fill="#52514e">0.90×</text>
+<line x1="80" y1="387.6" x2="575.0" y2="387.6" stroke="#e6e5e1"/>
+<text x="72" y="391.6" text-anchor="end" font-size="12" fill="#52514e">1.00×</text>
+<line x1="80" y1="323.9" x2="575.0" y2="323.9" stroke="#e6e5e1"/>
+<text x="72" y="327.9" text-anchor="end" font-size="12" fill="#52514e">1.10×</text>
+<line x1="80" y1="260.2" x2="575.0" y2="260.2" stroke="#e6e5e1"/>
+<text x="72" y="264.2" text-anchor="end" font-size="12" fill="#52514e">1.20×</text>
+<line x1="80" y1="196.4" x2="575.0" y2="196.4" stroke="#e6e5e1"/>
+<text x="72" y="200.4" text-anchor="end" font-size="12" fill="#52514e">1.30×</text>
+<line x1="80" y1="132.7" x2="575.0" y2="132.7" stroke="#e6e5e1"/>
+<text x="72" y="136.7" text-anchor="end" font-size="12" fill="#52514e">1.40×</text>
+<line x1="80" y1="387.6" x2="575.0" y2="387.6" stroke="#8a8984" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="84" y="381.6" font-size="12" fill="#52514e">parity</text>
+<line x1="80.0" y1="100" x2="80.0" y2="480" stroke="#e6e5e1"/>
+<text x="80.0" y="500" text-anchor="middle" font-size="12" fill="#52514e">1 µs</text>
+<line x1="203.8" y1="100" x2="203.8" y2="480" stroke="#e6e5e1"/>
+<text x="203.8" y="500" text-anchor="middle" font-size="12" fill="#52514e">10 µs</text>
+<line x1="327.5" y1="100" x2="327.5" y2="480" stroke="#e6e5e1"/>
+<text x="327.5" y="500" text-anchor="middle" font-size="12" fill="#52514e">100 µs</text>
+<line x1="451.2" y1="100" x2="451.2" y2="480" stroke="#e6e5e1"/>
+<text x="451.2" y="500" text-anchor="middle" font-size="12" fill="#52514e">1 ms</text>
+<line x1="575.0" y1="100" x2="575.0" y2="480" stroke="#e6e5e1"/>
+<text x="575.0" y="500" text-anchor="middle" font-size="12" fill="#52514e">10 ms</text>
+<line x1="80" y1="480" x2="575.0" y2="480" stroke="#8a8984"/>
+<text x="327.5" y="524" text-anchor="middle" font-size="13" fill="#52514e">direct-mode GPU time per iteration (log)</text>
+<g><title>1: batch 1, size 16, rows 16, ×1, no copies&amp;#10;1.150× mean (1.082–1.217, 3 trials)</title><line x1="156.2" y1="335.1" x2="156.2" y2="249.3" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="156.2" cy="291.7" r="12" fill="transparent"/><circle cx="156.2" cy="291.7" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>2: batch 1, size 64, rows 64, ×1, no copies&amp;#10;1.042× mean (1.024–1.067, 3 trials)</title><line x1="163.0" y1="372.5" x2="163.0" y2="344.9" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="163.0" cy="361.1" r="12" fill="transparent"/><circle cx="163.0" cy="361.1" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>3: batch 1, size 64, rows 64, ×16, no copies&amp;#10;1.394× mean (1.378–1.401, 3 trials)</title><line x1="308.3" y1="146.4" x2="308.3" y2="131.9" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="308.3" cy="136.8" r="12" fill="transparent"/><circle cx="308.3" cy="136.8" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>4: batch 1, size 256, rows 256, ×1, copies&amp;#10;0.949× mean (0.905–1.010, 3 trials)</title><line x1="231.8" y1="448.1" x2="231.8" y2="381.2" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="231.8" cy="420.3" r="12" fill="transparent"/><circle cx="231.8" cy="420.3" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>5: batch 1, size 256, rows 256, ×8, no copies&amp;#10;1.159× mean (1.110–1.244, 3 trials)</title><line x1="320.8" y1="317.6" x2="320.8" y2="232.4" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="320.8" cy="286.5" r="12" fill="transparent"/><circle cx="320.8" cy="286.5" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>6: batch 1, size 256, rows 256, ×32, no copies&amp;#10;1.122× mean (1.117–1.128, 3 trials)</title><line x1="393.0" y1="313.0" x2="393.0" y2="305.9" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="393.0" cy="309.6" r="12" fill="transparent"/><circle cx="393.0" cy="309.6" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>7: batch 1, size 1024, rows 1024, ×1, no copies&amp;#10;1.004× mean (0.999–1.008, 3 trials)</title><line x1="273.2" y1="388.2" x2="273.2" y2="382.8" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="273.2" cy="384.8" r="12" fill="transparent"/><circle cx="273.2" cy="384.8" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>8: batch 1, size 4096, rows 4096, ×1, copies&amp;#10;1.009× mean (1.006–1.012, 3 trials)</title><line x1="380.7" y1="383.7" x2="380.7" y2="379.9" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="380.7" cy="382.1" r="12" fill="transparent"/><circle cx="380.7" cy="382.1" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>9: batch 512, size 16384, rows 8192, ×1, copies&amp;#10;0.975× mean (0.962–0.984, 3 trials)</title><line x1="517.3" y1="411.9" x2="517.3" y2="397.6" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="517.3" cy="403.5" r="12" fill="transparent"/><circle cx="517.3" cy="403.5" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<text x="164.2" y="283.7" font-size="12" fill="#52514e">1</text>
+<text x="171.0" y="353.1" font-size="12" fill="#52514e">2</text>
+<text x="316.3" y="128.8" font-size="12" fill="#52514e">3</text>
+<text x="239.8" y="412.3" font-size="12" fill="#52514e">4</text>
+<text x="328.8" y="278.5" font-size="12" fill="#52514e">5</text>
+<text x="401.0" y="301.6" font-size="12" fill="#52514e">6</text>
+<text x="281.2" y="376.8" font-size="12" fill="#52514e">7</text>
+<text x="388.7" y="374.1" font-size="12" fill="#52514e">8</text>
+<text x="525.3" y="419.5" font-size="12" fill="#52514e">9</text>
+<text x="675.0" y="88" font-size="14" font-weight="600" fill="#0b0b0b">CPU submission per iteration: direct ÷ graph (log)</text>
+<line x1="675.0" y1="459.9" x2="1170.0" y2="459.9" stroke="#e6e5e1"/>
+<text x="667.0" y="463.9" text-anchor="end" font-size="12" fill="#52514e">1×</text>
+<line x1="675.0" y1="397.5" x2="1170.0" y2="397.5" stroke="#e6e5e1"/>
+<text x="667.0" y="401.5" text-anchor="end" font-size="12" fill="#52514e">2×</text>
+<line x1="675.0" y1="315.0" x2="1170.0" y2="315.0" stroke="#e6e5e1"/>
+<text x="667.0" y="319.0" text-anchor="end" font-size="12" fill="#52514e">5×</text>
+<line x1="675.0" y1="252.6" x2="1170.0" y2="252.6" stroke="#e6e5e1"/>
+<text x="667.0" y="256.6" text-anchor="end" font-size="12" fill="#52514e">10×</text>
+<line x1="675.0" y1="190.2" x2="1170.0" y2="190.2" stroke="#e6e5e1"/>
+<text x="667.0" y="194.2" text-anchor="end" font-size="12" fill="#52514e">20×</text>
+<line x1="675.0" y1="107.7" x2="1170.0" y2="107.7" stroke="#e6e5e1"/>
+<text x="667.0" y="111.7" text-anchor="end" font-size="12" fill="#52514e">50×</text>
+<line x1="675.0" y1="459.9" x2="1170.0" y2="459.9" stroke="#8a8984" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="679.0" y="453.9" font-size="12" fill="#52514e">parity</text>
+<line x1="675.0" y1="100" x2="675.0" y2="480" stroke="#e6e5e1"/>
+<text x="675.0" y="500" text-anchor="middle" font-size="12" fill="#52514e">1 µs</text>
+<line x1="798.8" y1="100" x2="798.8" y2="480" stroke="#e6e5e1"/>
+<text x="798.8" y="500" text-anchor="middle" font-size="12" fill="#52514e">10 µs</text>
+<line x1="922.5" y1="100" x2="922.5" y2="480" stroke="#e6e5e1"/>
+<text x="922.5" y="500" text-anchor="middle" font-size="12" fill="#52514e">100 µs</text>
+<line x1="1046.2" y1="100" x2="1046.2" y2="480" stroke="#e6e5e1"/>
+<text x="1046.2" y="500" text-anchor="middle" font-size="12" fill="#52514e">1 ms</text>
+<line x1="1170.0" y1="100" x2="1170.0" y2="480" stroke="#e6e5e1"/>
+<text x="1170.0" y="500" text-anchor="middle" font-size="12" fill="#52514e">10 ms</text>
+<line x1="675.0" y1="480" x2="1170.0" y2="480" stroke="#8a8984"/>
+<text x="922.5" y="524" text-anchor="middle" font-size="13" fill="#52514e">direct-mode GPU time per iteration (log)</text>
+<g><title>1: batch 1, size 16, rows 16, ×1, no copies&amp;#10;1.745× mean (1.725–1.760, 3 trials)</title><line x1="751.2" y1="410.8" x2="751.2" y2="409.0" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="751.2" cy="409.8" r="12" fill="transparent"/><circle cx="751.2" cy="409.8" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>2: batch 1, size 64, rows 64, ×1, no copies&amp;#10;1.798× mean (1.757–1.830, 3 trials)</title><line x1="758.0" y1="409.2" x2="758.0" y2="405.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="758.0" cy="407.1" r="12" fill="transparent"/><circle cx="758.0" cy="407.1" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>3: batch 1, size 64, rows 64, ×16, no copies&amp;#10;26.646× mean (22.259–35.260, 3 trials)</title><line x1="903.3" y1="180.6" x2="903.3" y2="139.2" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="903.3" cy="164.4" r="12" fill="transparent"/><circle cx="903.3" cy="164.4" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>4: batch 1, size 256, rows 256, ×1, copies&amp;#10;1.324× mean (1.046–1.482, 3 trials)</title><line x1="826.8" y1="455.8" x2="826.8" y2="424.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="826.8" cy="434.7" r="12" fill="transparent"/><circle cx="826.8" cy="434.7" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>5: batch 1, size 256, rows 256, ×8, no copies&amp;#10;11.727× mean (10.906–12.509, 3 trials)</title><line x1="915.8" y1="244.8" x2="915.8" y2="232.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="915.8" cy="238.3" r="12" fill="transparent"/><circle cx="915.8" cy="238.3" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>6: batch 1, size 256, rows 256, ×32, no copies&amp;#10;41.877× mean (40.599–43.591, 3 trials)</title><line x1="988.0" y1="126.5" x2="988.0" y2="120.1" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="988.0" cy="123.7" r="12" fill="transparent"/><circle cx="988.0" cy="123.7" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>7: batch 1, size 1024, rows 1024, ×1, no copies&amp;#10;1.896× mean (1.739–2.178, 3 trials)</title><line x1="868.2" y1="410.1" x2="868.2" y2="389.8" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="868.2" cy="402.3" r="12" fill="transparent"/><circle cx="868.2" cy="402.3" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>8: batch 1, size 4096, rows 4096, ×1, copies&amp;#10;1.477× mean (1.473–1.480, 3 trials)</title><line x1="975.7" y1="425.0" x2="975.7" y2="424.6" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="975.7" cy="424.8" r="12" fill="transparent"/><circle cx="975.7" cy="424.8" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<g><title>9: batch 512, size 16384, rows 8192, ×1, copies&amp;#10;1.512× mean (1.492–1.531, 3 trials)</title><line x1="1112.3" y1="423.9" x2="1112.3" y2="421.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="1112.3" cy="422.7" r="12" fill="transparent"/><circle cx="1112.3" cy="422.7" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<text x="759.2" y="425.8" font-size="12" fill="#52514e">1</text>
+<text x="766.0" y="399.1" font-size="12" fill="#52514e">2</text>
+<text x="911.3" y="156.4" font-size="12" fill="#52514e">3</text>
+<text x="834.8" y="426.7" font-size="12" fill="#52514e">4</text>
+<text x="923.8" y="230.3" font-size="12" fill="#52514e">5</text>
+<text x="996.0" y="115.7" font-size="12" fill="#52514e">6</text>
+<text x="876.2" y="394.3" font-size="12" fill="#52514e">7</text>
+<text x="983.7" y="416.8" font-size="12" fill="#52514e">8</text>
+<text x="1120.3" y="414.7" font-size="12" fill="#52514e">9</text>
+<text x="80" y="534" font-size="13" font-weight="600" fill="#0b0b0b">Configurations</text>
+<text x="80.0" y="550" font-size="12" fill="#52514e"><tspan font-weight="600" fill="#0b0b0b">1</tspan>  batch 1, size 16, rows 16, ×1, no copies  ·  GPU 1.15×, submit 1.7×</text>
+<text x="80.0" y="570" font-size="12" fill="#52514e"><tspan font-weight="600" fill="#0b0b0b">2</tspan>  batch 1, size 64, rows 64, ×1, no copies  ·  GPU 1.04×, submit 1.8×</text>
+<text x="80.0" y="590" font-size="12" fill="#52514e"><tspan font-weight="600" fill="#0b0b0b">3</tspan>  batch 1, size 64, rows 64, ×16, no copies  ·  GPU 1.39×, submit 26.6×</text>
+<text x="80.0" y="610" font-size="12" fill="#52514e"><tspan font-weight="600" fill="#0b0b0b">4</tspan>  batch 1, size 256, rows 256, ×1, copies  ·  GPU 0.95×, submit 1.3×</text>
+<text x="80.0" y="630" font-size="12" fill="#52514e"><tspan font-weight="600" fill="#0b0b0b">5</tspan>  batch 1, size 256, rows 256, ×8, no copies  ·  GPU 1.16×, submit 11.7×</text>
+<text x="625.0" y="550" font-size="12" fill="#52514e"><tspan font-weight="600" fill="#0b0b0b">6</tspan>  batch 1, size 256, rows 256, ×32, no copies  ·  GPU 1.12×, submit 41.9×</text>
+<text x="625.0" y="570" font-size="12" fill="#52514e"><tspan font-weight="600" fill="#0b0b0b">7</tspan>  batch 1, size 1024, rows 1024, ×1, no copies  ·  GPU 1.00×, submit 1.9×</text>
+<text x="625.0" y="590" font-size="12" fill="#52514e"><tspan font-weight="600" fill="#0b0b0b">8</tspan>  batch 1, size 4096, rows 4096, ×1, copies  ·  GPU 1.01×, submit 1.5×</text>
+<text x="625.0" y="610" font-size="12" fill="#52514e"><tspan font-weight="600" fill="#0b0b0b">9</tspan>  batch 512, size 16384, rows 8192, ×1, copies  ·  GPU 0.98×, submit 1.5×</text>
+</svg>

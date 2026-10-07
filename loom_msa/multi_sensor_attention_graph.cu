@@ -10,14 +10,14 @@ enum {
   // This benchmark uses 1,000 query tokens and a 50,000-token key/value
   // context. The graph is specialized to these dimensions.
   BATCH_COUNT = 1,
-  TOKEN_COUNT = 1000,
-  CONTEXT_COUNT = 50000,
+  TOKEN_COUNT = 25000,
+  CONTEXT_COUNT = 250000,
   SENSOR_LANE_COUNT = 3,
   FEATURE_LANE_COUNT = 4,
   STATISTIC_COUNT = 4,
   REDUCTION_THREADS = 32,
   ATTENTION_THREADS = 256,
-  GRAPH_REPLAYS = 5000,
+  GRAPH_REPLAYS = 50,
 };
 
 #define CUDA_CHECK(call)                                                     \

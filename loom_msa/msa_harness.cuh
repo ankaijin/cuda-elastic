@@ -11,6 +11,8 @@
 
 #include <cuda_runtime.h>
 
+#include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
@@ -78,14 +80,79 @@ struct PipelineBuffers {
   float* d_statistics;
 };
 
+// Stage-timing events. They are recorded as event-record nodes only in a
+// separate instrumented graph; in the end-to-end graph every member is null
+// and record_stage() is a no-op, so that graph is not perturbed.
+//   attention_start  -> attention_stop:  attention kernel
+//   attention_start  -> statistics_stop: attention through statistics, which
+//                       for a split context includes merging the partials
+//                       into the final attention rows
+struct StageEvents {
+  cudaEvent_t attention_start;
+  cudaEvent_t attention_stop;
+  cudaEvent_t statistics_stop;
+};
+
+inline cudaError_t record_stage(cudaEvent_t event, cudaStream_t stream) {
+  return event != nullptr
+             ? cudaEventRecordWithFlags(event, stream, cudaEventRecordExternal)
+             : cudaSuccess;
+}
+
 // Enqueues one full pipeline iteration (H2D, kernels, D2H) during capture.
 // audio_stream is the capture origin; imu_stream has already been forked from
 // it and must be joined back before returning. imu_ready is a spare event for
-// that join.
+// that join. Variants call record_stage() at the three StageEvents points.
 using EnqueuePipeline = int (*)(const PipelineBuffers& buffers,
                                 cudaStream_t audio_stream,
                                 cudaStream_t imu_stream,
-                                cudaEvent_t imu_ready);
+                                cudaEvent_t imu_ready,
+                                const StageEvents& stages);
+
+// Algorithmic attention FLOPs, counted from main.c's math rather than from
+// either kernel's instruction stream, so the numerator is identical for every
+// variant (effective attention throughput):
+//   per (query, key) pair: score 4 mul + 3 add + 1 scale (8), subtract max
+//   (1), exp (1), denominator add (1), weighted value 4 mul + 4 add (8) = 19
+//   per query row: 4 normalizing divisions
+// Max comparisons are not counted.
+constexpr double kAttentionFlopsPerPair = 19.0;
+constexpr double kAttentionFlopsPerRow = 4.0;
+constexpr double kAttentionFlops =
+    static_cast<double>(BATCH_COUNT) * TOKEN_COUNT *
+    (kAttentionFlopsPerPair * CONTEXT_COUNT + kAttentionFlopsPerRow);
+
+struct Summary {
+  double median;
+  double minimum;
+  double maximum;
+};
+
+inline Summary summarize(std::vector<double> samples) {
+  std::sort(samples.begin(), samples.end());
+  const size_t count = samples.size();
+  const double median = count % 2 == 1
+                            ? samples[count / 2]
+                            : 0.5 * (samples[count / 2 - 1] + samples[count / 2]);
+  return {median, samples.front(), samples.back()};
+}
+
+inline int capture_pipeline(EnqueuePipeline enqueue_pipeline,
+                            const PipelineBuffers& buffers,
+                            cudaStream_t audio_stream, cudaStream_t imu_stream,
+                            cudaEvent_t capture_start, cudaEvent_t imu_ready,
+                            const StageEvents& stages, cudaGraph_t* graph,
+                            cudaGraphExec_t* graph_exec) {
+  CUDA_CHECK(cudaStreamBeginCapture(audio_stream, cudaStreamCaptureModeGlobal));
+  CUDA_CHECK(cudaEventRecord(capture_start, audio_stream));
+  CUDA_CHECK(cudaStreamWaitEvent(imu_stream, capture_start, 0));
+  if (enqueue_pipeline(buffers, audio_stream, imu_stream, imu_ready, stages) !=
+      EXIT_SUCCESS)
+    return EXIT_FAILURE;
+  CUDA_CHECK(cudaStreamEndCapture(audio_stream, graph));
+  CUDA_CHECK(cudaGraphInstantiate(graph_exec, *graph, nullptr, nullptr, 0));
+  return EXIT_SUCCESS;
+}
 
 enum class InputMode { kRepeat, kRandom };
 
@@ -160,6 +227,9 @@ inline void compute_reference(const float* audio, const float* imu,
       out[3] = in[0] - in[1];
     }
 
+    // Rows are independent; parallelized so large shapes stay checkable
+    // (a no-op without -fopenmp).
+#pragma omp parallel for schedule(static) firstprivate(scores)
     for (int row = 0; row < TOKEN_COUNT; ++row) {
       const float* query = &projected_audio[row * FEATURE_LANE_COUNT];
       double maximum = 0.0;
@@ -335,25 +405,38 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   cudaEvent_t timing_stop = nullptr;
   cudaGraph_t graph = nullptr;
   cudaGraphExec_t graph_exec = nullptr;
+  cudaGraph_t stage_graph = nullptr;
+  cudaGraphExec_t stage_graph_exec = nullptr;
+  StageEvents stages{};
   CUDA_CHECK(cudaStreamCreateWithFlags(&audio_stream, cudaStreamNonBlocking));
   CUDA_CHECK(cudaStreamCreateWithFlags(&imu_stream, cudaStreamNonBlocking));
   CUDA_CHECK(cudaEventCreateWithFlags(&capture_start, cudaEventDisableTiming));
   CUDA_CHECK(cudaEventCreateWithFlags(&imu_ready, cudaEventDisableTiming));
   CUDA_CHECK(cudaEventCreate(&timing_start));
   CUDA_CHECK(cudaEventCreate(&timing_stop));
+  CUDA_CHECK(cudaEventCreate(&stages.attention_start));
+  CUDA_CHECK(cudaEventCreate(&stages.attention_stop));
+  CUDA_CHECK(cudaEventCreate(&stages.statistics_stop));
 
-  CUDA_CHECK(cudaStreamBeginCapture(audio_stream, cudaStreamCaptureModeGlobal));
-  CUDA_CHECK(cudaEventRecord(capture_start, audio_stream));
-  CUDA_CHECK(cudaStreamWaitEvent(imu_stream, capture_start, 0));
-  if (enqueue_pipeline(buffers, audio_stream, imu_stream, imu_ready) !=
-      EXIT_SUCCESS)
+  if (capture_pipeline(enqueue_pipeline, buffers, audio_stream, imu_stream,
+                       capture_start, imu_ready, StageEvents{}, &graph,
+                       &graph_exec) != EXIT_SUCCESS ||
+      capture_pipeline(enqueue_pipeline, buffers, audio_stream, imu_stream,
+                       capture_start, imu_ready, stages, &stage_graph,
+                       &stage_graph_exec) != EXIT_SUCCESS)
     return EXIT_FAILURE;
-  CUDA_CHECK(cudaStreamEndCapture(audio_stream, &graph));
-  CUDA_CHECK(cudaGraphInstantiate(&graph_exec, graph, nullptr, nullptr, 0));
 
-  // Warm-up policy: one launch, then GRAPH_REPLAYS timed launches.
-  CUDA_CHECK(cudaGraphLaunch(graph_exec, audio_stream));
-  CUDA_CHECK(cudaStreamSynchronize(audio_stream));
+  // End-to-end: uninstrumented graph. Warm-up policy: replay for at least
+  // kWarmupSeconds (so GPU clocks leave their idle state; one launch is not
+  // enough at small shapes), then GRAPH_REPLAYS back-to-back timed launches.
+  constexpr double kWarmupSeconds = 0.25;
+  const auto warmup_begin = std::chrono::steady_clock::now();
+  do {
+    CUDA_CHECK(cudaGraphLaunch(graph_exec, audio_stream));
+    CUDA_CHECK(cudaStreamSynchronize(audio_stream));
+  } while (std::chrono::duration<double>(std::chrono::steady_clock::now() -
+                                         warmup_begin)
+               .count() < kWarmupSeconds);
   CUDA_CHECK(cudaEventRecord(timing_start, audio_stream));
   for (int replay = 0; replay < GRAPH_REPLAYS; ++replay)
     CUDA_CHECK(cudaGraphLaunch(graph_exec, audio_stream));
@@ -362,25 +445,74 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   float elapsed_ms = 0.0f;
   CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, timing_start, timing_stop));
 
+  // Stages: instrumented graph, one warm-up launch, then GRAPH_REPLAYS
+  // launches each synchronized so every replay's stage events can be read.
+  std::vector<double> attention_us;
+  std::vector<double> through_statistics_us;
+  attention_us.reserve(GRAPH_REPLAYS);
+  through_statistics_us.reserve(GRAPH_REPLAYS);
+  CUDA_CHECK(cudaGraphLaunch(stage_graph_exec, audio_stream));
+  CUDA_CHECK(cudaStreamSynchronize(audio_stream));
+  for (int replay = 0; replay < GRAPH_REPLAYS; ++replay) {
+    CUDA_CHECK(cudaGraphLaunch(stage_graph_exec, audio_stream));
+    CUDA_CHECK(cudaStreamSynchronize(audio_stream));
+    float stage_ms = 0.0f;
+    CUDA_CHECK(cudaEventElapsedTime(&stage_ms, stages.attention_start,
+                                    stages.attention_stop));
+    attention_us.push_back(1000.0 * stage_ms);
+    CUDA_CHECK(cudaEventElapsedTime(&stage_ms, stages.attention_start,
+                                    stages.statistics_stop));
+    through_statistics_us.push_back(1000.0 * stage_ms);
+  }
+  const Summary attention = summarize(attention_us);
+  const Summary through_statistics = summarize(through_statistics_us);
+  const double end_to_end_us = 1000.0 * elapsed_ms / GRAPH_REPLAYS;
+
   const float* statistics = buffers.h_statistics;
   const float combined = statistics[2] + 3.0f * statistics[0] +
                          7.0f * statistics[1] + 11.0f * statistics[3];
   std::cout << "variant: " << variant_name << " (" << BATCH_COUNT << "x"
-            << TOKEN_COUNT << "x" << CONTEXT_COUNT << ", inputs="
+            << TOKEN_COUNT << "x" << CONTEXT_COUNT << ", replays="
+            << GRAPH_REPLAYS << ", inputs="
             << (mode == InputMode::kRepeat ? "repeat" : "random") << ")\n"
             << "attention checksum: " << statistics[2] << '\n'
             << "projection energy: " << statistics[0] << '\n'
             << "attention sum: " << statistics[1] << '\n'
             << "attention max: " << statistics[3] << '\n'
             << "combined checksum: " << combined << '\n'
-            << "graph replay average (us): "
-            << 1000.0f * elapsed_ms / GRAPH_REPLAYS << '\n';
+            << "graph replay average (us): " << end_to_end_us << '\n'
+            << "attention kernel median (us): " << attention.median
+            << " [min " << attention.minimum << ", max " << attention.maximum
+            << "]\n"
+            << "attention through statistics median (us): "
+            << through_statistics.median << " [min "
+            << through_statistics.minimum << ", max "
+            << through_statistics.maximum << "]\n"
+            << "effective attention throughput (TFLOP/s): kernel "
+            << kAttentionFlops / (attention.median * 1.0e6)
+            << ", through statistics "
+            << kAttentionFlops / (through_statistics.median * 1.0e6) << '\n'
+            << "metrics: shape=" << BATCH_COUNT << "x" << TOKEN_COUNT << "x"
+            << CONTEXT_COUNT << " replays=" << GRAPH_REPLAYS
+            << " end_to_end_us=" << end_to_end_us
+            << " attention_us=" << attention.median
+            << " attention_min_us=" << attention.minimum
+            << " attention_max_us=" << attention.maximum
+            << " through_statistics_us=" << through_statistics.median
+            << " through_statistics_min_us=" << through_statistics.minimum
+            << " through_statistics_max_us=" << through_statistics.maximum
+            << " attention_flops=" << kAttentionFlops << '\n';
 
   const bool passed = verify(mode, buffers.h_audio, buffers.h_imu,
                              buffers.h_output, buffers.h_statistics);
 
+  CUDA_CHECK(cudaGraphExecDestroy(stage_graph_exec));
+  CUDA_CHECK(cudaGraphDestroy(stage_graph));
   CUDA_CHECK(cudaGraphExecDestroy(graph_exec));
   CUDA_CHECK(cudaGraphDestroy(graph));
+  CUDA_CHECK(cudaEventDestroy(stages.statistics_stop));
+  CUDA_CHECK(cudaEventDestroy(stages.attention_stop));
+  CUDA_CHECK(cudaEventDestroy(stages.attention_start));
   CUDA_CHECK(cudaEventDestroy(timing_stop));
   CUDA_CHECK(cudaEventDestroy(timing_start));
   CUDA_CHECK(cudaEventDestroy(imu_ready));

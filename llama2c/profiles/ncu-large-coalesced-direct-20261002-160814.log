@@ -1,0 +1,13 @@
+==PROF== Connected to process 2081687 (/home/ankai/cuda/llama2c/llama2c_cuda_graph)
+==PROF== Profiling "rmsnorm_kernel" - 0 (1/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "softmax_kernel" - 1 (2/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "matmul_coalesced_kernel" - 2 (3/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "rmsnorm_kernel" - 3 (4/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "softmax_kernel" - 4 (5/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "matmul_coalesced_kernel" - 5 (6/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "rmsnorm_kernel" - 6 (7/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "softmax_kernel" - 7 (8/9): 0%....50%....100% - 8 passes
+==PROF== Profiling "matmul_coalesced_kernel" - 8 (9/9): 0%....50%....100% - 8 passes
+mode=direct matmul=coalesced launches=5 batch=512 size=16384 rows=8192 repeats=1 copies=1 warmup_ms=1 warmup_iterations=1 gpu_ms=1798.734131 gpu_ms_per_iter=359.746826 wall_ms=1798.755984 wall_ms_per_iter=359.751197 submit_us=1786777.815 submit_us_per_iter=357355.563 graph_capture_ms=0.000000 graph_instantiate_ms=0.000000 graph_upload_ms=0.000000 rms_waves=1.041 softmax_waves=1.041 matmul_waves=2.081 min_waves=1.041 min_bytes_per_iter=671252480 achieved_gbps=1.9 valid=1
+==PROF== Disconnected from process 2081687
+==PROF== Report: /home/ankai/cuda/llama2c/profiles/ncu-large-coalesced-direct-20261002-160814.ncu-rep

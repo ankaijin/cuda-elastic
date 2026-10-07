@@ -2,4 +2,8 @@
 /multi_sensor_attention_graph
 
 # Nsight profiling reports
-/reports/
+.claude/worktrees/
+
+# Nsight profiling output
+*.sqlite
+*.nsys-rep

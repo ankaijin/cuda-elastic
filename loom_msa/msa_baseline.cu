@@ -202,7 +202,8 @@ __global__ void reduce_statistics_kernel(
 // before attention.
 static int enqueue_pipeline(const PipelineBuffers& b,
                             cudaStream_t audio_stream,
-                            cudaStream_t imu_stream, cudaEvent_t imu_ready) {
+                            cudaStream_t imu_stream, cudaEvent_t imu_ready,
+                            const StageEvents& stages) {
   CUDA_CHECK(cudaMemcpyAsync(b.d_audio, b.h_audio,
                              kQuerySensorElements * sizeof(float),
                              cudaMemcpyHostToDevice, audio_stream));
@@ -226,14 +227,17 @@ static int enqueue_pipeline(const PipelineBuffers& b,
 
   CUDA_CHECK(cudaEventRecord(imu_ready, imu_stream));
   CUDA_CHECK(cudaStreamWaitEvent(audio_stream, imu_ready, 0));
+  CUDA_CHECK(record_stage(stages.attention_start, audio_stream));
   fuse_attention_kernel<<<BATCH_COUNT * TOKEN_COUNT, ATTENTION_THREADS, 0,
                           audio_stream>>>(
       b.d_projected_audio, b.d_projected_imu, b.d_attention);
   CUDA_CHECK(cudaGetLastError());
+  CUDA_CHECK(record_stage(stages.attention_stop, audio_stream));
   reduce_statistics_kernel<<<BATCH_COUNT, REDUCTION_THREADS, 0,
                              audio_stream>>>(
       b.d_projected_audio, b.d_attention, b.d_output, b.d_statistics);
   CUDA_CHECK(cudaGetLastError());
+  CUDA_CHECK(record_stage(stages.statistics_stop, audio_stream));
   CUDA_CHECK(cudaMemcpyAsync(b.h_output, b.d_output,
                              kFeatureElements * sizeof(float),
                              cudaMemcpyDeviceToHost, audio_stream));
