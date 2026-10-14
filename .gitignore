@@ -4,6 +4,9 @@
 # Nsight profiling reports
 .claude/worktrees/
 
-# Nsight profiling output
-*.sqlite
-*.nsys-rep
+# Nsight profiling output. Plain nsys traces (.nsys-rep, .sqlite) are a few MB
+# and are committed so results/cuda_performance.xlsx can link them. GPU-metrics
+# traces (nsys --gpu-metrics-devices) export 120+ MB of .sqlite, over GitHub's
+# 100 MB file limit, so commit only their .nsys-rep and a zstd copy:
+#   zstd -19 -T0 nsys-metrics-<name>.sqlite    # -> .sqlite.zst; zstd -d to restore
+*nsys-metrics*.sqlite
