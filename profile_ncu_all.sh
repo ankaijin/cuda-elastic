@@ -37,7 +37,7 @@ for mode in graph direct; do
 done
 
 echo "### loom_msa"
-(cd "$ROOT/loom_msa" && BIN="$OUT/loom_msa/build/msa_optimized_large" ./profile_cuda.sh ncu)
+(cd "$ROOT/loom_msa" && ./profile_cuda.sh ncu)
 
 echo "### pagerank"
 "$ROOT/pagerank/profile_cuda.sh" ncu
