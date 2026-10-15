@@ -163,15 +163,25 @@ def share(kernel, app, launches=1):
 
 def llama2c_rows():
     p = "llama2c/profiles/"
+    w = "llama2c (coalesced matmul)"
+    size = "batch=1024, dim=16384, rows=8192"
     sweep = f"{p}sweep-fill-20261002-152612-speedup.csv"
     row = sweep_row(sweep, batch=1024, size=16384, rows=8192, repeats=1)
-    return [("llama2c (coalesced matmul)", f"{WHOLE_APP} (rmsnorm + softmax + matmul iteration)",
-             "batch=1024, dim=16384, rows=8192", "Iteration time (cudaEvent)",
-             Cell(float(row["graph_gpu_ms"]) * 1e3, csv=sweep),
-             Cell(float(row["direct_gpu_ms"]) * 1e3, csv=sweep),
-             "Mean of 3 interleaved trials from the GPU-filling sweep; no per-iteration copies. "
-             "matmul_coalesced_kernel is the largest kernel (~62% of kernel time at batch=512), "
-             "but ncu was not run at this size, so there is no kernel row.")]
+    nsys = {m: f"{p}nsys-b1024-{m}-20261014-215130.sqlite" for m in ("graph", "direct")}
+    app = {m: Cell(float(row[f"{m}_gpu_ms"]) * 1e3, csv=sweep, nsys=nsys[m]) for m in nsys}
+    matmul = {m: ncu_cell(f"{p}ncu-large-coalesced-b1024-{m}-20261014-215130.ncu-rep",
+                          "matmul_coalesced_kernel", nsys=nsys[m]) for m in nsys}
+    return [
+        (w, "matmul_coalesced_kernel", size, KERNEL_TIME, matmul["graph"], matmul["direct"],
+         "Largest kernel (47% of serialized kernel time under ncu; rmsnorm 20%, softmax 33%). "
+         "It is a matrix-vector product, so its time does not grow with batch; the three "
+         "kernels run concurrently on separate streams, so their times overlap. "
+         + share(matmul["graph"], app["graph"])),
+        (w, f"{WHOLE_APP} (rmsnorm + softmax + matmul iteration)", size,
+         "Iteration time (cudaEvent)", app["graph"], app["direct"],
+         "Mean of 3 interleaved trials from the GPU-filling sweep; no per-iteration copies. "
+         "The nsys traces rerun this configuration (1274.5 / 1272.5 us per iteration)."),
+    ]
 
 
 def loom_rows():
