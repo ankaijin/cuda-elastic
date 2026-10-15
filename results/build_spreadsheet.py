@@ -4,7 +4,9 @@ committed in this repository. Nothing is re-run: every number is read from an
 existing ncu report, nsys sqlite export, benchmark log or sweep CSV, and every
 number links to the file it came from on GitHub.
 
-Only the latest run of each workload's current implementation is included.
+Only the latest run of each workload's current implementation is included, at
+the largest problem size tested: the dominant kernel (when one dominates) and
+the whole application.
 Columns of the Summary sheet:
   CUDA Graph     the workload launched as a CUDA Graph
   Direct launch  the same kernels launched directly (only llama2c has this mode)
@@ -148,66 +150,46 @@ GRAPH_ONLY = Cell(empty="n/a (graph-only harness)")
 
 # ------------------------------------------------------------------- rows ---
 # Each row: (workload, kernel/stage, problem size, metric, graph, direct, notes)
+# One problem size per workload (the largest tested): the dominant kernel, when
+# one kernel dominates, and the whole application.
 
 KERNEL_TIME = "Kernel time (ncu)"
+WHOLE_APP = "Whole application"
+
+
+def share(kernel, app, launches=1):
+    return f"{100 * launches * kernel.us / app.us:.0f}% of the whole-application time."
 
 
 def llama2c_rows():
     p = "llama2c/profiles/"
-    w = "llama2c (coalesced matmul)"
-    size = "batch=512, dim=16384, rows=8192"
-    graph = f"{p}ncu-large-coalesced-graph-20261002-160814.ncu-rep"
-    direct = f"{p}ncu-large-coalesced-direct-20261002-160814.ncu-rep"
-    rows = [(w, kernel, size, KERNEL_TIME, ncu_cell(graph, kernel), ncu_cell(direct, kernel), note)
-            for kernel, note in (
-                ("rmsnorm_kernel", ""),
-                ("softmax_kernel", ""),
-                ("matmul_coalesced_kernel", "Warp-per-row matmul with coalesced weight reads."))]
-
     sweep = f"{p}sweep-fill-20261002-152612-speedup.csv"
     row = sweep_row(sweep, batch=1024, size=16384, rows=8192, repeats=1)
-    rows.append((w, "End-to-end iteration (rmsnorm + softmax + matmul)",
-                 "batch=1024, dim=16384, rows=8192", "Iteration time (cudaEvent)",
-                 Cell(float(row["graph_gpu_ms"]) * 1e3, csv=sweep),
-                 Cell(float(row["direct_gpu_ms"]) * 1e3, csv=sweep),
-                 "Mean of 3 interleaved trials from the GPU-filling sweep; no per-iteration "
-                 "copies. The sweep CSV has smaller sizes too."))
-    return rows
+    return [("llama2c (coalesced matmul)", f"{WHOLE_APP} (rmsnorm + softmax + matmul iteration)",
+             "batch=1024, dim=16384, rows=8192", "Iteration time (cudaEvent)",
+             Cell(float(row["graph_gpu_ms"]) * 1e3, csv=sweep),
+             Cell(float(row["direct_gpu_ms"]) * 1e3, csv=sweep),
+             "Mean of 3 interleaved trials from the GPU-filling sweep; no per-iteration copies. "
+             "matmul_coalesced_kernel is the largest kernel (~62% of kernel time at batch=512), "
+             "but ncu was not run at this size, so there is no kernel row.")]
 
 
 def loom_rows():
     p = "loom_msa/profiles/"
     w = "loom_msa (multi-sensor attention)"
-    bench = loom_benchmark()
-    bench_src = "loom_msa/build/benchmark.txt"
-    rows = []
-    for shape, label, ncu, nsys in (
-            ("1x1000x50000", "1,000 queries x 50,000 context",
-             f"{p}ncu-all-kernels-msa_optimized-20260925-123922.ncu-rep",
-             f"{p}nsys-msa_optimized-20260925-123919.sqlite"),
-            ("1x25000x250000", "25,000 queries x 250,000 context",
-             f"{p}ncu-all-kernels-msa_optimized_large-20260925-142052.ncu-rep",
-             f"{p}nsys-msa_optimized_large-20260925-142045.sqlite")):
-        for kernel, note in (
-                ("project_audio_kernel", ""),
-                ("project_imu_kernel", ""),
-                ("fuse_attention_kernel", "Single-pass online softmax, shared-memory context "
-                                          "tiles, 8-way context split (FlashAttention-style)."),
-                ("reduce_statistics_kernel", "Multi-warp shuffle reduction that also merges "
-                                             "the split partials.")):
-            rows.append((w, kernel, label, KERNEL_TIME, ncu_cell(ncu, kernel, nsys=nsys),
-                         GRAPH_ONLY, note))
-        s = bench[(shape, "random")]["optimized"]
-        for key, stage, note in (
-                ("attention_us", "Attention kernel (in-graph events)", ""),
-                ("end_to_end_us", "End-to-end graph replay",
-                 "Includes H2D input and D2H output copies.")):
-            rows.append((w, stage, label, "Replay time (cudaEvent)",
-                         Cell(s[key]["median"], csv=bench_src,
-                              nsys=nsys if key == "end_to_end_us" else None),
-                         GRAPH_ONLY,
-                         "benchmark.py: median of 5 runs, random inputs. " + note))
-    return rows
+    size = "25,000 queries x 250,000 context"
+    ncu = f"{p}ncu-all-kernels-msa_optimized_large-20260925-142052.ncu-rep"
+    nsys = f"{p}nsys-msa_optimized_large-20260925-142045.sqlite"
+    app = Cell(loom_benchmark()[("1x25000x250000", "random")]["optimized"]["end_to_end_us"]["median"],
+               csv="loom_msa/build/benchmark.txt", nsys=nsys)
+    attention = ncu_cell(ncu, "fuse_attention_kernel", nsys=nsys)
+    return [
+        (w, "fuse_attention_kernel", size, KERNEL_TIME, attention, GRAPH_ONLY,
+         "Single-pass online softmax, shared-memory context tiles, 8-way context split "
+         "(FlashAttention-style). " + share(attention, app)),
+        (w, f"{WHOLE_APP} (graph replay)", size, "Replay time (cudaEvent)", app, GRAPH_ONLY,
+         "benchmark.py: median of 5 runs, random inputs. Includes H2D input and D2H output copies."),
+    ]
 
 
 def pagerank_rows():
@@ -217,15 +199,15 @@ def pagerank_rows():
     ncu = f"{p}ncu-pagerank-20261007-152417.ncu-rep"
     nsys = f"{p}nsys-20261007-152346.sqlite"
     replay_us, n = nsys_node_replay_us(nsys)
+    app = Cell(replay_us, nsys=nsys)
+    update = ncu_cell(ncu, "pagerank_update", grid=32768, nsys=nsys)
     return [
-        (w, "initialize_scores", size, KERNEL_TIME, ncu_cell(ncu, "initialize_scores", nsys=nsys),
-         GRAPH_ONLY, ""),
-        (w, "pagerank_update (one iteration)", size, KERNEL_TIME,
-         ncu_cell(ncu, "pagerank_update", grid=32768, nsys=nsys), GRAPH_ONLY,
+        (w, "pagerank_update (one iteration)", size, KERNEL_TIME, update, GRAPH_ONLY,
          "Pull gather of precomputed contributions. Full-graph iterations only; the first "
-         "iteration runs as 8 upload-overlapped chunks of ~41 us each."),
-        (w, "End-to-end graph replay (H2D + 20 iterations)", size, "Replay time (nsys)",
-         Cell(replay_us, nsys=nsys), GRAPH_ONLY,
+         "iteration runs as 8 upload-overlapped chunks of ~41 us each. 19 full iterations = "
+         + share(update, app, 19)),
+        (w, f"{WHOLE_APP} (graph replay: H2D + 20 iterations)", size, "Replay time (nsys)",
+         app, GRAPH_ONLY,
          f"Median span of the {n} replays with transfers in the nsys node trace. The CSR graph "
          "is uploaded from pinned memory in 8 chunks overlapped with the first iteration. "
          "The binary's own cudaEvent timing in the same run: 7.684 ms with transfers, "
@@ -236,19 +218,26 @@ def pagerank_rows():
 def mlperf_rows():
     a = "mlperf-anomaly/profiles/"
     c = "mlperf-classification/profiles/"
-    anomaly = (f"{a}ncu-anomaly_mse-20261007-144943.ncu-rep",
-               f"{a}nsys-anomaly_mse-20261007-144939.sqlite")
-    kws = (f"{c}ncu-kws_postprocess-20261007-144950.ncu-rep",
-           f"{c}nsys-kws_postprocess-20261007-144947.sqlite")
-    vww = (f"{c}ncu-vww_preprocess-20261007-144958.ncu-rep",
-           f"{c}nsys-vww_preprocess-20261007-144953.sqlite")
-    return [(w, kernel, size, KERNEL_TIME, ncu_cell(ncu, kernel.split(" ")[0], nsys=nsys),
-             GRAPH_ONLY, "")
-            for w, kernel, size, (ncu, nsys) in (
-                ("mlperf-tiny anomaly", "mse_partial_kernel", "64M elements", anomaly),
-                ("mlperf-tiny anomaly", "mse_finalize_kernel", "64M elements", anomaly),
-                ("mlperf-tiny KWS", "kws_postprocess_kernel (argmax)", "12 classes x 4M rows", kws),
-                ("mlperf-tiny VWW", "vww_preprocess_kernel", "256M bytes", vww))]
+    rows = []
+    for w, kernel, size, ncu, nsys in (
+            ("mlperf-tiny anomaly", "mse_partial_kernel", "64M elements",
+             f"{a}ncu-anomaly_mse-20261007-144943.ncu-rep",
+             f"{a}nsys-anomaly_mse-20261007-144939.sqlite"),
+            ("mlperf-tiny KWS", "kws_postprocess_kernel", "12 classes x 4M rows",
+             f"{c}ncu-kws_postprocess-20261007-144950.ncu-rep",
+             f"{c}nsys-kws_postprocess-20261007-144947.sqlite"),
+            ("mlperf-tiny VWW", "vww_preprocess_kernel", "256M bytes",
+             f"{c}ncu-vww_preprocess-20261007-144958.ncu-rep",
+             f"{c}nsys-vww_preprocess-20261007-144953.sqlite")):
+        replay_us, n = nsys_node_replay_us(nsys)
+        app = Cell(replay_us, nsys=nsys)
+        k = ncu_cell(ncu, kernel, nsys=nsys)
+        only = "" if kernel == "mse_partial_kernel" else "Only kernel in the application. "
+        rows += [(w, kernel, size, KERNEL_TIME, k, GRAPH_ONLY, only + share(k, app)),
+                 (w, f"{WHOLE_APP} (graph replay: H2D + kernels + D2H)", size, "Replay time (nsys)",
+                  app, GRAPH_ONLY,
+                  f"Median span of the {n} end-to-end replays in the nsys node trace.")]
+    return rows
 
 
 # ----------------------------------------------------------------- styling ---
@@ -278,7 +267,9 @@ def build_summary(wb, rows):
     ws["A1"] = "CUDA performance results (latest runs)"
     ws["A1"].font = Font(bold=True, size=14)
     ws["A2"] = (f"GPU: NVIDIA GeForce {GPU}. Times in microseconds (lower is better). "
-                "Latest run of each workload's current implementation. Each value links to its "
+                "Latest run of each workload's current implementation at the largest problem size "
+                "tested: the dominant kernel (if one dominates) and the whole application. "
+                "Each value links to its "
                 "source; the ncu-rep / nsys sqlite columns link the profile files on GitHub. "
                 "ncu replays each kernel in isolation, so ncu kernel times barely change with "
                 "launch mode; the CUDA Graph benefit (launch overhead) shows in end-to-end rows.")
@@ -415,7 +406,8 @@ def write_markdown(rows):
         "# CUDA performance results",
         "",
         f"GPU: NVIDIA GeForce {GPU}. Times in microseconds (lower is better). "
-        "Latest run of each workload's current implementation, generated by "
+        "Latest run of each workload's current implementation at the largest problem size "
+        "tested (dominant kernel, if one dominates, and the whole application), generated by "
         "`build_spreadsheet.py` from profiles committed in this repo. The spreadsheet "
         "[`cuda_performance.xlsx`](cuda_performance.xlsx) also has the ncu metrics of every "
         "profiled launch.",
