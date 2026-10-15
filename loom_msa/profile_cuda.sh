@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Override to profile another variant, e.g. BIN=build/msa_optimized ./profile_cuda.sh
-BIN="${BIN:-./multi_sensor_attention_graph}"
-OUT_DIR="profiles"
+# Binaries and profiles live in <repo>/<gpu>/loom_msa/ (see gpu.sh).
+GPU_DIR="${GPU_DIR:-../$(../gpu.sh name)/loom_msa}"
+# Override to profile another variant, e.g.
+# BIN=$GPU_DIR/build/msa_optimized_large ./profile_cuda.sh
+BIN="${BIN:-$GPU_DIR/multi_sensor_attention_graph}"
+OUT_DIR="$GPU_DIR/profiles"
 STAMP="$(basename "$BIN")-$(date +%Y%m%d-%H%M%S)"
 
 mkdir -p "$OUT_DIR"

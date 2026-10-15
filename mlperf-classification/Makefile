@@ -20,11 +20,16 @@
 # end-to-end, excluding warm-up) total about 10 s on the RTX 3090; the
 # binaries report the measured total as "graph total".
 SHELL := /bin/bash
+# Binaries go to <repo>/<gpu>/mlperf-classification/build (see gpu.sh), so builds for
+# different GPUs never overwrite each other. Override with GPU=... ARCH=...
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))..)
+GPU := $(or $(GPU),$(shell $(ROOT)/gpu.sh name))
+ARCH := $(or $(ARCH),$(shell $(ROOT)/gpu.sh arch))
 NVCC ?= nvcc
 LOOM_CXX ?= clang++
-NVCCFLAGS ?= -O3 -std=c++17 -arch=sm_86 -lineinfo --fmad=false \
+NVCCFLAGS ?= -O3 -std=c++17 -arch=$(ARCH) -lineinfo --fmad=false \
              -Xcompiler -ffp-contract=off
-BUILD := build
+BUILD := $(ROOT)/$(GPU)/mlperf-classification/build
 LOOM := loom
 
 MLPERF_TINY_URL := https://github.com/mlcommons/tiny.git
@@ -76,22 +81,22 @@ $(BUILD)/%: %.cu classification_harness.cuh | $(BUILD)
 
 check: all
 	@for app in kws vww; do \
-	  echo "./$(BUILD)/loom_$$app"; \
-	  ./$(BUILD)/loom_$$app > $(BUILD)/loom_$$app.out || exit 1; \
+	  echo "$(BUILD)/loom_$$app"; \
+	  $(BUILD)/loom_$$app > $(BUILD)/loom_$$app.out || exit 1; \
 	  cmp $(BUILD)/loom_$$app.out \
 	    $(LOOM)/mlperf-tiny-$$app-expected-smoke.txt || exit 1; \
 	done
 	@for shape in $(KWS_SHAPES); do \
 	  IFS=: read count batch replays <<< "$$shape"; \
 	  for inputs in $(KWS_INPUTS); do \
-	    ./$(BUILD)/kws_postprocess --count=$$count --batch=$$batch \
+	    $(BUILD)/kws_postprocess --count=$$count --batch=$$batch \
 	      --inputs=$$inputs --replays=$$replays || exit 1; \
 	  done; \
 	done
 	@for shape in $(VWW_SHAPES); do \
 	  IFS=: read count replays <<< "$$shape"; \
 	  for inputs in $(VWW_INPUTS); do \
-	    ./$(BUILD)/vww_preprocess --count=$$count --inputs=$$inputs \
+	    $(BUILD)/vww_preprocess --count=$$count --inputs=$$inputs \
 	      --replays=$$replays || exit 1; \
 	  done; \
 	done

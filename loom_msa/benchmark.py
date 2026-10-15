@@ -21,7 +21,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-BUILD = Path(__file__).resolve().parent / "build"
+HERE = Path(__file__).resolve().parent
+# Binaries live in <repo>/<gpu>/loom_msa/build (see gpu.sh).
+GPU = subprocess.run([str(HERE.parent / "gpu.sh"), "name"], check=True,
+                     capture_output=True, text=True).stdout.strip()
+BUILD = HERE.parent / GPU / "loom_msa" / "build"
 SHAPES = ["4x4", "medium", "large"]
 INPUTS = ["random", "repeat"]  # random is the primary performance input
 VARIANTS = ["baseline", "optimized"]

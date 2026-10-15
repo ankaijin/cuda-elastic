@@ -46,11 +46,15 @@ def git(*args):
 
 
 def link(path):
-    """GitHub URL for path, pinned to the commit that last changed it when that
-    commit is already on origin/main; files not merged yet link to main."""
-    commit = git("log", "-1", "--format=%H", "--", path).stdout.strip()
-    on_main = commit and git("merge-base", "--is-ancestor", commit, "origin/main").returncode == 0
-    return f"{GITHUB}/{commit if on_main else 'main'}/{path}"
+    """GitHub URL for path, pinned to the latest commit on origin/main that
+    has the file, under the name it had there (files moved since, e.g. into
+    rtx3090/, keep their original links); files not merged yet link to main."""
+    log = git("log", "--follow", "--name-only", "--format=%x00%H", "--", path).stdout
+    for entry in log.split("\0")[1:]:
+        commit, _, name = entry.strip().partition("\n")
+        if git("merge-base", "--is-ancestor", commit, "origin/main").returncode == 0:
+            return f"{GITHUB}/{commit}/{name.strip()}"
+    return f"{GITHUB}/main/{path}"
 
 
 _ncu_cache = {}
@@ -115,7 +119,7 @@ def nsys_node_replay_us(path):
 
 
 def loom_benchmark():
-    runs = json.loads((REPO / "loom_msa/build/benchmark.json").read_text())
+    runs = json.loads((REPO / "rtx3090/loom_msa/build/benchmark.json").read_text())
     return {(r["shape"], r["inputs"]): r["summary"] for r in runs}
 
 
@@ -162,7 +166,7 @@ def share(kernel, app, launches=1):
 
 
 def llama2c_rows():
-    p = "llama2c/profiles/"
+    p = "rtx3090/llama2c/profiles/"
     w = "llama2c (coalesced matmul)"
     size = "batch=1024, dim=16384, rows=8192"
     sweep = f"{p}sweep-fill-20261002-152612-speedup.csv"
@@ -185,13 +189,13 @@ def llama2c_rows():
 
 
 def loom_rows():
-    p = "loom_msa/profiles/"
+    p = "rtx3090/loom_msa/profiles/"
     w = "loom_msa (multi-sensor attention)"
     size = "25,000 queries x 250,000 context"
     ncu = f"{p}ncu-all-kernels-msa_optimized_large-20260925-142052.ncu-rep"
     nsys = f"{p}nsys-msa_optimized_large-20260925-142045.sqlite"
     app = Cell(loom_benchmark()[("1x25000x250000", "random")]["optimized"]["end_to_end_us"]["median"],
-               csv="loom_msa/build/benchmark.txt", nsys=nsys)
+               csv="rtx3090/loom_msa/build/benchmark.txt", nsys=nsys)
     attention = ncu_cell(ncu, "fuse_attention_kernel", nsys=nsys)
     return [
         (w, "fuse_attention_kernel", size, KERNEL_TIME, attention, GRAPH_ONLY,
@@ -203,7 +207,7 @@ def loom_rows():
 
 
 def pagerank_rows():
-    p = "pagerank/profiles/"
+    p = "rtx3090/pagerank/profiles/"
     w = "pagerank (GAPBS)"
     size = "2^20 vertices, 16 edges/vertex, 20 iterations"
     ncu = f"{p}ncu-pagerank-20261007-152417.ncu-rep"
@@ -226,8 +230,8 @@ def pagerank_rows():
 
 
 def mlperf_rows():
-    a = "mlperf-anomaly/profiles/"
-    c = "mlperf-classification/profiles/"
+    a = "rtx3090/mlperf-anomaly/profiles/"
+    c = "rtx3090/mlperf-classification/profiles/"
     rows = []
     for w, kernel, size, ncu, nsys in (
             ("mlperf-tiny anomaly", "mse_partial_kernel", "64M elements",

@@ -15,11 +15,16 @@
 # end-to-end, excluding warm-up) total about 10 s on the RTX 3090; the
 # binary reports the measured total as "graph total".
 SHELL := /bin/bash
+# Binaries go to <repo>/<gpu>/mlperf-anomaly/build (see gpu.sh), so builds for
+# different GPUs never overwrite each other. Override with GPU=... ARCH=...
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))..)
+GPU := $(or $(GPU),$(shell $(ROOT)/gpu.sh name))
+ARCH := $(or $(ARCH),$(shell $(ROOT)/gpu.sh arch))
 NVCC ?= nvcc
 LOOM_CXX ?= clang++
-NVCCFLAGS ?= -O3 -std=c++17 -arch=sm_86 -lineinfo --fmad=false \
+NVCCFLAGS ?= -O3 -std=c++17 -arch=$(ARCH) -lineinfo --fmad=false \
              -Xcompiler -ffp-contract=off
-BUILD := build
+BUILD := $(ROOT)/$(GPU)/mlperf-anomaly/build
 LOOM := loom
 
 MLPERF_TINY_URL := https://github.com/mlcommons/tiny.git
@@ -62,12 +67,12 @@ $(BUILD)/anomaly_mse: anomaly_mse.cu | $(BUILD)
 	$(NVCC) $(NVCCFLAGS) -o $@ $<
 
 check: all
-	./$(BUILD)/loom_reference > $(BUILD)/loom_reference.out
+	$(BUILD)/loom_reference > $(BUILD)/loom_reference.out
 	cmp $(BUILD)/loom_reference.out $(LOOM)/mlperf-tiny-anomaly-expected-smoke.txt
 	@for shape in $(SHAPES); do \
 	  IFS=: read name count replays <<< "$$shape"; \
 	  for inputs in $(INPUTS); do \
-	    ./$(BUILD)/anomaly_mse --count=$$count --inputs=$$inputs \
+	    $(BUILD)/anomaly_mse --count=$$count --inputs=$$inputs \
 	      --replays=$$replays || exit 1; \
 	  done; \
 	done

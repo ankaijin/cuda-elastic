@@ -6,10 +6,15 @@
 #   *_4x4     main.c's shape; also checks main.c's hard-coded constants
 #   *_medium  1000 x 50000, the original workload and tuning point
 #   *_large   25000 x 250000, production scale
+# Binaries go to <repo>/<gpu>/loom_msa/build (see gpu.sh), so builds for
+# different GPUs never overwrite each other. Override with GPU=... ARCH=...
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))..)
+GPU := $(or $(GPU),$(shell $(ROOT)/gpu.sh name))
+ARCH := $(or $(ARCH),$(shell $(ROOT)/gpu.sh arch))
 NVCC ?= nvcc
 CC ?= cc
-NVCCFLAGS ?= -O3 -std=c++17 -arch=sm_86 -lineinfo -Xcompiler -fopenmp
-BUILD := build
+NVCCFLAGS ?= -O3 -std=c++17 -arch=$(ARCH) -lineinfo -Xcompiler -fopenmp
+BUILD := $(ROOT)/$(GPU)/loom_msa/build
 
 SHAPE_4x4 := -DTOKEN_COUNT=4 -DCONTEXT_COUNT=4 -DGRAPH_REPLAYS=5000
 SHAPE_medium := -DTOKEN_COUNT=1000 -DCONTEXT_COUNT=50000 -DGRAPH_REPLAYS=5000
@@ -34,7 +39,7 @@ endef
 $(foreach s,$(SHAPES),$(eval $(call shape_rule,$(s))))
 
 check: all
-	./$(BUILD)/reference
+	$(BUILD)/reference
 	@for bin in $(CUDA_TARGETS); do \
 	  for inputs in repeat random; do \
 	    ./$$bin --inputs=$$inputs || exit 1; \
@@ -42,8 +47,8 @@ check: all
 	done
 
 compare-large: $(BUILD)/msa_baseline_large $(BUILD)/msa_optimized_large
-	./$(BUILD)/msa_baseline_large
-	./$(BUILD)/msa_optimized_large
+	$(BUILD)/msa_baseline_large
+	$(BUILD)/msa_optimized_large
 
 # Repeated, interleaved runs of every shape and input set; median and spread.
 benchmark: all

@@ -10,3 +10,7 @@
 # 100 MB file limit, so commit only their .nsys-rep and a zstd copy:
 #   zstd -19 -T0 nsys-metrics-<name>.sqlite    # -> .sqlite.zst; zstd -d to restore
 *nsys-metrics*.sqlite
+
+# Per-GPU mlperf-tiny build trees (upstream clone, Loom reference builds)
+/*/mlperf-anomaly/build/
+/*/mlperf-classification/build/

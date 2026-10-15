@@ -2,12 +2,14 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-BIN="${BIN:-$SCRIPT_DIR/llama2c_cuda_graph}"
+# Binaries and profiles go to <repo>/<gpu>/llama2c/ (see gpu.sh).
+GPU_DIR="${GPU_DIR:-$SCRIPT_DIR/../$("$SCRIPT_DIR/../gpu.sh" name)/llama2c}"
+BIN="${BIN:-$GPU_DIR/llama2c_cuda_graph}"
 SRC="$SCRIPT_DIR/llama2c_cuda_graph.cu"
-OUT_DIR="${OUT_DIR:-$SCRIPT_DIR/profiles}"
+OUT_DIR="${OUT_DIR:-$GPU_DIR/profiles}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 NVCC="${NVCC:-nvcc}"
-read -r -a NVCC_FLAGS <<< "${NVCC_FLAGS:-}"
+read -r -a NVCC_FLAGS <<< "${NVCC_FLAGS:--arch=$("$SCRIPT_DIR/../gpu.sh" arch)}"
 
 usage() {
   printf 'Usage: %s [build|run|nsys|nsys-node|ncu|sweep|sweep-fill|plot-sweep|plot-nodes|isolate|all] [args...]\n' "$0"
@@ -17,7 +19,7 @@ usage() {
   printf '  plot-sweep <sweep.csv> [options]\n  plot-nodes <direct.sqlite> [graph.sqlite] [options]\n'
 }
 require_tool() { command -v "$1" >/dev/null || { printf 'error: %s is not installed or not in PATH\n' "$1" >&2; exit 127; }; }
-build() { require_tool "$NVCC"; "$NVCC" "${NVCC_FLAGS[@]}" -O3 -o "$BIN" "$SRC"; }
+build() { require_tool "$NVCC"; mkdir -p "$(dirname "$BIN")"; "$NVCC" "${NVCC_FLAGS[@]}" -O3 -o "$BIN" "$SRC"; }
 ensure_bin() { [[ -x "$BIN" && "$BIN" -nt "$SRC" ]] || build; }
 run() { ensure_bin; "$BIN" "$@"; }
 profile_nsys() {
