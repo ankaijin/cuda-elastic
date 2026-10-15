@@ -1,0 +1,2 @@
+batch,size,rows,repeats,copies,matmul,trials,min_waves,direct_gbps,graph_gbps,direct_gpu_ms,graph_gpu_ms,gpu_speedup,gpu_speedup_min,gpu_speedup_max,direct_submit_us,graph_submit_us,submit_speedup,submit_speedup_min,submit_speedup_max,graph_setup_ms,break_even_replays
+1024,16384,8192,1,nocopy,coalesced,3,1.333,836.1333333333333,836.9333333333334,0.963302,0.9624196666666668,1.0009177560685252,0.999394016116681,1.002852853477279,6.776,4.073333333333333,1.6474489388499158,1.5064666321779616,1.9074033631797336,0.08975166666666667,98

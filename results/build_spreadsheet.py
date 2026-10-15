@@ -4,17 +4,20 @@ committed in this repository. Nothing is re-run: every number is read from an
 existing ncu report, nsys sqlite export, benchmark log or sweep CSV, and every
 number links to the file it came from on GitHub.
 
+One summary sheet per GPU (RTX 3090, RTX 4090), each read from that GPU's
+output folder (rtx3090/, rtx4090/; see gpu.sh), plus each GPU's ncu metrics.
 Only the latest run of each workload's current implementation is included, at
 the largest problem size tested: the dominant kernel (when one dominates) and
 the whole application.
-Columns of the Summary sheet:
+Columns of each summary sheet:
   CUDA Graph     the workload launched as a CUDA Graph
   Direct launch  the same kernels launched directly (only llama2c has this mode)
 
 Kernel rows use the ncu kernel duration (gpu__time_duration.sum, mean over
 the profiled launches of that kernel). End-to-end rows use the benchmark's
 own timing (cudaEvent per iteration / graph replay) or, where only an nsys
-trace exists, the median graph replay span from that trace.
+trace exists, the median graph replay span from that trace. A kernel row whose
+ncu report does not exist yet (profile_ncu_all.sh not run) reads "pending".
 
 Requires: ncu (Nsight Compute CLI) on PATH and openpyxl.
 Usage:    python3 results/build_spreadsheet.py
@@ -23,6 +26,7 @@ Usage:    python3 results/build_spreadsheet.py
 import csv
 import io
 import json
+import re
 import sqlite3
 import statistics
 import subprocess
@@ -36,7 +40,75 @@ REPO = Path(__file__).resolve().parent.parent
 OUT = REPO / "results" / "cuda_performance.xlsx"
 MD_OUT = REPO / "results" / "README.md"
 GITHUB = "https://github.com/ankaijin/cuda-elastic/blob"
-GPU = "RTX 3090 (sm_86, 24 GB)"
+
+
+# ------------------------------------------------------------------- GPUs ---
+
+class GPU:
+    """One GPU's results: the folder its outputs live in and, per input, the
+    file to read (a glob; the latest match by name, i.e. by timestamp, wins)."""
+
+    def __init__(self, folder, label, toolkit, files, notes):
+        self.folder, self.label, self.toolkit = folder, label, toolkit
+        self.files, self.notes = files, notes
+
+    @property
+    def sheet(self):
+        return self.label.split(" (")[0]
+
+    def file(self, key):
+        matches = sorted((REPO / self.folder).glob(self.files[key]))
+        return str(matches[-1].relative_to(REPO)) if matches else None
+
+
+RTX3090 = GPU("rtx3090", "RTX 3090 (sm_86, 24 GB)", "CUDA 13.3", {
+    "llama_sweep": "llama2c/profiles/sweep-fill-20261002-152612-speedup.csv",
+    "llama_nsys_graph": "llama2c/profiles/nsys-b1024-graph-20261014-215130.sqlite",
+    "llama_nsys_direct": "llama2c/profiles/nsys-b1024-direct-20261014-215130.sqlite",
+    "llama_ncu_graph": "llama2c/profiles/ncu-large-coalesced-b1024-graph-20261014-215130.ncu-rep",
+    "llama_ncu_direct": "llama2c/profiles/ncu-large-coalesced-b1024-direct-20261014-215130.ncu-rep",
+    "loom_benchmark": "loom_msa/build/benchmark.json",
+    "loom_benchmark_txt": "loom_msa/build/benchmark.txt",
+    "loom_ncu": "loom_msa/profiles/ncu-all-kernels-msa_optimized_large-20260925-142052.ncu-rep",
+    "loom_nsys": "loom_msa/profiles/nsys-msa_optimized_large-20260925-142045.sqlite",
+    "pagerank_ncu": "pagerank/profiles/ncu-pagerank-20261007-152417.ncu-rep",
+    "pagerank_nsys": "pagerank/profiles/nsys-20261007-152346.sqlite",
+    "anomaly_ncu": "mlperf-anomaly/profiles/ncu-anomaly_mse-20261007-144943.ncu-rep",
+    "anomaly_nsys": "mlperf-anomaly/profiles/nsys-anomaly_mse-20261007-144939.sqlite",
+    "kws_ncu": "mlperf-classification/profiles/ncu-kws_postprocess-20261007-144950.ncu-rep",
+    "kws_nsys": "mlperf-classification/profiles/nsys-kws_postprocess-20261007-144947.sqlite",
+    "vww_ncu": "mlperf-classification/profiles/ncu-vww_preprocess-20261007-144958.ncu-rep",
+    "vww_nsys": "mlperf-classification/profiles/nsys-vww_preprocess-20261007-144953.sqlite",
+}, {
+    "pagerank_timing": "The binary's own cudaEvent timing in the same run: 7.684 ms with "
+                       "transfers, 4.841 ms compute only.",
+})
+
+RTX4090 = GPU("rtx4090", "RTX 4090 (sm_89, 24 GB)", "CUDA 12.5", {
+    "llama_sweep": "llama2c/profiles/sweep-fill-*-speedup.csv",
+    "llama_nsys_graph": "llama2c/profiles/nsys-node-graph-*.sqlite",
+    "llama_nsys_direct": "llama2c/profiles/nsys-node-direct-*.sqlite",
+    "llama_ncu_graph": "llama2c/profiles/ncu-large-coalesced-b1024-graph-*.ncu-rep",
+    "llama_ncu_direct": "llama2c/profiles/ncu-large-coalesced-b1024-direct-*.ncu-rep",
+    "loom_benchmark": "loom_msa/build/benchmark.json",
+    "loom_benchmark_txt": "loom_msa/build/benchmark.txt",
+    "loom_ncu": "loom_msa/profiles/ncu-all-kernels-msa_optimized_large-*.ncu-rep",
+    "loom_nsys": "loom_msa/profiles/nsys-msa_optimized_large-*.sqlite",
+    "pagerank_ncu": "pagerank/profiles/ncu-pagerank-*.ncu-rep",
+    "pagerank_nsys": "pagerank/profiles/nsys-*.sqlite",
+    "anomaly_ncu": "mlperf-anomaly/profiles/ncu-anomaly_mse-*.ncu-rep",
+    "anomaly_nsys": "mlperf-anomaly/profiles/nsys-anomaly_mse-*.sqlite",
+    "kws_ncu": "mlperf-classification/profiles/ncu-kws_postprocess-*.ncu-rep",
+    "kws_nsys": "mlperf-classification/profiles/nsys-kws_postprocess-*.sqlite",
+    "vww_ncu": "mlperf-classification/profiles/ncu-vww_preprocess-*.ncu-rep",
+    "vww_nsys": "mlperf-classification/profiles/nsys-vww_preprocess-*.sqlite",
+}, {
+    "pagerank_timing": "A separate uninstrumented run of the binary "
+                       "(profiles/bench-20261015-091815.txt): 5.714 ms with transfers, "
+                       "2.651 ms compute only.",
+})
+
+GPUS = [RTX3090, RTX4090]
 
 
 # ---------------------------------------------------------------- loaders ---
@@ -81,12 +153,19 @@ TIME_SCALE_TO_US = {"ns": 1e-3, "nsecond": 1e-3, "us": 1.0, "usecond": 1.0,
                     "ms": 1e3, "msecond": 1e3, "s": 1e6, "second": 1e6}
 
 
+def kernel_name(row):
+    return row["Kernel Name"][0].split("(")[0].split("::")[-1].removeprefix("void ")
+
+
+def launch_us(row):
+    v, unit = row["gpu__time_duration.sum"]
+    return number(v) * TIME_SCALE_TO_US[unit]
+
+
 def kernel_launches(path, kernel, grid=None):
     """Launches of `kernel` (name prefix after any namespace) in an ncu report."""
-    def name(row):
-        return row["Kernel Name"][0].split("(")[0].split("::")[-1].removeprefix("void ")
     return [r for r in ncu_rows(path)
-            if name(r).startswith(kernel)
+            if kernel_name(r).startswith(kernel)
             and (grid is None or number(r["launch__grid_size"][0]) == grid)]
 
 
@@ -94,9 +173,16 @@ def ncu_kernel_us(path, kernel, grid=None):
     launches = kernel_launches(path, kernel, grid)
     if not launches:
         raise ValueError(f"{kernel} (grid={grid}) not found in {path}")
-    times = [number(r["gpu__time_duration.sum"][0]) * TIME_SCALE_TO_US[r["gpu__time_duration.sum"][1]]
-             for r in launches]
+    times = [launch_us(r) for r in launches]
     return statistics.mean(times), len(times)
+
+
+def ncu_time_shares(path):
+    """Percent of the report's summed kernel time per kernel name."""
+    totals = {}
+    for r in ncu_rows(path):
+        totals[kernel_name(r)] = totals.get(kernel_name(r), 0) + launch_us(r)
+    return {k: 100 * v / sum(totals.values()) for k, v in totals.items()}
 
 
 def nsys_node_replay_us(path):
@@ -118,8 +204,14 @@ def nsys_node_replay_us(path):
     return statistics.median(durations), len(durations)
 
 
-def loom_benchmark():
-    runs = json.loads((REPO / "rtx3090/loom_msa/build/benchmark.json").read_text())
+def nsys_log_ms_per_iter(sqlite_path):
+    """gpu_ms_per_iter the binary printed during an nsys run (the .log beside the trace)."""
+    log = (REPO / sqlite_path).with_suffix(".log")
+    return float(re.search(r"gpu_ms_per_iter=([\d.]+)", log.read_text()).group(1))
+
+
+def loom_benchmark(path):
+    runs = json.loads((REPO / path).read_text())
     return {(r["shape"], r["inputs"]): r["summary"] for r in runs}
 
 
@@ -145,7 +237,12 @@ class Cell:
         return self.ncu or self.csv or self.nsys
 
 
+NCU_PENDING = "pending (ncu not run yet)"
+
+
 def ncu_cell(path, kernel, grid=None, nsys=None):
+    if path is None:
+        return Cell(nsys=nsys, empty=NCU_PENDING)
     return Cell(ncu_kernel_us(path, kernel, grid)[0], ncu=path, nsys=nsys)
 
 
@@ -162,41 +259,48 @@ WHOLE_APP = "Whole application"
 
 
 def share(kernel, app, launches=1):
+    if kernel.us is None:
+        return ""
     return f"{100 * launches * kernel.us / app.us:.0f}% of the whole-application time."
 
 
-def llama2c_rows():
-    p = "rtx3090/llama2c/profiles/"
+def llama2c_rows(gpu):
     w = "llama2c (coalesced matmul)"
     size = "batch=1024, dim=16384, rows=8192"
-    sweep = f"{p}sweep-fill-20261002-152612-speedup.csv"
+    sweep = gpu.file("llama_sweep")
     row = sweep_row(sweep, batch=1024, size=16384, rows=8192, repeats=1)
-    nsys = {m: f"{p}nsys-b1024-{m}-20261014-215130.sqlite" for m in ("graph", "direct")}
+    nsys = {m: gpu.file(f"llama_nsys_{m}") for m in ("graph", "direct")}
+    ncu = {m: gpu.file(f"llama_ncu_{m}") for m in nsys}
     app = {m: Cell(float(row[f"{m}_gpu_ms"]) * 1e3, csv=sweep, nsys=nsys[m]) for m in nsys}
-    matmul = {m: ncu_cell(f"{p}ncu-large-coalesced-b1024-{m}-20261014-215130.ncu-rep",
-                          "matmul_coalesced_kernel", nsys=nsys[m]) for m in nsys}
+    matmul = {m: ncu_cell(ncu[m], "matmul_coalesced_kernel", nsys=nsys[m]) for m in nsys}
+    if ncu["graph"]:
+        s = ncu_time_shares(ncu["graph"])
+        largest = (f"Largest kernel ({s['matmul_coalesced_kernel']:.0f}% of serialized kernel "
+                   f"time under ncu; rmsnorm {s['rmsnorm_kernel']:.0f}%, softmax "
+                   f"{s['softmax_kernel']:.0f}%). ")
+    else:
+        largest = "Largest kernel. "
+    reruns = " / ".join(f"{1e3 * nsys_log_ms_per_iter(nsys[m]):.1f}" for m in nsys)
     return [
         (w, "matmul_coalesced_kernel", size, KERNEL_TIME, matmul["graph"], matmul["direct"],
-         "Largest kernel (47% of serialized kernel time under ncu; rmsnorm 20%, softmax 33%). "
-         "It is a matrix-vector product, so its time does not grow with batch; the three "
-         "kernels run concurrently on separate streams, so their times overlap. "
+         largest + "It is a matrix-vector product, so its time does not grow with batch; the "
+         "three kernels run concurrently on separate streams, so their times overlap. "
          + share(matmul["graph"], app["graph"])),
         (w, f"{WHOLE_APP} (rmsnorm + softmax + matmul iteration)", size,
          "Iteration time (cudaEvent)", app["graph"], app["direct"],
          "Mean of 3 interleaved trials from the GPU-filling sweep; no per-iteration copies. "
-         "The nsys traces rerun this configuration (1274.5 / 1272.5 us per iteration)."),
+         f"The nsys traces rerun this configuration ({reruns} us per iteration)."),
     ]
 
 
-def loom_rows():
-    p = "rtx3090/loom_msa/profiles/"
+def loom_rows(gpu):
     w = "loom_msa (multi-sensor attention)"
     size = "25,000 queries x 250,000 context"
-    ncu = f"{p}ncu-all-kernels-msa_optimized_large-20260925-142052.ncu-rep"
-    nsys = f"{p}nsys-msa_optimized_large-20260925-142045.sqlite"
-    app = Cell(loom_benchmark()[("1x25000x250000", "random")]["optimized"]["end_to_end_us"]["median"],
-               csv="rtx3090/loom_msa/build/benchmark.txt", nsys=nsys)
-    attention = ncu_cell(ncu, "fuse_attention_kernel", nsys=nsys)
+    nsys = gpu.file("loom_nsys")
+    benchmark = loom_benchmark(gpu.file("loom_benchmark"))
+    app = Cell(benchmark[("1x25000x250000", "random")]["optimized"]["end_to_end_us"]["median"],
+               csv=gpu.file("loom_benchmark_txt"), nsys=nsys)
+    attention = ncu_cell(gpu.file("loom_ncu"), "fuse_attention_kernel", nsys=nsys)
     return [
         (w, "fuse_attention_kernel", size, KERNEL_TIME, attention, GRAPH_ONLY,
          "Single-pass online softmax, shared-memory context tiles, 8-way context split "
@@ -206,52 +310,53 @@ def loom_rows():
     ]
 
 
-def pagerank_rows():
-    p = "rtx3090/pagerank/profiles/"
+def pagerank_rows(gpu):
     w = "pagerank (GAPBS)"
     size = "2^20 vertices, 16 edges/vertex, 20 iterations"
-    ncu = f"{p}ncu-pagerank-20261007-152417.ncu-rep"
-    nsys = f"{p}nsys-20261007-152346.sqlite"
+    ncu = gpu.file("pagerank_ncu")
+    nsys = gpu.file("pagerank_nsys")
     replay_us, n = nsys_node_replay_us(nsys)
     app = Cell(replay_us, nsys=nsys)
     update = ncu_cell(ncu, "pagerank_update", grid=32768, nsys=nsys)
+    if ncu:
+        chunks = [launch_us(r) for r in kernel_launches(ncu, "pagerank_update")
+                  if number(r["launch__grid_size"][0]) != 32768]
+        first = (f"the first iteration runs as {len(chunks)} upload-overlapped chunks of "
+                 f"~{statistics.mean(chunks):.0f} us each. 19 full iterations = ")
+    else:
+        first = "the first iteration runs as 8 upload-overlapped chunks. "
     return [
         (w, "pagerank_update (one iteration)", size, KERNEL_TIME, update, GRAPH_ONLY,
-         "Pull gather of precomputed contributions. Full-graph iterations only; the first "
-         "iteration runs as 8 upload-overlapped chunks of ~41 us each. 19 full iterations = "
-         + share(update, app, 19)),
+         "Pull gather of precomputed contributions. Full-graph iterations only; "
+         + first + share(update, app, 19)),
         (w, f"{WHOLE_APP} (graph replay: H2D + 20 iterations)", size, "Replay time (nsys)",
          app, GRAPH_ONLY,
          f"Median span of the {n} replays with transfers in the nsys node trace. The CSR graph "
          "is uploaded from pinned memory in 8 chunks overlapped with the first iteration. "
-         "The binary's own cudaEvent timing in the same run: 7.684 ms with transfers, "
-         "4.841 ms compute only."),
+         + gpu.notes["pagerank_timing"]),
     ]
 
 
-def mlperf_rows():
-    a = "rtx3090/mlperf-anomaly/profiles/"
-    c = "rtx3090/mlperf-classification/profiles/"
+def mlperf_rows(gpu):
     rows = []
-    for w, kernel, size, ncu, nsys in (
-            ("mlperf-tiny anomaly", "mse_partial_kernel", "64M elements",
-             f"{a}ncu-anomaly_mse-20261007-144943.ncu-rep",
-             f"{a}nsys-anomaly_mse-20261007-144939.sqlite"),
-            ("mlperf-tiny KWS", "kws_postprocess_kernel", "12 classes x 4M rows",
-             f"{c}ncu-kws_postprocess-20261007-144950.ncu-rep",
-             f"{c}nsys-kws_postprocess-20261007-144947.sqlite"),
-            ("mlperf-tiny VWW", "vww_preprocess_kernel", "256M bytes",
-             f"{c}ncu-vww_preprocess-20261007-144958.ncu-rep",
-             f"{c}nsys-vww_preprocess-20261007-144953.sqlite")):
+    for w, kernel, size, key in (
+            ("mlperf-tiny anomaly", "mse_partial_kernel", "64M elements", "anomaly"),
+            ("mlperf-tiny KWS", "kws_postprocess_kernel", "12 classes x 4M rows", "kws"),
+            ("mlperf-tiny VWW", "vww_preprocess_kernel", "256M bytes", "vww")):
+        nsys = gpu.file(f"{key}_nsys")
         replay_us, n = nsys_node_replay_us(nsys)
         app = Cell(replay_us, nsys=nsys)
-        k = ncu_cell(ncu, kernel, nsys=nsys)
+        k = ncu_cell(gpu.file(f"{key}_ncu"), kernel, nsys=nsys)
         only = "" if kernel == "mse_partial_kernel" else "Only kernel in the application. "
         rows += [(w, kernel, size, KERNEL_TIME, k, GRAPH_ONLY, only + share(k, app)),
                  (w, f"{WHOLE_APP} (graph replay: H2D + kernels + D2H)", size, "Replay time (nsys)",
                   app, GRAPH_ONLY,
                   f"Median span of the {n} end-to-end replays in the nsys node trace.")]
     return rows
+
+
+def gpu_rows(gpu):
+    return llama2c_rows(gpu) + loom_rows(gpu) + pagerank_rows(gpu) + mlperf_rows(gpu)
 
 
 # ----------------------------------------------------------------- styling ---
@@ -275,12 +380,12 @@ def put_link(ws, row, col, path, text):
     return c
 
 
-def build_summary(wb, rows):
-    ws = wb.active
-    ws.title = "Summary"
-    ws["A1"] = "CUDA performance results (latest runs)"
+def build_summary(ws, gpu, rows):
+    ws.title = gpu.sheet
+    ws["A1"] = f"CUDA performance results (latest runs): {gpu.sheet}"
     ws["A1"].font = Font(bold=True, size=14)
-    ws["A2"] = (f"GPU: NVIDIA GeForce {GPU}. Times in microseconds (lower is better). "
+    ws["A2"] = (f"GPU: NVIDIA GeForce {gpu.label}, binaries built with {gpu.toolkit} "
+                f"GPU (outputs in {gpu.folder}/). Times in microseconds (lower is better). "
                 "Latest run of each workload's current implementation at the largest problem size "
                 "tested: the dominant kernel (if one dominates) and the whole application. "
                 "Each value links to its "
@@ -323,7 +428,7 @@ def build_summary(wb, rows):
         if previous is not None and workload != previous:
             r += 1  # blank spacer between workloads
         previous = workload
-        for i, v in enumerate((workload, kernel, size, GPU, metric), 1):
+        for i, v in enumerate((workload, kernel, size, gpu.label, metric), 1):
             ws.cell(r, i, v).alignment = WRAP
         ws.cell(r, 1).font = BOLD
         for cell_spec, gc, fill in zip(cells, group_cols, GROUP_FILLS):
@@ -373,15 +478,18 @@ NCU_DETAIL_METRICS = [
 ]
 
 
-def build_ncu_details(wb, rows):
-    """Every launch in every ncu report the Summary uses, with key metrics."""
-    ws = wb.create_sheet("ncu metrics")
+def build_ncu_details(wb, gpu, rows):
+    """Every launch in every ncu report a summary sheet uses, with key metrics."""
+    ws = wb.create_sheet(f"ncu metrics ({gpu.sheet})")
     reports = []
     for _, _, _, _, *cells, _ in rows:
         for c in cells:
             if c.ncu and c.ncu not in reports:
                 reports.append(c.ncu)
     ws.append(["ncu report", "Launch #", "Kernel"] + [label for _, label in NCU_DETAIL_METRICS])
+    if not reports:
+        ws.append([NCU_PENDING])
+        ws.cell(2, 1).font = GREY
     for path in reports:
         for i, launch in enumerate(ncu_rows(path)):
             values = []
@@ -405,11 +513,11 @@ def build_ncu_details(wb, rows):
     ws.freeze_panes = "A2"
 
 
-def write_markdown(rows):
-    """GitHub-readable copy of the Summary sheet; values link to their source files."""
+def write_markdown(results):
+    """GitHub-readable copy of the summary sheets; values link to their source files."""
     def fmt(c):
         if c.us is None:
-            return "—"
+            return c.empty if c.empty == NCU_PENDING else "—"
         return f"[{c.us:,.2f}]({link(c.value_file())})"
 
     def files(c):
@@ -419,38 +527,51 @@ def write_markdown(rows):
     lines = [
         "# CUDA performance results",
         "",
-        f"GPU: NVIDIA GeForce {GPU}. Times in microseconds (lower is better). "
-        "Latest run of each workload's current implementation at the largest problem size "
-        "tested (dominant kernel, if one dominates, and the whole application), generated by "
-        "`build_spreadsheet.py` from profiles committed in this repo. The spreadsheet "
-        "[`cuda_performance.xlsx`](cuda_performance.xlsx) also has the ncu metrics of every "
-        "profiled launch.",
+        "Times in microseconds (lower is better). Latest run of each workload's current "
+        "implementation at the largest problem size tested (dominant kernel, if one dominates, "
+        "and the whole application) on each GPU, generated by `build_spreadsheet.py` from "
+        "profiles committed in this repo. Each GPU's binaries and profiles live in its own "
+        "folder (`rtx3090/`, `rtx4090/`); the sources are shared. The spreadsheet "
+        "[`cuda_performance.xlsx`](cuda_performance.xlsx) has one sheet per GPU plus the ncu "
+        "metrics of every profiled launch.",
         "",
         "**Direct** = the same kernels launched without a CUDA Graph (only llama2c has this "
         "mode; the other harnesses are graph-only). — = not available.",
-        "",
-        "| Workload | Kernel / stage | Problem size | Metric | CUDA Graph | Graph profiles | "
-        "Direct | Direct profiles | Graph speedup |",
-        "|---|---|---|---|--:|---|--:|---|--:|",
     ]
-    for workload, kernel, size, metric, graph, direct, _ in rows:
-        speedup = f"{direct.us / graph.us:.2f}x" if direct.us is not None else ""
-        lines.append(f"| {workload} | {kernel} | {size} | {metric} | {fmt(graph)} | {files(graph)} | "
-                     f"{fmt(direct)} | {files(direct)} | {speedup} |")
+    for gpu, rows in results:
+        lines += [
+            "",
+            f"## {gpu.sheet}",
+            "",
+            f"GPU: NVIDIA GeForce {gpu.label}. Binaries built with {gpu.toolkit}.",
+            "",
+            "| Workload | Kernel / stage | Problem size | Metric | CUDA Graph | Graph profiles | "
+            "Direct | Direct profiles | Graph speedup |",
+            "|---|---|---|---|--:|---|--:|---|--:|",
+        ]
+        for workload, kernel, size, metric, graph, direct, _ in rows:
+            speedup = (f"{direct.us / graph.us:.2f}x"
+                       if direct.us is not None and graph.us is not None else "")
+            lines.append(f"| {workload} | {kernel} | {size} | {metric} | {fmt(graph)} | "
+                         f"{files(graph)} | {fmt(direct)} | {files(direct)} | {speedup} |")
     lines += ["", "Regenerate (needs `ncu` on PATH and `pip install openpyxl`):", "",
               "```bash", "python3 results/build_spreadsheet.py", "```", ""]
     MD_OUT.write_text("\n".join(lines))
 
 
 def main():
-    rows = llama2c_rows() + loom_rows() + pagerank_rows() + mlperf_rows()
+    results = [(gpu, gpu_rows(gpu)) for gpu in GPUS]
     wb = Workbook()
-    build_summary(wb, rows)
-    build_ncu_details(wb, rows)
+    wb.remove(wb.active)
+    for gpu, rows in results:
+        build_summary(wb.create_sheet(), gpu, rows)
+    for gpu, rows in results:
+        build_ncu_details(wb, gpu, rows)
     wb.calculation.fullCalcOnLoad = True  # openpyxl does not evaluate the speedup formulas
     wb.save(OUT)
-    write_markdown(rows)
-    print(f"wrote {OUT.relative_to(REPO)} and {MD_OUT.relative_to(REPO)} ({len(rows)} summary rows)")
+    write_markdown(results)
+    print(f"wrote {OUT.relative_to(REPO)} and {MD_OUT.relative_to(REPO)} "
+          f"({', '.join(f'{len(rows)} {gpu.sheet} rows' for gpu, rows in results)})")
 
 
 if __name__ == "__main__":
