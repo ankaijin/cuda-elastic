@@ -4,203 +4,281 @@ baseline attention kernel:                  5.12 us [5.12-5.12]
 optimized attention kernel:                 5.12 us [5.12-5.12]
 attention kernel speedup:                   1.00x
 attention kernel time saved:                0.00 us
+sota attention kernel:                      7.23 us [7.17-7.28]
+sota attention kernel speedup vs optimized: 0.71x
 baseline attention through statistics:      8.19 us [8.19-8.19]
-optimized attention through statistics:     9.22 us [8.99-9.22]
+optimized attention through statistics:     9.22 us [9.22-9.22]
 attention through statistics speedup:       0.89x
 attention through statistics time saved:    -1.02 us
-baseline end-to-end replay:                 17.41 us [17.38-17.61]
-optimized end-to-end replay:                17.63 us [17.17-17.85]
+sota attention through statistics:          9.22 us [9.22-9.22]
+sota attention through statistics speedup vs optimized:1.00x
+baseline end-to-end replay:                 17.20 us [17.14-17.39]
+optimized end-to-end replay:                17.44 us [17.34-17.59]
 end-to-end replay speedup:                  0.99x
-end-to-end replay time saved:               -0.22 us
-effective TFLOP/s (kernel):                 baseline 6.25e-05, optimized 6.25e-05
-effective TFLOP/s (through statistics):     baseline 3.906e-05, optimized 3.472e-05
+end-to-end replay time saved:               -0.24 us
+sota end-to-end replay:                     8.03 us [8.00-8.12]
+sota end-to-end replay speedup vs optimized:2.17x
+effective TFLOP/s (kernel):                 baseline 6.25e-05, optimized 6.25e-05, sota 4.425e-05
+effective TFLOP/s (through statistics):     baseline 3.906e-05, optimized 3.472e-05, sota 3.472e-05
 direct baseline attention kernel:           5.12 us [5.12-5.12]
 direct optimized attention kernel:          5.12 us [5.12-5.12]
 direct attention kernel speedup:            1.00x
 direct attention kernel time saved:         0.00 us
+direct sota attention kernel:               8.19 us [8.19-8.19]
+direct sota attention kernel speedup vs optimized:0.62x
 direct baseline attention through statistics:8.19 us [8.19-8.19]
 direct optimized attention through statistics:9.22 us [9.22-9.22]
 direct attention through statistics speedup:0.89x
 direct attention through statistics time saved:-1.02 us
-direct baseline end-to-end replay:          22.76 us [18.77-23.27]
-direct optimized end-to-end replay:         22.98 us [21.51-23.93]
-direct end-to-end replay speedup:           0.99x
-direct end-to-end replay time saved:        -0.22 us
-direct effective TFLOP/s (kernel):          baseline 6.25e-05, optimized 6.25e-05
-direct effective TFLOP/s (through statistics):baseline 3.906e-05, optimized 3.472e-05
-baseline end-to-end graph speedup:          1.31x (direct / graph)
+direct sota attention through statistics:   9.22 us [9.22-9.22]
+direct sota attention through statistics speedup vs optimized:1.00x
+direct baseline end-to-end replay:          23.26 us [22.76-23.78]
+direct optimized end-to-end replay:         22.71 us [22.43-22.98]
+direct end-to-end replay speedup:           1.02x
+direct end-to-end replay time saved:        0.55 us
+direct sota end-to-end replay:              7.80 us [7.78-7.87]
+direct sota end-to-end replay speedup vs optimized:2.91x
+direct effective TFLOP/s (kernel):          baseline 6.25e-05, optimized 6.25e-05, sota 3.906e-05
+direct effective TFLOP/s (through statistics):baseline 3.906e-05, optimized 3.472e-05, sota 3.472e-05
+baseline end-to-end graph speedup:          1.35x (direct / graph)
 optimized end-to-end graph speedup:         1.30x (direct / graph)
+sota end-to-end graph speedup:              0.97x (direct / graph)
 attention FLOPs (algorithmic):              320
-GPU while busy:                             SM clock median 1950 MHz [1935-1950], pstates P0,P2, max 70 C
+GPU while busy:                             SM clock median 1950 MHz [1920-1950], pstates P0,P2, max 69 C
 
 shape: 1x4x4 (replays=5000, inputs=repeat, repeats=5; median [min-max])
-baseline attention kernel:                  5.12 us [5.12-5.12]
+baseline attention kernel:                  5.12 us [4.48-5.12]
 optimized attention kernel:                 5.12 us [5.12-5.12]
 attention kernel speedup:                   1.00x
 attention kernel time saved:                0.00 us
-baseline attention through statistics:      8.19 us [8.19-8.19]
-optimized attention through statistics:     9.22 us [9.15-9.22]
+sota attention kernel:                      7.17 us [7.17-7.17]
+sota attention kernel speedup vs optimized: 0.71x
+baseline attention through statistics:      8.19 us [8.10-8.19]
+optimized attention through statistics:     9.22 us [9.22-9.22]
 attention through statistics speedup:       0.89x
 attention through statistics time saved:    -1.02 us
-baseline end-to-end replay:                 17.25 us [17.10-17.31]
-optimized end-to-end replay:                17.68 us [17.48-17.91]
+sota attention through statistics:          9.22 us [9.22-9.22]
+sota attention through statistics speedup vs optimized:1.00x
+baseline end-to-end replay:                 17.34 us [17.21-17.46]
+optimized end-to-end replay:                17.64 us [17.44-17.78]
 end-to-end replay speedup:                  0.98x
-end-to-end replay time saved:               -0.43 us
-effective TFLOP/s (kernel):                 baseline 6.25e-05, optimized 6.25e-05
-effective TFLOP/s (through statistics):     baseline 3.906e-05, optimized 3.472e-05
+end-to-end replay time saved:               -0.30 us
+sota end-to-end replay:                     8.05 us [8.03-8.07]
+sota end-to-end replay speedup vs optimized:2.19x
+effective TFLOP/s (kernel):                 baseline 6.25e-05, optimized 6.25e-05, sota 4.464e-05
+effective TFLOP/s (through statistics):     baseline 3.906e-05, optimized 3.472e-05, sota 3.472e-05
 direct baseline attention kernel:           5.12 us [5.12-5.12]
 direct optimized attention kernel:          5.12 us [5.12-5.12]
 direct attention kernel speedup:            1.00x
 direct attention kernel time saved:         0.00 us
-direct baseline attention through statistics:8.19 us [8.19-8.58]
+direct sota attention kernel:               8.19 us [8.19-8.19]
+direct sota attention kernel speedup vs optimized:0.62x
+direct baseline attention through statistics:8.19 us [8.19-8.19]
 direct optimized attention through statistics:9.22 us [9.22-9.22]
 direct attention through statistics speedup:0.89x
 direct attention through statistics time saved:-1.02 us
-direct baseline end-to-end replay:          22.88 us [22.12-23.35]
-direct optimized end-to-end replay:         22.92 us [22.47-23.61]
-direct end-to-end replay speedup:           1.00x
-direct end-to-end replay time saved:        -0.04 us
-direct effective TFLOP/s (kernel):          baseline 6.25e-05, optimized 6.25e-05
-direct effective TFLOP/s (through statistics):baseline 3.906e-05, optimized 3.472e-05
-baseline end-to-end graph speedup:          1.33x (direct / graph)
-optimized end-to-end graph speedup:         1.30x (direct / graph)
+direct sota attention through statistics:   9.22 us [9.22-9.22]
+direct sota attention through statistics speedup vs optimized:1.00x
+direct baseline end-to-end replay:          23.53 us [22.17-23.83]
+direct optimized end-to-end replay:         22.62 us [21.82-22.82]
+direct end-to-end replay speedup:           1.04x
+direct end-to-end replay time saved:        0.90 us
+direct sota end-to-end replay:              7.82 us [7.79-7.83]
+direct sota end-to-end replay speedup vs optimized:2.89x
+direct effective TFLOP/s (kernel):          baseline 6.25e-05, optimized 6.25e-05, sota 3.906e-05
+direct effective TFLOP/s (through statistics):baseline 3.906e-05, optimized 3.472e-05, sota 3.472e-05
+baseline end-to-end graph speedup:          1.36x (direct / graph)
+optimized end-to-end graph speedup:         1.28x (direct / graph)
+sota end-to-end graph speedup:              0.97x (direct / graph)
 attention FLOPs (algorithmic):              320
-GPU while busy:                             SM clock median 1950 MHz [1950-1950], pstates P0,P2, max 62 C
+GPU while busy:                             SM clock median 1950 MHz [1950-1950], pstates P0,P2, max 63 C
 
 shape: 1x1000x50000 (replays=5000, inputs=random, repeats=5; median [min-max])
-baseline attention kernel:                  655.36 us [646.14-657.41]
-optimized attention kernel:                 85.22 us [84.74-86.02]
-attention kernel speedup:                   7.69x
-attention kernel time saved:                570.14 us
+baseline attention kernel:                  655.36 us [647.17-657.41]
+optimized attention kernel:                 85.95 us [84.99-86.02]
+attention kernel speedup:                   7.62x
+attention kernel time saved:                569.41 us
+sota attention kernel:                      58.37 us [58.37-58.37]
+sota attention kernel speedup vs optimized: 1.47x
 baseline attention through statistics:      665.60 us [656.38-667.65]
-optimized attention through statistics:     93.18 us [92.16-94.21]
-attention through statistics speedup:       7.14x
-attention through statistics time saved:    572.42 us
-baseline end-to-end replay:                 707.30 us [696.62-709.90]
-optimized end-to-end replay:                138.59 us [133.60-139.28]
-end-to-end replay speedup:                  5.10x
-end-to-end replay time saved:               568.71 us
-effective TFLOP/s (kernel):                 baseline 1.45, optimized 11.15
-effective TFLOP/s (through statistics):     baseline 1.427, optimized 10.19
-direct baseline attention kernel:           651.26 us [646.14-653.31]
+optimized attention through statistics:     94.08 us [93.18-94.21]
+attention through statistics speedup:       7.07x
+attention through statistics time saved:    571.52 us
+sota attention through statistics:          69.63 us [68.61-69.63]
+sota attention through statistics speedup vs optimized:1.35x
+baseline end-to-end replay:                 708.76 us [698.11-709.91]
+optimized end-to-end replay:                138.54 us [133.75-138.93]
+end-to-end replay speedup:                  5.12x
+end-to-end replay time saved:               570.22 us
+sota end-to-end replay:                     72.44 us [71.60-72.52]
+sota end-to-end replay speedup vs optimized:1.91x
+effective TFLOP/s (kernel):                 baseline 1.45, optimized 11.05, sota 16.28
+effective TFLOP/s (through statistics):     baseline 1.427, optimized 10.1, sota 13.64
+direct baseline attention kernel:           651.26 us [647.17-652.29]
 direct optimized attention kernel:          86.02 us [86.02-86.02]
 direct attention kernel speedup:            7.57x
 direct attention kernel time saved:         565.25 us
-direct baseline attention through statistics:661.50 us [656.38-663.55]
+direct sota attention kernel:               60.42 us [60.42-60.42]
+direct sota attention kernel speedup vs optimized:1.42x
+direct baseline attention through statistics:661.50 us [657.41-662.53]
 direct optimized attention through statistics:94.21 us [94.21-94.21]
 direct attention through statistics speedup:7.02x
 direct attention through statistics time saved:567.30 us
-direct baseline end-to-end replay:          704.94 us [697.97-707.07]
-direct optimized end-to-end replay:         133.69 us [131.72-133.96]
-direct end-to-end replay speedup:           5.27x
-direct end-to-end replay time saved:        571.25 us
-direct effective TFLOP/s (kernel):          baseline 1.459, optimized 11.04
-direct effective TFLOP/s (through statistics):baseline 1.436, optimized 10.08
-baseline end-to-end graph speedup:          1.00x (direct / graph)
+direct sota attention through statistics:   71.68 us [71.68-71.68]
+direct sota attention through statistics speedup vs optimized:1.31x
+direct baseline end-to-end replay:          705.17 us [699.69-706.79]
+direct optimized end-to-end replay:         132.87 us [132.22-133.91]
+direct end-to-end replay speedup:           5.31x
+direct end-to-end replay time saved:        572.31 us
+direct sota end-to-end replay:              69.69 us [69.41-69.87]
+direct sota end-to-end replay speedup vs optimized:1.91x
+direct effective TFLOP/s (kernel):          baseline 1.459, optimized 11.04, sota 15.72
+direct effective TFLOP/s (through statistics):baseline 1.436, optimized 10.08, sota 13.25
+baseline end-to-end graph speedup:          0.99x (direct / graph)
 optimized end-to-end graph speedup:         0.96x (direct / graph)
+sota end-to-end graph speedup:              0.96x (direct / graph)
 attention FLOPs (algorithmic):              9.5e+08
-GPU while busy:                             SM clock median 1778 MHz [1680-1890], pstates P0,P2, max 78 C
+GPU while busy:                             SM clock median 1856 MHz [1680-1890], pstates P0,P2, max 79 C
 
 shape: 1x1000x50000 (replays=5000, inputs=repeat, repeats=5; median [min-max])
-baseline attention kernel:                  630.78 us [630.78-636.93]
+baseline attention kernel:                  633.86 us [631.81-635.90]
 optimized attention kernel:                 83.97 us [83.97-83.97]
-attention kernel speedup:                   7.51x
-attention kernel time saved:                546.82 us
-baseline attention through statistics:      641.02 us [640.11-647.17]
+attention kernel speedup:                   7.55x
+attention kernel time saved:                549.89 us
+sota attention kernel:                      57.34 us [57.34-57.34]
+sota attention kernel speedup vs optimized: 1.46x
+baseline attention through statistics:      643.07 us [641.02-646.14]
 optimized attention through statistics:     92.16 us [92.16-92.16]
-attention through statistics speedup:       6.96x
-attention through statistics time saved:    548.86 us
-baseline end-to-end replay:                 685.15 us [684.97-690.35]
-optimized end-to-end replay:                132.53 us [132.14-133.43]
+attention through statistics speedup:       6.98x
+attention through statistics time saved:    550.91 us
+sota attention through statistics:          67.58 us [67.58-67.92]
+sota attention through statistics speedup vs optimized:1.36x
+baseline end-to-end replay:                 686.16 us [684.22-688.40]
+optimized end-to-end replay:                132.84 us [131.27-133.25]
 end-to-end replay speedup:                  5.17x
-end-to-end replay time saved:               552.62 us
-effective TFLOP/s (kernel):                 baseline 1.506, optimized 11.31
-effective TFLOP/s (through statistics):     baseline 1.482, optimized 10.31
-direct baseline attention kernel:           626.69 us [626.69-626.69]
-direct optimized attention kernel:          84.99 us [84.93-84.99]
-direct attention kernel speedup:            7.37x
-direct attention kernel time saved:         541.70 us
-direct baseline attention through statistics:636.93 us [636.93-636.93]
-direct optimized attention through statistics:92.16 us [92.16-92.51]
-direct attention through statistics speedup:6.91x
-direct attention through statistics time saved:544.77 us
-direct baseline end-to-end replay:          681.04 us [680.69-681.25]
-direct optimized end-to-end replay:         132.75 us [132.56-133.29]
-direct end-to-end replay speedup:           5.13x
-direct end-to-end replay time saved:        548.30 us
-direct effective TFLOP/s (kernel):          baseline 1.516, optimized 11.18
-direct effective TFLOP/s (through statistics):baseline 1.492, optimized 10.31
+end-to-end replay time saved:               553.33 us
+sota end-to-end replay:                     70.97 us [70.91-71.10]
+sota end-to-end replay speedup vs optimized:1.87x
+effective TFLOP/s (kernel):                 baseline 1.499, optimized 11.31, sota 16.57
+effective TFLOP/s (through statistics):     baseline 1.477, optimized 10.31, sota 14.06
+direct baseline attention kernel:           627.71 us [626.69-630.78]
+direct optimized attention kernel:          84.32 us [84.16-84.99]
+direct attention kernel speedup:            7.44x
+direct attention kernel time saved:         543.39 us
+direct sota attention kernel:               59.39 us [59.39-59.39]
+direct sota attention kernel speedup vs optimized:1.42x
+direct baseline attention through statistics:637.95 us [636.93-641.12]
+direct optimized attention through statistics:92.16 us [92.16-93.02]
+direct attention through statistics speedup:6.92x
+direct attention through statistics time saved:545.79 us
+direct sota attention through statistics:   70.66 us [70.66-70.66]
+direct sota attention through statistics speedup vs optimized:1.30x
+direct baseline end-to-end replay:          681.65 us [679.68-684.22]
+direct optimized end-to-end replay:         133.03 us [132.17-133.47]
+direct end-to-end replay speedup:           5.12x
+direct end-to-end replay time saved:        548.62 us
+direct sota end-to-end replay:              68.21 us [68.16-68.34]
+direct sota end-to-end replay speedup vs optimized:1.95x
+direct effective TFLOP/s (kernel):          baseline 1.513, optimized 11.27, sota 16
+direct effective TFLOP/s (through statistics):baseline 1.489, optimized 10.31, sota 13.45
 baseline end-to-end graph speedup:          0.99x (direct / graph)
 optimized end-to-end graph speedup:         1.00x (direct / graph)
+sota end-to-end graph speedup:              0.96x (direct / graph)
 attention FLOPs (algorithmic):              9.5e+08
-GPU while busy:                             SM clock median 1838 MHz [1725-1935], pstates P0,P2, max 78 C
+GPU while busy:                             SM clock median 1920 MHz [1725-1920], pstates P0,P2, max 78 C
 
 shape: 1x25000x250000 (replays=50, inputs=random, repeats=5; median [min-max])
-baseline attention kernel:                  84.792 ms [84.625-85.045]
-optimized attention kernel:                 8529.92 us [8529.92-8608.77]
-attention kernel speedup:                   9.94x
-attention kernel time saved:                76.262 ms
-baseline attention through statistics:      84.966 ms [84.798-85.218]
-optimized attention through statistics:     8716.50 us [8716.29-8796.16]
-attention through statistics speedup:       9.75x
-attention through statistics time saved:    76.249 ms
-baseline end-to-end replay:                 84.893 ms [84.848-85.433]
-optimized end-to-end replay:                8885.45 us [8872.09-8885.95]
-end-to-end replay speedup:                  9.55x
-end-to-end replay time saved:               76.008 ms
-effective TFLOP/s (kernel):                 baseline 1.4, optimized 13.92
-effective TFLOP/s (through statistics):     baseline 1.398, optimized 13.62
-direct baseline attention kernel:           84.349 ms [84.094-84.388]
-direct optimized attention kernel:          8530.94 us [8530.94-8609.79]
-direct attention kernel speedup:            9.89x
-direct attention kernel time saved:         75.818 ms
-direct baseline attention through statistics:84.527 ms [84.270-84.560]
-direct optimized attention through statistics:8718.34 us [8717.31-8797.70]
-direct attention through statistics speedup:9.70x
-direct attention through statistics time saved:75.809 ms
-direct baseline end-to-end replay:          84.317 ms [84.287-84.426]
-direct optimized end-to-end replay:         8889.35 us [8882.13-8895.37]
+baseline attention kernel:                  84.424 ms [84.196-85.411]
+optimized attention kernel:                 8529.92 us [8529.01-8560.64]
+attention kernel speedup:                   9.90x
+attention kernel time saved:                75.894 ms
+sota attention kernel:                      4260.61 us [4258.48-4296.27]
+sota attention kernel speedup vs optimized: 2.00x
+baseline attention through statistics:      84.595 ms [84.370-85.585]
+optimized attention through statistics:     8716.29 us [8715.26-8757.86]
+attention through statistics speedup:       9.71x
+attention through statistics time saved:    75.878 ms
+sota attention through statistics:          4262.42 us [4259.68-4297.87]
+sota attention through statistics speedup vs optimized:2.04x
+baseline end-to-end replay:                 84.470 ms [84.447-85.977]
+optimized end-to-end replay:                8858.52 us [8835.85-8879.58]
+end-to-end replay speedup:                  9.54x
+end-to-end replay time saved:               75.611 ms
+sota end-to-end replay:                     4285.17 us [4279.60-4292.18]
+sota end-to-end replay speedup vs optimized:2.07x
+effective TFLOP/s (kernel):                 baseline 1.407, optimized 13.92, sota 27.87
+effective TFLOP/s (through statistics):     baseline 1.404, optimized 13.62, sota 27.86
+direct baseline attention kernel:           83.828 ms [83.650-84.138]
+direct optimized attention kernel:          8529.92 us [8529.92-8547.84]
+direct attention kernel speedup:            9.83x
+direct attention kernel time saved:         75.298 ms
+direct sota attention kernel:               4269.17 us [4268.61-4269.66]
+direct sota attention kernel speedup vs optimized:2.00x
+direct baseline attention through statistics:84.002 ms [83.821-84.309]
+direct optimized attention through statistics:8717.31 us [8717.31-8734.72]
+direct attention through statistics speedup:9.64x
+direct attention through statistics time saved:75.285 ms
+direct sota attention through statistics:   4270.48 us [4270.06-4271.04]
+direct sota attention through statistics speedup vs optimized:2.04x
+direct baseline end-to-end replay:          83.983 ms [83.653-84.105]
+direct optimized end-to-end replay:         8847.11 us [8836.25-8875.72]
 direct end-to-end replay speedup:           9.49x
-direct end-to-end replay time saved:        75.428 ms
-direct effective TFLOP/s (kernel):          baseline 1.408, optimized 13.92
-direct effective TFLOP/s (through statistics):baseline 1.405, optimized 13.62
+direct end-to-end replay time saved:        75.136 ms
+direct sota end-to-end replay:              4293.51 us [4278.03-4298.90]
+direct sota end-to-end replay speedup vs optimized:2.06x
+direct effective TFLOP/s (kernel):          baseline 1.417, optimized 13.92, sota 27.82
+direct effective TFLOP/s (through statistics):baseline 1.414, optimized 13.62, sota 27.81
 baseline end-to-end graph speedup:          0.99x (direct / graph)
 optimized end-to-end graph speedup:         1.00x (direct / graph)
+sota end-to-end graph speedup:              1.00x (direct / graph)
 attention FLOPs (algorithmic):              1.188e+11
-GPU while busy:                             SM clock median 1642 MHz [1605-1680], pstates P0,P2, max 77 C
+GPU while busy:                             SM clock median 1672 MHz [1620-1920], pstates P0,P2, max 78 C
 
 shape: 1x25000x250000 (replays=50, inputs=repeat, repeats=5; median [min-max])
-baseline attention kernel:                  83.749 ms [83.471-83.941]
-optimized attention kernel:                 8438.78 us [8437.86-8438.78]
+baseline attention kernel:                  83.721 ms [83.067-83.879]
+optimized attention kernel:                 8437.76 us [8437.76-8438.78]
 attention kernel speedup:                   9.92x
-attention kernel time saved:                75.310 ms
-baseline attention through statistics:      83.919 ms [83.642-84.112]
+attention kernel time saved:                75.283 ms
+sota attention kernel:                      4010.34 us [4009.31-4010.91]
+sota attention kernel speedup vs optimized: 2.10x
+baseline attention through statistics:      83.892 ms [83.239-84.050]
 optimized attention through statistics:     8623.10 us [8623.10-8623.10]
 attention through statistics speedup:       9.73x
-attention through statistics time saved:    75.296 ms
-baseline end-to-end replay:                 83.862 ms [83.716-83.987]
-optimized end-to-end replay:                8793.46 us [8785.95-8797.45]
-end-to-end replay speedup:                  9.54x
-end-to-end replay time saved:               75.069 ms
-effective TFLOP/s (kernel):                 baseline 1.418, optimized 14.07
-effective TFLOP/s (through statistics):     baseline 1.415, optimized 13.77
-direct baseline attention kernel:           83.123 ms [83.005-83.647]
+attention through statistics time saved:    75.269 ms
+sota attention through statistics:          4011.65 us [4010.51-4012.26]
+sota attention through statistics speedup vs optimized:2.15x
+baseline end-to-end replay:                 83.666 ms [83.425-83.918]
+optimized end-to-end replay:                8794.79 us [8779.92-8798.86]
+end-to-end replay speedup:                  9.51x
+end-to-end replay time saved:               74.871 ms
+sota end-to-end replay:                     4043.14 us [4036.46-4083.16]
+sota end-to-end replay speedup vs optimized:2.18x
+effective TFLOP/s (kernel):                 baseline 1.418, optimized 14.07, sota 29.61
+effective TFLOP/s (through statistics):     baseline 1.416, optimized 13.77, sota 29.6
+direct baseline attention kernel:           82.983 ms [82.509-83.151]
 direct optimized attention kernel:          8438.78 us [8438.78-8438.78]
-direct attention kernel speedup:            9.85x
-direct attention kernel time saved:         74.684 ms
-direct baseline attention through statistics:83.297 ms [83.175-83.822]
-direct optimized attention through statistics:8624.13 us [8624.13-8624.19]
-direct attention through statistics speedup:9.66x
-direct attention through statistics time saved:74.673 ms
-direct baseline end-to-end replay:          83.356 ms [83.231-83.471]
-direct optimized end-to-end replay:         8800.48 us [8798.80-8811.01]
-direct end-to-end replay speedup:           9.47x
-direct end-to-end replay time saved:        74.555 ms
-direct effective TFLOP/s (kernel):          baseline 1.429, optimized 14.07
-direct effective TFLOP/s (through statistics):baseline 1.426, optimized 13.77
+direct attention kernel speedup:            9.83x
+direct attention kernel time saved:         74.544 ms
+direct sota attention kernel:               4020.13 us [3988.30-4021.10]
+direct sota attention kernel speedup vs optimized:2.10x
+direct baseline attention through statistics:83.157 ms [82.681-83.322]
+direct optimized attention through statistics:8624.13 us [8624.13-8624.14]
+direct attention through statistics speedup:9.64x
+direct attention through statistics time saved:74.533 ms
+direct sota attention through statistics:   4021.34 us [3989.70-4022.22]
+direct sota attention through statistics speedup vs optimized:2.14x
+direct baseline end-to-end replay:          83.099 ms [83.020-83.324]
+direct optimized end-to-end replay:         8805.13 us [8789.20-8809.69]
+direct end-to-end replay speedup:           9.44x
+direct end-to-end replay time saved:        74.294 ms
+direct sota end-to-end replay:              4043.31 us [4017.44-4051.58]
+direct sota end-to-end replay speedup vs optimized:2.18x
+direct effective TFLOP/s (kernel):          baseline 1.431, optimized 14.07, sota 29.54
+direct effective TFLOP/s (through statistics):baseline 1.428, optimized 13.77, sota 29.53
 baseline end-to-end graph speedup:          0.99x (direct / graph)
 optimized end-to-end graph speedup:         1.00x (direct / graph)
+sota end-to-end graph speedup:              1.00x (direct / graph)
 attention FLOPs (algorithmic):              1.188e+11
-GPU while busy:                             SM clock median 1654 MHz [1635-1710], pstates P2, max 72 C
+GPU while busy:                             SM clock median 1684 MHz [1635-1852], pstates P0,P2, max 72 C
 
-raw results: /home/ankai/cuda/.claude/worktrees/direct-launch-kernel-versions-ac58c1/loom_msa/build/benchmark.json
+raw results: /home/ankai/cuda/.claude/worktrees/direct-launch-kernel-versions-ac58c1/rtx3090/loom_msa/build/benchmark.json
