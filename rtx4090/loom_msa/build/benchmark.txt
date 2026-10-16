@@ -1,0 +1,110 @@
+
+shape: 1x4x4 (replays=5000, inputs=random, repeats=5; median [min-max])
+baseline attention kernel:                  4.10 us [4.06-4.10]
+optimized attention kernel:                 4.10 us [4.10-4.10]
+attention kernel speedup:                   1.00x
+attention kernel time saved:                0.00 us
+baseline attention through statistics:      7.17 us [6.82-7.17]
+optimized attention through statistics:     7.94 us [7.52-8.03]
+attention through statistics speedup:       0.90x
+attention through statistics time saved:    -0.77 us
+baseline end-to-end replay:                 18.15 us [17.46-18.54]
+optimized end-to-end replay:                19.55 us [18.65-19.91]
+end-to-end replay speedup:                  0.93x
+end-to-end replay time saved:               -1.40 us
+effective TFLOP/s (kernel):                 baseline 7.813e-05, optimized 7.813e-05
+effective TFLOP/s (through statistics):     baseline 4.464e-05, optimized 4.032e-05
+attention FLOPs (algorithmic):              320
+GPU while busy:                             SM clock median 2730 MHz [2730-2730], pstates P0, max 47 C
+
+shape: 1x4x4 (replays=5000, inputs=repeat, repeats=5; median [min-max])
+baseline attention kernel:                  4.10 us [4.06-4.10]
+optimized attention kernel:                 4.10 us [4.10-4.10]
+attention kernel speedup:                   1.00x
+attention kernel time saved:                0.00 us
+baseline attention through statistics:      7.01 us [6.82-7.17]
+optimized attention through statistics:     7.97 us [7.90-8.19]
+attention through statistics speedup:       0.88x
+attention through statistics time saved:    -0.96 us
+baseline end-to-end replay:                 18.43 us [18.09-18.58]
+optimized end-to-end replay:                18.96 us [18.50-19.40]
+end-to-end replay speedup:                  0.97x
+end-to-end replay time saved:               -0.53 us
+effective TFLOP/s (kernel):                 baseline 7.813e-05, optimized 7.813e-05
+effective TFLOP/s (through statistics):     baseline 4.566e-05, optimized 4.016e-05
+attention FLOPs (algorithmic):              320
+GPU while busy:                             SM clock median 2730 MHz [2730-2730], pstates P0, max 44 C
+
+shape: 1x1000x50000 (replays=5000, inputs=random, repeats=5; median [min-max])
+baseline attention kernel:                  279.68 us [274.43-282.62]
+optimized attention kernel:                 36.86 us [36.83-36.86]
+attention kernel speedup:                   7.59x
+attention kernel time saved:                242.82 us
+baseline attention through statistics:      287.74 us [282.62-290.82]
+optimized attention through statistics:     44.03 us [44.03-44.03]
+attention through statistics speedup:       6.53x
+attention through statistics time saved:    243.71 us
+baseline end-to-end replay:                 328.80 us [325.37-1740.36]
+optimized end-to-end replay:                83.30 us [82.97-1459.67]
+end-to-end replay speedup:                  3.95x
+end-to-end replay time saved:               245.50 us
+effective TFLOP/s (kernel):                 baseline 3.397, optimized 25.77
+effective TFLOP/s (through statistics):     baseline 3.302, optimized 21.58
+attention FLOPs (algorithmic):              9.5e+08
+GPU while busy:                             SM clock median 2700 MHz [2640-2730], pstates P0, max 82 C
+
+shape: 1x1000x50000 (replays=5000, inputs=repeat, repeats=5; median [min-max])
+baseline attention kernel:                  275.46 us [271.49-275.46]
+optimized attention kernel:                 36.74 us [36.54-36.86]
+attention kernel speedup:                   7.50x
+attention kernel time saved:                238.72 us
+baseline attention through statistics:      282.86 us [279.62-283.65]
+optimized attention through statistics:     43.94 us [43.74-44.03]
+attention through statistics speedup:       6.44x
+attention through statistics time saved:    238.93 us
+baseline end-to-end replay:                 321.51 us [320.85-1679.09]
+optimized end-to-end replay:                83.74 us [82.91-1159.48]
+end-to-end replay speedup:                  3.84x
+end-to-end replay time saved:               237.77 us
+effective TFLOP/s (kernel):                 baseline 3.449, optimized 25.86
+effective TFLOP/s (through statistics):     baseline 3.359, optimized 21.62
+attention FLOPs (algorithmic):              9.5e+08
+GPU while busy:                             SM clock median 2700 MHz [2685-2730], pstates P0, max 80 C
+
+shape: 1x25000x250000 (replays=50, inputs=random, repeats=5; median [min-max])
+baseline attention kernel:                  36.046 ms [35.824-36.708]
+optimized attention kernel:                 3575.02 us [3554.46-3596.29]
+attention kernel speedup:                   10.08x
+attention kernel time saved:                32.471 ms
+baseline attention through statistics:      36.180 ms [35.959-36.844]
+optimized attention through statistics:     3693.31 us [3672.06-3714.05]
+attention through statistics speedup:       9.80x
+attention through statistics time saved:    32.487 ms
+baseline end-to-end replay:                 35.727 ms [35.642-36.168]
+optimized end-to-end replay:                3835.57 us [3831.59-3858.99]
+end-to-end replay speedup:                  9.31x
+end-to-end replay time saved:               31.891 ms
+effective TFLOP/s (kernel):                 baseline 3.294, optimized 33.22
+effective TFLOP/s (through statistics):     baseline 3.282, optimized 32.15
+attention FLOPs (algorithmic):              1.188e+11
+GPU while busy:                             SM clock median 2468 MHz [2400-2565], pstates P0, max 87 C
+
+shape: 1x25000x250000 (replays=50, inputs=repeat, repeats=5; median [min-max])
+baseline attention kernel:                  37.206 ms [36.901-37.331]
+optimized attention kernel:                 3322.70 us [3319.74-3324.42]
+attention kernel speedup:                   11.20x
+attention kernel time saved:                33.883 ms
+baseline attention through statistics:      37.326 ms [37.021-37.452]
+optimized attention through statistics:     3431.42 us [3428.35-3433.97]
+attention through statistics speedup:       10.88x
+attention through statistics time saved:    33.895 ms
+baseline end-to-end replay:                 35.941 ms [35.592-36.333]
+optimized end-to-end replay:                3599.20 us [3588.47-3628.65]
+end-to-end replay speedup:                  9.99x
+end-to-end replay time saved:               32.342 ms
+effective TFLOP/s (kernel):                 baseline 3.192, optimized 35.74
+effective TFLOP/s (through statistics):     baseline 3.181, optimized 34.61
+attention FLOPs (algorithmic):              1.188e+11
+GPU while busy:                             SM clock median 2685 MHz [2685-2700], pstates P0, max 84 C
+
+raw results: /home/ankai/cuda-elastic/rtx4090/loom_msa/build/benchmark.json

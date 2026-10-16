@@ -1,0 +1,2 @@
+PageRank scores after 20 iterations (replays=1712): 0.000001 0.000001 0.000001 0.000001
+block_size=32 pin_host=1 upload_chunks=8: 5.714 ms per replay with transfers, 2.651 ms compute only (0.1326 ms per iteration)

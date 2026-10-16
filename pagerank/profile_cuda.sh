@@ -3,11 +3,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$SCRIPT_DIR/gapbs_pagerank_cuda_graph.cu"
-BIN="${BIN:-$SCRIPT_DIR/gapbs_pagerank_cuda_graph}"
-OUT_DIR="${OUT_DIR:-$SCRIPT_DIR/profiles}"
+# Binaries and profiles go to <repo>/<gpu>/pagerank/ (see gpu.sh).
+GPU_DIR="${GPU_DIR:-$SCRIPT_DIR/../$("$SCRIPT_DIR/../gpu.sh" name)/pagerank}"
+BIN="${BIN:-$GPU_DIR/gapbs_pagerank_cuda_graph}"
+OUT_DIR="${OUT_DIR:-$GPU_DIR/profiles}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 NVCC="${NVCC:-nvcc}"
-read -r -a NVCC_FLAGS <<< "${NVCC_FLAGS:-}"
+read -r -a NVCC_FLAGS <<< "${NVCC_FLAGS:--arch=$("$SCRIPT_DIR/../gpu.sh" arch)}"
 # graph: one range per graph launch.  node: one range per kernel/memcpy node.
 NSYS_GRAPH_TRACE="${NSYS_GRAPH_TRACE:-graph}"
 # One initialize_scores node, one first-iteration pagerank_update node per
@@ -22,6 +24,7 @@ require_tool() { command -v "$1" >/dev/null || { printf 'error: %s is not instal
 build_id() { printf '%s %s\n' "$NVCC" "${NVCC_FLAGS[*]}"; }
 build() {
   require_tool "$NVCC"
+  mkdir -p "$(dirname "$BIN")"
   "$NVCC" "${NVCC_FLAGS[@]}" -O3 -o "$BIN" "$SRC"
   build_id > "$BIN.build"
 }

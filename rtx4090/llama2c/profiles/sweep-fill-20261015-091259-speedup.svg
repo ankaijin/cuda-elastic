@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="590" viewBox="0 0 1200 590" font-family="system-ui, sans-serif">
+<rect width="100%" height="100%" fill="#fcfcfb"/>
+<text x="80" y="30" font-size="18" font-weight="600" fill="#0b0b0b">CUDA Graph speedup across the size sweep</text>
+<text x="80" y="52" font-size="13" fill="#52514e">Above 1× the graph is faster. Dot = mean of trials; whisker = min–max trial. Numbers refer to the configuration key below.</text>
+<text x="80" y="88" font-size="14" font-weight="600" fill="#0b0b0b">GPU time per iteration: direct ÷ graph</text>
+<line x1="80" y1="480.0" x2="575.0" y2="480.0" stroke="#e6e5e1"/>
+<text x="72" y="484.0" text-anchor="end" font-size="12" fill="#52514e">0.90×</text>
+<line x1="80" y1="385.0" x2="575.0" y2="385.0" stroke="#e6e5e1"/>
+<text x="72" y="389.0" text-anchor="end" font-size="12" fill="#52514e">0.95×</text>
+<line x1="80" y1="290.0" x2="575.0" y2="290.0" stroke="#e6e5e1"/>
+<text x="72" y="294.0" text-anchor="end" font-size="12" fill="#52514e">1.00×</text>
+<line x1="80" y1="195.0" x2="575.0" y2="195.0" stroke="#e6e5e1"/>
+<text x="72" y="199.0" text-anchor="end" font-size="12" fill="#52514e">1.05×</text>
+<line x1="80" y1="100.0" x2="575.0" y2="100.0" stroke="#e6e5e1"/>
+<text x="72" y="104.0" text-anchor="end" font-size="12" fill="#52514e">1.10×</text>
+<line x1="80" y1="290.0" x2="575.0" y2="290.0" stroke="#8a8984" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="84" y="284.0" font-size="12" fill="#52514e">parity</text>
+<line x1="80.0" y1="100" x2="80.0" y2="480" stroke="#e6e5e1"/>
+<text x="80.0" y="500" text-anchor="middle" font-size="12" fill="#52514e">100 µs</text>
+<line x1="575.0" y1="100" x2="575.0" y2="480" stroke="#e6e5e1"/>
+<text x="575.0" y="500" text-anchor="middle" font-size="12" fill="#52514e">1 ms</text>
+<line x1="80" y1="480" x2="575.0" y2="480" stroke="#8a8984"/>
+<text x="327.5" y="524" text-anchor="middle" font-size="13" fill="#52514e">direct-mode GPU time per iteration (log)</text>
+<g><title>1: batch 1024, size 16384, rows 8192, ×1, no copies, coalesced matmul&amp;#10;1.001× mean (0.999–1.003, 3 trials)</title><line x1="567.0" y1="291.2" x2="567.0" y2="284.6" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="567.0" cy="288.3" r="12" fill="transparent"/><circle cx="567.0" cy="288.3" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<text x="550.0" y="280.3" font-size="12" fill="#52514e">1</text>
+<text x="675.0" y="88" font-size="14" font-weight="600" fill="#0b0b0b">CPU submission per iteration: direct ÷ graph (log)</text>
+<line x1="675.0" y1="402.4" x2="1170.0" y2="402.4" stroke="#e6e5e1"/>
+<text x="667.0" y="406.4" text-anchor="end" font-size="12" fill="#52514e">1×</text>
+<line x1="675.0" y1="161.2" x2="1170.0" y2="161.2" stroke="#e6e5e1"/>
+<text x="667.0" y="165.2" text-anchor="end" font-size="12" fill="#52514e">2×</text>
+<line x1="675.0" y1="402.4" x2="1170.0" y2="402.4" stroke="#8a8984" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="679.0" y="396.4" font-size="12" fill="#52514e">parity</text>
+<line x1="675.0" y1="100" x2="675.0" y2="480" stroke="#e6e5e1"/>
+<text x="675.0" y="500" text-anchor="middle" font-size="12" fill="#52514e">100 µs</text>
+<line x1="1170.0" y1="100" x2="1170.0" y2="480" stroke="#e6e5e1"/>
+<text x="1170.0" y="500" text-anchor="middle" font-size="12" fill="#52514e">1 ms</text>
+<line x1="675.0" y1="480" x2="1170.0" y2="480" stroke="#8a8984"/>
+<text x="922.5" y="524" text-anchor="middle" font-size="13" fill="#52514e">direct-mode GPU time per iteration (log)</text>
+<g><title>1: batch 1024, size 16384, rows 8192, ×1, no copies, coalesced matmul&amp;#10;1.647× mean (1.506–1.907, 3 trials)</title><line x1="1162.0" y1="259.8" x2="1162.0" y2="177.6" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/><circle cx="1162.0" cy="228.6" r="12" fill="transparent"/><circle cx="1162.0" cy="228.6" r="5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/></g>
+<text x="1145.0" y="220.6" font-size="12" fill="#52514e">1</text>
+<text x="80" y="534" font-size="13" font-weight="600" fill="#0b0b0b">Configurations</text>
+<text x="80.0" y="550" font-size="12" fill="#52514e"><tspan font-weight="600" fill="#0b0b0b">1</tspan>  batch 1024, size 16384, rows 8192, ×1, no copies, coalesced matmul  ·  GPU 1.00×, submit 1.6×</text>
+</svg>

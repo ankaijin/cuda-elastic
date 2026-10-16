@@ -6,13 +6,15 @@ set -euo pipefail
 #   APP=vww ./profile_cuda.sh   build/vww_preprocess, 256M bytes
 # Override the arguments with ARGS.
 APP="${APP:-kws}"
+# Binaries and profiles live in <repo>/<gpu>/mlperf-classification/ (see gpu.sh).
+GPU_DIR="${GPU_DIR:-../$(../gpu.sh name)/mlperf-classification}"
 case "$APP" in
   kws)
-    BIN="./build/kws_postprocess"
+    BIN="$GPU_DIR/build/kws_postprocess"
     ARGS="${ARGS:---count=12 --batch=4194304 --inputs=random --replays=20}"
     ;;
   vww)
-    BIN="./build/vww_preprocess"
+    BIN="$GPU_DIR/build/vww_preprocess"
     ARGS="${ARGS:---count=268435456 --inputs=random --replays=20}"
     ;;
   *)
@@ -20,7 +22,7 @@ case "$APP" in
     exit 2
     ;;
 esac
-OUT_DIR="profiles"
+OUT_DIR="$GPU_DIR/profiles"
 STAMP="$(basename "$BIN")-$(date +%Y%m%d-%H%M%S)"
 
 mkdir -p "$OUT_DIR"

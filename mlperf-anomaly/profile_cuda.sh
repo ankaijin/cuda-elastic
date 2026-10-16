@@ -3,9 +3,11 @@ set -euo pipefail
 
 # Profiles build/anomaly_mse at the large shape (random inputs).
 # Override the arguments with ARGS, e.g. ARGS="--count=640" ./profile_cuda.sh
-BIN="./build/anomaly_mse"
+# Binaries and profiles live in <repo>/<gpu>/mlperf-anomaly/ (see gpu.sh).
+GPU_DIR="${GPU_DIR:-../$(../gpu.sh name)/mlperf-anomaly}"
+BIN="$GPU_DIR/build/anomaly_mse"
 ARGS="${ARGS:---count=67108864 --inputs=random --replays=20}"
-OUT_DIR="profiles"
+OUT_DIR="$GPU_DIR/profiles"
 STAMP="$(basename "$BIN")-$(date +%Y%m%d-%H%M%S)"
 
 mkdir -p "$OUT_DIR"

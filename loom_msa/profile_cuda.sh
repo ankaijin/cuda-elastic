@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Override to profile another variant, e.g. BIN=build/msa_optimized ./profile_cuda.sh
-BIN="${BIN:-./multi_sensor_attention_graph}"
-OUT_DIR="profiles"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# Binaries and profiles live in <repo>/<gpu>/loom_msa/ (see gpu.sh).
+GPU_DIR="${GPU_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)/$("$SCRIPT_DIR/../gpu.sh" name)/loom_msa}"
+# Defaults to the build the results spreadsheet uses (make builds it). Override
+# to profile another variant, e.g. BIN=$GPU_DIR/build/msa_optimized_medium
+BIN="${BIN:-$GPU_DIR/build/msa_optimized_large}"
+OUT_DIR="$GPU_DIR/profiles"
 STAMP="$(basename "$BIN")-$(date +%Y%m%d-%H%M%S)"
+
+if [[ ! -x "$BIN" ]]; then
+  echo "error: $BIN not built; run make in $SCRIPT_DIR (or set BIN)" >&2
+  exit 1
+fi
 
 mkdir -p "$OUT_DIR"
 
