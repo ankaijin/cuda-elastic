@@ -16,52 +16,20 @@
 // every run instead of capturing them once into a graph and replaying it
 // (PAGERANK_LAUNCH=graph, the default).  Each timed run is an NVTX range
 // (pagerank.full, pagerank.compute).
+//
+// PAGERANK_GRAPH, PAGERANK_START, PAGERANK_ROTATE, PAGERANK_DUMP and
+// PAGERANK_DUMP_REF (see InputOptions in pagerank_common.h) select the
+// benchmark input, rotate the timed replays between distinct inputs (default
+// 1, the original benchmark) and dump the benchmark input's final scores.
 
-#include <cuda_runtime.h>
+#include "pagerank_common.h"
 
-#include <algorithm>
-#include <cmath>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <string>
-#include <vector>
-
-#if defined(__has_include)
-#  if __has_include(<nvtx3/nvToolsExt.h>)
-#    include <nvtx3/nvToolsExt.h>
-#    define PAGERANK_HAS_NVTX 1
-#  endif
-#endif
-#ifndef PAGERANK_HAS_NVTX
-#  define PAGERANK_HAS_NVTX 0
-#endif
-
-#define CUDA_CHECK(call)                                                       \
-  do {                                                                         \
-    cudaError_t err__ = (call);                                                \
-    if (err__ != cudaSuccess) {                                                \
-      std::fprintf(stderr, "%s failed: %s\n", #call, cudaGetErrorString(err__)); \
-      std::exit(EXIT_FAILURE);                                                 \
-    }                                                                          \
-  } while (0)
-
-constexpr int kVertices = 1 << 20;
-constexpr int kEdgesPerVertex = 16;
-constexpr int kEdges = kVertices * kEdgesPerVertex;
-constexpr int kIterations = 20;
-constexpr float kDamping = 0.85f;
 // Threads per block for every kernel; PAGERANK_BLOCK_SIZE overrides it.
 // With gathered contributions, 32 through 512 measure within ~4% of each
 // other (0.234-0.247 ms per iteration; 1024 is ~25% slower) because the
 // kernel is bound by L2 bandwidth for the random contribution reads, not by
 // occupancy.  32 was marginally fastest.
 constexpr int kDefaultBlockSize = 32;
-
-// A score passes when |gpu - reference| <= abs + rel * |reference|.  Scores
-// are O(1/V), so the absolute floor is scaled by 1/V.
-constexpr double kRelTolerance = 1e-4;
-constexpr double kAbsToleranceScale = 1e-6;
 
 // What each outgoing edge of a vertex carries: its score divided by its
 // out-degree.  Dangling vertices (out-degree zero) are never read as sources,
@@ -103,143 +71,6 @@ __global__ void initialize_scores(float* scores, float* contributions,
   const float score = uniform ? 1.0f / vertices : scores[i];
   if (uniform) scores[i] = score;
   contributions[i] = contribution(score, out_degrees[i]);
-}
-
-struct SplitMix64 {
-  uint64_t state;
-  uint64_t next() {
-    uint64_t z = (state += 0x9e3779b97f4a7c15ull);
-    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ull;
-    z = (z ^ (z >> 27)) * 0x94d049bb133111ebull;
-    return z ^ (z >> 31);
-  }
-};
-
-// CSR over incoming edges: row_offsets/columns are indexed by destination and
-// columns holds each edge's source vertex.
-struct HostGraph {
-  int vertices = 0;
-  std::vector<int> row_offsets;
-  std::vector<int> columns;
-  std::vector<int> out_degrees;
-};
-
-// Generated regular CSR fixture: every destination has sixteen incoming
-// edges.  17 is odd, so each edge slot maps destinations to sources one to
-// one and every vertex also has exactly sixteen outgoing edges.  That makes
-// the uniform start the stationary distribution, so a uniform-start run
-// cannot tell a correct update from one that reads the wrong edges.
-HostGraph make_benchmark_fixture() {
-  HostGraph graph;
-  graph.vertices = kVertices;
-  graph.row_offsets.resize(kVertices + 1);
-  graph.columns.resize(kEdges);
-  graph.out_degrees.assign(kVertices, kEdgesPerVertex);
-  for (int vertex = 0; vertex <= kVertices; ++vertex)
-    graph.row_offsets[vertex] = vertex * kEdgesPerVertex;
-  for (int dst = 0; dst < kVertices; ++dst)
-    for (int edge = 0; edge < kEdgesPerVertex; ++edge)
-      graph.columns[dst * kEdgesPerVertex + edge] =
-          (dst * 17 + edge * 104729) & (kVertices - 1);
-  return graph;
-}
-
-// Small irregular graph for validation: skewed in-degrees including a few
-// heavy rows, vertices with no incoming edges, dangling vertices with no
-// outgoing edges, and a vertex count that is not a multiple of any block
-// size.  Duplicate edges and self loops are allowed; both count towards
-// degree like any other edge.
-HostGraph make_irregular_graph(int vertices, uint64_t seed) {
-  HostGraph graph;
-  graph.vertices = vertices;
-  graph.row_offsets.assign(vertices + 1, 0);
-  SplitMix64 rng{seed};
-  for (int dst = 0; dst < vertices; ++dst) {
-    int degree;
-    if (dst % 11 == 0)
-      degree = 0;
-    else if (dst % 997 == 1)
-      degree = 500 + static_cast<int>(rng.next() % 2500);
-    else if (rng.next() % 32 == 0)
-      degree = 32 + static_cast<int>(rng.next() % 200);
-    else
-      degree = static_cast<int>(rng.next() % 24);
-    graph.row_offsets[dst + 1] = graph.row_offsets[dst] + degree;
-  }
-  graph.columns.resize(graph.row_offsets[vertices]);
-  graph.out_degrees.assign(vertices, 0);
-  for (int& source : graph.columns) {
-    // Vertices with source % 7 == 3 are never sources, so they dangle.
-    source = static_cast<int>(rng.next() % vertices);
-    if (source % 7 == 3) source = (source + 1) % vertices;
-    ++graph.out_degrees[source];
-  }
-  return graph;
-}
-
-// Deterministic, uneven starting scores normalized to sum to one.
-std::vector<float> make_skewed_scores(int vertices, uint64_t seed) {
-  SplitMix64 rng{seed};
-  std::vector<double> weights(vertices);
-  double total = 0.0;
-  for (double& weight : weights) {
-    weight = 1.0 + static_cast<double>(rng.next() % 1000);
-    total += weight;
-  }
-  std::vector<float> scores(vertices);
-  for (int v = 0; v < vertices; ++v)
-    scores[v] = static_cast<float>(weights[v] / total);
-  return scores;
-}
-
-// Returns an empty string when the CSR arrays are well formed and every
-// stored out-degree matches the number of edges that vertex is a source of.
-std::string check_graph(const HostGraph& graph) {
-  const int vertices = graph.vertices;
-  if (graph.row_offsets.size() != static_cast<size_t>(vertices) + 1 ||
-      graph.out_degrees.size() != static_cast<size_t>(vertices))
-    return "array sizes do not match the vertex count";
-  if (graph.row_offsets[0] != 0 ||
-      graph.row_offsets[vertices] != static_cast<int>(graph.columns.size()))
-    return "row offsets do not span the column array";
-  for (int v = 0; v < vertices; ++v)
-    if (graph.row_offsets[v + 1] < graph.row_offsets[v])
-      return "row offsets decrease at vertex " + std::to_string(v);
-  std::vector<int> counted(vertices, 0);
-  for (int source : graph.columns) {
-    if (source < 0 || source >= vertices)
-      return "column " + std::to_string(source) + " is out of range";
-    ++counted[source];
-  }
-  for (int v = 0; v < vertices; ++v)
-    if (counted[v] != graph.out_degrees[v])
-      return "out_degrees[" + std::to_string(v) + "] is " +
-             std::to_string(graph.out_degrees[v]) + " but the vertex is the source of " +
-             std::to_string(counted[v]) + " edges";
-  return {};
-}
-
-// Plain double-precision Jacobi PageRank with the same semantics as
-// pagerank_update.  As in GAPBS, rank held by dangling vertices is not
-// redistributed.
-std::vector<double> reference_pagerank(const HostGraph& graph,
-                                       const std::vector<float>& initial,
-                                       int iterations) {
-  const int vertices = graph.vertices;
-  std::vector<double> previous(initial.begin(), initial.end());
-  std::vector<double> next(vertices);
-  for (int iteration = 0; iteration < iterations; ++iteration) {
-    for (int dst = 0; dst < vertices; ++dst) {
-      double incoming = 0.0;
-      for (int edge = graph.row_offsets[dst]; edge < graph.row_offsets[dst + 1]; ++edge) {
-        const int source = graph.columns[edge];
-        incoming += previous[source] / graph.out_degrees[source];
-      }
-      next[dst] = (1.0 - kDamping) / vertices + kDamping * incoming;
-    }
-    previous.swap(next);
-  }
-  return previous;
 }
 
 struct DeviceGraph {
@@ -308,32 +139,6 @@ struct Settings {
   // behind the copy); more chunks add nodes without saving more.
   int upload_chunks = 8;
 };
-
-// Page-locks the host buffers that a PageRank run copies from and to, when
-// settings.pin_host is set.  Returns the registered pointers for unpinning.
-std::vector<void*> pin_host_buffers(const Settings& settings, const HostGraph& graph,
-                                    const std::vector<float>* initial,
-                                    std::vector<float>& result) {
-  std::vector<void*> pinned;
-  if (!settings.pin_host) return pinned;
-  const auto pin = [&](const void* data, size_t bytes) {
-    if (bytes == 0) return;
-    void* pointer = const_cast<void*>(data);
-    CUDA_CHECK(cudaHostRegister(pointer, bytes, cudaHostRegisterDefault));
-    pinned.push_back(pointer);
-  };
-  pin(graph.row_offsets.data(), graph.row_offsets.size() * sizeof(int));
-  pin(graph.columns.data(), graph.columns.size() * sizeof(int));
-  pin(graph.out_degrees.data(), graph.out_degrees.size() * sizeof(int));
-  if (initial) pin(initial->data(), initial->size() * sizeof(float));
-  pin(result.data(), result.size() * sizeof(float));
-  return pinned;
-}
-
-void unpin_host_buffers(std::vector<void*>& pinned) {
-  for (void* pointer : pinned) CUDA_CHECK(cudaHostUnregister(pointer));
-  pinned.clear();
-}
 
 struct RunOptions {
   // nullptr starts the scores uniform (initialize_scores, as in the
@@ -514,34 +319,15 @@ void destroy_pagerank(PagerankRun& run) {
   run = PagerankRun{};
 }
 
-void nvtx_push(const char* label) {
-#if PAGERANK_HAS_NVTX
-  nvtxRangePushA(label);
-#else
-  (void)label;
-#endif
-}
-
-void nvtx_pop() {
-#if PAGERANK_HAS_NVTX
-  nvtxRangePop();
-#endif
-}
-
-// Runs PageRank once and compares every score with the CPU reference.
-// The score sum is a secondary check.  "spread" is (max - min) / mean of the
-// expected scores; near zero means the case cannot detect wrong edges.
+// Runs PageRank once and compares every score with the CPU reference
+// (compare_scores in pagerank_common.h).
 bool validate_case(const Streams& streams, const Settings& settings, const char* name,
                    const HostGraph& graph, const std::vector<float>* initial,
                    int iterations) {
-  const std::string graph_error = check_graph(graph);
-  if (!graph_error.empty()) {
-    std::printf("FAIL %s: malformed graph: %s\n", name, graph_error.c_str());
-    return false;
-  }
+  if (!check_case_graph(name, graph)) return false;
   const int vertices = graph.vertices;
   std::vector<float> actual(vertices);
-  std::vector<void*> pinned = pin_host_buffers(settings, graph, initial, actual);
+  std::vector<void*> pinned = pin_host_buffers(settings.pin_host, graph, initial, actual);
   DeviceGraph device = allocate_device_graph(graph);
   RunOptions options;
   options.initial_scores = initial ? initial->data() : nullptr;
@@ -558,69 +344,16 @@ bool validate_case(const Streams& streams, const Settings& settings, const char*
 
   const std::vector<double> expected = reference_pagerank(
       graph, initial ? *initial : std::vector<float>(vertices, 1.0f / vertices), iterations);
-
-  const double abs_tolerance = kAbsToleranceScale / vertices;
-  double max_abs = 0.0, max_rel = 0.0, sum_actual = 0.0, sum_expected = 0.0;
-  double min_expected = expected[0], max_expected = expected[0];
-  int failures = 0, first_failure = -1;
-  for (int v = 0; v < vertices; ++v) {
-    const double want = expected[v];
-    const double error = std::fabs(static_cast<double>(actual[v]) - want);
-    // Written as !(<=) so NaN scores fail.
-    if (!(error <= abs_tolerance + kRelTolerance * std::fabs(want)) && failures++ == 0)
-      first_failure = v;
-    max_abs = std::max(max_abs, error);
-    if (want != 0.0) max_rel = std::max(max_rel, error / std::fabs(want));
-    sum_actual += actual[v];
-    sum_expected += want;
-    min_expected = std::min(min_expected, want);
-    max_expected = std::max(max_expected, want);
-  }
-  const bool sum_ok =
-      std::fabs(sum_actual - sum_expected) <= kRelTolerance * std::fabs(sum_expected);
-  const bool pass = failures == 0 && sum_ok;
-  const double spread = (max_expected - min_expected) / (sum_expected / vertices);
-
-  std::printf("%s  %-34s V=%-8d E=%-9zu iters=%-2d max_abs=%.2e max_rel=%.2e spread=%.3g\n",
-              pass ? "PASS" : "FAIL", name, vertices, graph.columns.size(), iterations,
-              max_abs, max_rel, spread);
-  if (failures > 0)
-    std::printf("      %d of %d scores outside tolerance; first at vertex %d: got %.9g, expected %.9g\n",
-                failures, vertices, first_failure, actual[first_failure],
-                expected[first_failure]);
-  if (!sum_ok)
-    std::printf("      score sum %.9g, expected %.9g\n", sum_actual, sum_expected);
-  return pass;
+  return compare_scores(name, graph, iterations, actual, expected);
 }
 
 bool run_validation(const Streams& streams, const Settings& settings,
                     const HostGraph& fixture) {
-  const HostGraph irregular = make_irregular_graph(100003, 0x5eed);
-  const std::vector<float> fixture_skewed = make_skewed_scores(fixture.vertices, 1);
-  const std::vector<float> irregular_skewed = make_skewed_scores(irregular.vertices, 2);
-
-  bool ok = true;
-  // The benchmark graph itself.  Its uniform start is already the fixture's
-  // stationary distribution, so this checks plumbing, not the update.
-  ok &= validate_case(streams, settings, "fixture, uniform start (benchmark)", fixture,
-                      nullptr, kIterations);
-  // Skewed starts make every edge matter, but the fixture mixes quickly: the
-  // spread of a skewed start falls below kRelTolerance after about six
-  // iterations, so longer fixture runs are no stronger than the uniform one.
-  // One and two iterations check a single update and a chained update that
-  // reads the contributions the first one wrote.
-  ok &= validate_case(streams, settings, "fixture, skewed start", fixture, &fixture_skewed,
-                      1);
-  ok &= validate_case(streams, settings, "fixture, skewed start", fixture, &fixture_skewed,
-                      2);
-  // The irregular graph has a nonuniform stationary distribution, so its
-  // full-length runs stay discriminating.
-  ok &= validate_case(streams, settings, "irregular, uniform start", irregular, nullptr,
-                      kIterations);
-  ok &= validate_case(streams, settings, "irregular, skewed start", irregular,
-                      &irregular_skewed, 1);
-  ok &= validate_case(streams, settings, "irregular, skewed start", irregular,
-                      &irregular_skewed, kIterations);
+  const bool ok = run_validation_cases(
+      fixture, [&](const char* name, const HostGraph& graph, const std::vector<float>* initial,
+                   int iterations) {
+        return validate_case(streams, settings, name, graph, initial, iterations);
+      });
   std::printf("validation %s (launch=%s block_size=%d pin_host=%d upload_chunks=%d)\n",
               ok ? "passed" : "FAILED", settings.graph ? "graph" : "direct",
               settings.block_size, settings.pin_host, settings.upload_chunks);
@@ -628,8 +361,9 @@ bool run_validation(const Streams& streams, const Settings& settings,
 }
 
 // Average milliseconds per run over `replays` back-to-back runs, each an
-// NVTX range named `range`.
-float time_replays(const Streams& streams, const PagerankRun& run, int replays,
+// NVTX range named `range`.  Replay r runs runs[r % runs.size()], so with
+// PAGERANK_ROTATE > 1 consecutive replays use distinct inputs.
+float time_replays(const Streams& streams, const std::vector<PagerankRun>& runs, int replays,
                    const char* range) {
   cudaEvent_t start = nullptr, stop = nullptr;
   CUDA_CHECK(cudaEventCreate(&start));
@@ -637,7 +371,7 @@ float time_replays(const Streams& streams, const PagerankRun& run, int replays,
   CUDA_CHECK(cudaEventRecord(start, streams.compute));
   for (int replay = 0; replay < replays; ++replay) {
     nvtx_push(range);
-    launch_pagerank(run);
+    launch_pagerank(runs[replay % runs.size()]);
     nvtx_pop();
   }
   CUDA_CHECK(cudaEventRecord(stop, streams.compute));
@@ -652,24 +386,37 @@ float time_replays(const Streams& streams, const PagerankRun& run, int replays,
 // Times the benchmark run (upload, twenty iterations, download) and a
 // compute-only run (initialization and twenty iterations on data already on
 // the device).  The full run goes first, so a profiler limited to the first
-// launches sees it and the compute-only run finds the data uploaded.
-void run_benchmark(const Streams& streams, const Settings& settings,
-                   const HostGraph& fixture) {
-  std::vector<float> h_result(fixture.vertices);
-  std::vector<void*> pinned = pin_host_buffers(settings, fixture, nullptr, h_result);
-  DeviceGraph device = allocate_device_graph(fixture);
+// launches sees it and the compute-only run finds the data uploaded.  With
+// PAGERANK_ROTATE=K > 1 the full replays cycle through K inputs (one captured
+// graph each), every input's last result is checked against its own CPU
+// reference afterwards, and the compute-only run uses input 0's data.
+bool run_benchmark(const Streams& streams, const Settings& settings,
+                   const HostGraph& fixture, const InputOptions& input_options) {
+  std::vector<BenchInput> inputs = make_bench_inputs(input_options, fixture);
+  const bool rotating = inputs.size() > 1;
+  std::vector<std::vector<void*>> pinned;
+  for (BenchInput& input : inputs) {
+    if (rotating) std::fill(input.result.begin(), input.result.end(), std::nanf(""));
+    pinned.push_back(pin_host_buffers(settings.pin_host, input.graph, input.initial_or_null(),
+                                      input.result));
+  }
+  DeviceGraph device = allocate_device_graph(inputs[0].graph);
   RunOptions options;
   options.block_size = settings.block_size;
   options.upload_chunks = settings.upload_chunks;
-  PagerankRun full = prepare_pagerank(streams, fixture, device, options, h_result.data(),
-                                      settings.graph);
+  std::vector<PagerankRun> full;
+  for (BenchInput& input : inputs) {
+    options.initial_scores = input.initial.empty() ? nullptr : input.initial.data();
+    full.push_back(prepare_pagerank(streams, input.graph, device, options, input.result.data(),
+                                    settings.graph));
+  }
   options.include_transfers = false;
-  PagerankRun compute_only =
-      prepare_pagerank(streams, fixture, device, options, nullptr, settings.graph);
+  std::vector<PagerankRun> compute_only{
+      prepare_pagerank(streams, inputs[0].graph, device, options, nullptr, settings.graph)};
   // Uploading ahead keeps one-time graph setup out of the timings.
   if (settings.graph) {
-    CUDA_CHECK(cudaGraphUpload(full.executable, streams.compute));
-    CUDA_CHECK(cudaGraphUpload(compute_only.executable, streams.compute));
+    for (PagerankRun& run : full) CUDA_CHECK(cudaGraphUpload(run.executable, streams.compute));
+    CUDA_CHECK(cudaGraphUpload(compute_only[0].executable, streams.compute));
   }
 
   int graph_replays = 0;
@@ -681,23 +428,33 @@ void run_benchmark(const Streams& streams, const Settings& settings,
                         ? static_cast<int>(10000.0f / replay_ms) + 1
                         : 1;
   }
+  // Every input runs at least once, so every input's result can be checked.
+  if (rotating) graph_replays = std::max<int>(graph_replays, static_cast<int>(inputs.size()));
   const float full_ms = time_replays(streams, full, graph_replays, "pagerank.full");
+  // The compute-only run works on input 0, whatever input ran last.
+  if (rotating) {
+    launch_pagerank(full[0]);
+    CUDA_CHECK(cudaStreamSynchronize(streams.compute));
+  }
   const float compute_ms =
       time_replays(streams, compute_only, graph_replays, "pagerank.compute");
 
+  const std::vector<float>& h_result = inputs[0].result;
   const char* launch = settings.graph ? "graph" : "direct";
   std::printf("PageRank scores after %d iterations (launch=%s replays=%d): %.6f %.6f %.6f %.6f\n",
               kIterations, launch, graph_replays, h_result[0], h_result[1],
               h_result[2], h_result[3]);
+  const bool ok = check_bench_inputs(input_options, inputs, rotating);
   std::printf("launch=%s block_size=%d pin_host=%d upload_chunks=%d: %.3f ms per replay with "
               "transfers, %.3f ms compute only (%.4f ms per iteration)\n",
               launch, settings.block_size, settings.pin_host, settings.upload_chunks,
               full_ms, compute_ms, compute_ms / kIterations);
 
-  destroy_pagerank(compute_only);
-  destroy_pagerank(full);
+  destroy_pagerank(compute_only[0]);
+  for (PagerankRun& run : full) destroy_pagerank(run);
   free_device_graph(device);
-  unpin_host_buffers(pinned);
+  for (std::vector<void*>& buffers : pinned) unpin_host_buffers(buffers);
+  return ok;
 }
 
 int main() {
@@ -742,11 +499,13 @@ int main() {
     }
   }
 
+  const InputOptions input_options = read_input_options(1);
+
   Streams streams = create_streams();
   const HostGraph fixture = make_benchmark_fixture();
   bool ok = true;
   if (mode != "bench") ok = run_validation(streams, settings, fixture);
-  if (ok && mode != "validate") run_benchmark(streams, settings, fixture);
+  if (ok && mode != "validate") ok = run_benchmark(streams, settings, fixture, input_options);
   destroy_streams(streams);
   return ok ? 0 : 1;
 }

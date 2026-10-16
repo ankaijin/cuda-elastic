@@ -12,6 +12,29 @@
 //
 // The oracle is a direct port of main.c's loops, generalized to
 // TOKEN_COUNT x CONTEXT_COUNT and accumulated in double precision.
+//
+// Further flags:
+//   --seed=N    xorshift32 seed of the random inputs (decimal or 0x hex;
+//               default 0x9e3779b9, the original inputs). Ignored by repeat.
+//   --rotate=K  the timed loops rotate over K distinct input sets, each with
+//               its own pinned host input and output buffers (and, in graph
+//               mode, its own captured graphs); iteration i uses set i % K.
+//               Set 0 is exactly the single-set input; set k > 0 uses the
+//               seed mixed with k (random) or the seed tables offset by k
+//               rows (repeat). After timing, every set's output and
+//               statistics are checked against that set's own CPU
+//               reference, so a variant that reused data from an earlier
+//               iteration fails. The default comes from the variant
+//               (1 for baseline and optimized, so their numbers are
+//               unchanged).
+//   --dump=F    after the correctness pass, writes raw little-endian float32
+//               to F, for each set k = 0..K-1 in order:
+//                 output[BATCH_COUNT][TOKEN_COUNT][4]   (host output)
+//                 statistics[BATCH_COUNT][4]            (projection_energy,
+//                                                        attention_sum,
+//                                                        weighted_sum,
+//                                                        max |attention|)
+//               i.e. K * (B*T*4 + B*4) floats, no header.
 #pragma once
 
 #include <cuda_runtime.h>
@@ -20,6 +43,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -207,7 +231,25 @@ inline int capture_pipeline(EnqueuePipeline enqueue_pipeline,
 
 enum class InputMode { kRepeat, kRandom };
 
-inline void fill_inputs(InputMode mode, float* audio, float* imu) {
+constexpr uint32_t kDefaultSeed = 0x9e3779b9u;
+constexpr int kMaxRotation = 16;
+
+// Seed of input set `set`: set 0 uses the seed unchanged; later sets mix in
+// the set index (never 0, which would make xorshift32 stick at 0).
+inline uint32_t set_seed(uint32_t seed, int set) {
+  uint32_t mixed = seed;
+  if (set > 0) {
+    mixed ^= static_cast<uint32_t>(set) * 0x85ebca6bu;
+    mixed = (mixed ^ (mixed >> 16)) * 0x7feb352du;
+    mixed ^= mixed >> 15;
+  }
+  return mixed == 0 ? 1u : mixed;
+}
+
+// Input set `set` (see --rotate). Set 0 with the default seed is the
+// original single-set input.
+inline void fill_inputs(InputMode mode, uint32_t seed, int set, float* audio,
+                        float* imu) {
   const float audio_seed[4][SENSOR_LANE_COUNT] = {
       {1.0f, 0.0f, 0.5f},
       {0.5f, 1.0f, -0.5f},
@@ -224,16 +266,16 @@ inline void fill_inputs(InputMode mode, float* audio, float* imu) {
     for (int batch = 0; batch < BATCH_COUNT; ++batch) {
       for (int token = 0; token < TOKEN_COUNT; ++token)
         std::memcpy(audio + (batch * TOKEN_COUNT + token) * SENSOR_LANE_COUNT,
-                    audio_seed[token % 4], sizeof(audio_seed[0]));
+                    audio_seed[(token + set) % 4], sizeof(audio_seed[0]));
       for (int token = 0; token < CONTEXT_COUNT; ++token)
         std::memcpy(imu + (batch * CONTEXT_COUNT + token) * SENSOR_LANE_COUNT,
-                    imu_seed[token % 4], sizeof(imu_seed[0]));
+                    imu_seed[(token + 3 * set) % 4], sizeof(imu_seed[0]));
     }
     return;
   }
 
   // Deterministic, nonrepeating values in [-1, 1).
-  uint32_t state = 0x9e3779b9u;
+  uint32_t state = set_seed(seed, set);
   auto next = [&state]() {
     state ^= state << 13;
     state ^= state >> 17;
@@ -341,7 +383,10 @@ inline bool within_tolerance(double actual, double expected,
          absolute_tolerance + relative_tolerance * std::fabs(expected);
 }
 
-inline bool verify(InputMode mode, const float* audio, const float* imu,
+// check_golden: also compare with main.c's constants (4x4 shape, repeat
+// inputs, set 0 only). label prefixes the error lines (empty for one set).
+inline bool verify(InputMode mode, bool check_golden, const char* label,
+                   const float* audio, const float* imu,
                    const float* output, const float* statistics) {
   std::vector<double> expected_output;
   std::vector<double> expected_statistics;
@@ -358,7 +403,7 @@ inline bool verify(InputMode mode, const float* audio, const float* imu,
                           kOutputAbsoluteTolerance,
                           kOutputRelativeTolerance)) {
       if (failures++ < 5)
-        std::cerr << "output[" << index << "] = " << output[index]
+        std::cerr << label << "output[" << index << "] = " << output[index]
                   << ", expected " << expected_output[index] << '\n';
       passed = false;
     }
@@ -374,19 +419,20 @@ inline bool verify(InputMode mode, const float* audio, const float* imu,
     if (!within_tolerance(statistics[index], expected,
                           kStatisticAbsoluteTolerance,
                           kStatisticRelativeTolerance)) {
-      std::cerr << "statistics[" << index << "] = " << statistics[index]
+      std::cerr << label << "statistics[" << index << "] = " << statistics[index]
                 << ", expected " << expected << '\n';
       passed = false;
     }
   }
-  std::cout << "reference max |output error|: " << worst_output_error << '\n'
-            << "reference max statistic error (rel): "
+  std::cout << label << "reference max |output error|: " << worst_output_error
+            << '\n'
+            << label << "reference max statistic error (rel): "
             << worst_statistic_error << '\n';
 
 #if BATCH_COUNT == 1 && TOKEN_COUNT == 4 && CONTEXT_COUNT == 4
   // Regression against the constants hard-coded in main.c, with its
   // tolerance. Only meaningful for main.c's own inputs.
-  if (mode == InputMode::kRepeat) {
+  if (mode == InputMode::kRepeat && check_golden) {
     const float combined = statistics[2] + 3.0f * statistics[0] +
                            7.0f * statistics[1] + 11.0f * statistics[3];
     const float actual[5] = {statistics[0], statistics[1], statistics[2],
@@ -405,40 +451,77 @@ inline bool verify(InputMode mode, const float* audio, const float* imu,
   }
 #else
   (void)mode;
+  (void)check_golden;
 #endif
   return passed;
 }
 
 inline int run_benchmark(int argc, char** argv, const char* variant_name,
-                         EnqueuePipeline enqueue_pipeline) {
+                         EnqueuePipeline enqueue_pipeline,
+                         int default_rotation = 1) {
   InputMode mode = InputMode::kRepeat;
   bool use_graph = true;
+  uint32_t seed = kDefaultSeed;
+  bool seed_given = false;
+  int rotation = default_rotation;
+  const char* dump_path = nullptr;
   for (int index = 1; index < argc; ++index) {
-    if (std::strcmp(argv[index], "--inputs=random") == 0) {
+    const char* arg = argv[index];
+    if (std::strcmp(arg, "--inputs=random") == 0) {
       mode = InputMode::kRandom;
-    } else if (std::strcmp(argv[index], "--inputs=repeat") == 0) {
+    } else if (std::strcmp(arg, "--inputs=repeat") == 0) {
       mode = InputMode::kRepeat;
-    } else if (std::strcmp(argv[index], "--launch=graph") == 0) {
+    } else if (std::strcmp(arg, "--launch=graph") == 0) {
       use_graph = true;
-    } else if (std::strcmp(argv[index], "--launch=direct") == 0) {
+    } else if (std::strcmp(arg, "--launch=direct") == 0) {
       use_graph = false;
+    } else if (std::strncmp(arg, "--seed=", 7) == 0 && arg[7] != '\0') {
+      char* end = nullptr;
+      const unsigned long long value = std::strtoull(arg + 7, &end, 0);
+      if (*end != '\0' || value == 0 || value > 0xffffffffull) {
+        std::cerr << "--seed must be a nonzero 32-bit integer\n";
+        return EXIT_FAILURE;
+      }
+      seed = static_cast<uint32_t>(value);
+      seed_given = true;
+    } else if (std::strncmp(arg, "--rotate=", 9) == 0) {
+      char* end = nullptr;
+      const long value = std::strtol(arg + 9, &end, 10);
+      if (*end != '\0' || value < 1 || value > kMaxRotation) {
+        std::cerr << "--rotate must be 1.." << kMaxRotation << '\n';
+        return EXIT_FAILURE;
+      }
+      rotation = static_cast<int>(value);
+    } else if (std::strncmp(arg, "--dump=", 7) == 0 && arg[7] != '\0') {
+      dump_path = arg + 7;
     } else {
       std::cerr << "Usage: " << argv[0]
-                << " [--inputs=repeat|random] [--launch=graph|direct]\n";
+                << " [--inputs=repeat|random] [--launch=graph|direct]"
+                   " [--seed=N] [--rotate=K] [--dump=FILE]\n";
       return EXIT_FAILURE;
     }
   }
 
-  PipelineBuffers buffers{};
-  CUDA_CHECK(cudaMallocHost(&buffers.h_audio,
-                            kQuerySensorElements * sizeof(float)));
-  CUDA_CHECK(cudaMallocHost(&buffers.h_imu,
-                            kContextSensorElements * sizeof(float)));
-  CUDA_CHECK(cudaMallocHost(&buffers.h_output,
-                            kFeatureElements * sizeof(float)));
-  CUDA_CHECK(cudaMallocHost(&buffers.h_statistics,
-                            kStatisticsElements * sizeof(float)));
-  fill_inputs(mode, buffers.h_audio, buffers.h_imu);
+  // One PipelineBuffers per input set: own pinned host buffers, shared
+  // device buffers (iterations are serialized on audio_stream).
+  std::vector<PipelineBuffers> sets(rotation);
+  PipelineBuffers& buffers = sets[0];
+  for (int set = 0; set < rotation; ++set) {
+    PipelineBuffers& b = sets[set];
+    CUDA_CHECK(cudaMallocHost(&b.h_audio,
+                              kQuerySensorElements * sizeof(float)));
+    CUDA_CHECK(cudaMallocHost(&b.h_imu,
+                              kContextSensorElements * sizeof(float)));
+    CUDA_CHECK(cudaMallocHost(&b.h_output, kFeatureElements * sizeof(float)));
+    CUDA_CHECK(cudaMallocHost(&b.h_statistics,
+                              kStatisticsElements * sizeof(float)));
+    fill_inputs(mode, seed, set, b.h_audio, b.h_imu);
+    // Poison the outputs so a set that was never written cannot pass.
+    for (size_t index = 0; index < kFeatureElements; ++index)
+      b.h_output[index] = NAN;
+    for (size_t index = 0; index < kStatisticsElements; ++index)
+      b.h_statistics[index] = NAN;
+  }
 
   CUDA_CHECK(cudaMalloc(&buffers.d_audio,
                         kQuerySensorElements * sizeof(float)));
@@ -453,6 +536,15 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   CUDA_CHECK(cudaMalloc(&buffers.d_output, kFeatureElements * sizeof(float)));
   CUDA_CHECK(cudaMalloc(&buffers.d_statistics,
                         kStatisticsElements * sizeof(float)));
+  for (int set = 1; set < rotation; ++set) {
+    sets[set].d_audio = buffers.d_audio;
+    sets[set].d_imu = buffers.d_imu;
+    sets[set].d_projected_audio = buffers.d_projected_audio;
+    sets[set].d_projected_imu = buffers.d_projected_imu;
+    sets[set].d_attention = buffers.d_attention;
+    sets[set].d_output = buffers.d_output;
+    sets[set].d_statistics = buffers.d_statistics;
+  }
 
   cudaStream_t audio_stream = nullptr;
   cudaStream_t imu_stream = nullptr;
@@ -460,10 +552,10 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   cudaEvent_t imu_ready = nullptr;
   cudaEvent_t timing_start = nullptr;
   cudaEvent_t timing_stop = nullptr;
-  cudaGraph_t graph = nullptr;
-  cudaGraphExec_t graph_exec = nullptr;
-  cudaGraph_t stage_graph = nullptr;
-  cudaGraphExec_t stage_graph_exec = nullptr;
+  std::vector<cudaGraph_t> graphs(rotation, nullptr);
+  std::vector<cudaGraphExec_t> graph_execs(rotation, nullptr);
+  std::vector<cudaGraph_t> stage_graphs(rotation, nullptr);
+  std::vector<cudaGraphExec_t> stage_graph_execs(rotation, nullptr);
   StageEvents stages{};
   CUDA_CHECK(cudaStreamCreateWithFlags(&audio_stream, cudaStreamNonBlocking));
   CUDA_CHECK(cudaStreamCreateWithFlags(&imu_stream, cudaStreamNonBlocking));
@@ -475,33 +567,41 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   CUDA_CHECK(cudaEventCreate(&stages.attention_stop));
   CUDA_CHECK(cudaEventCreate(&stages.statistics_stop));
 
-  if (use_graph &&
-      (capture_pipeline(enqueue_pipeline, buffers, audio_stream, imu_stream,
-                        capture_start, imu_ready, StageEvents{}, &graph,
-                        &graph_exec) != EXIT_SUCCESS ||
-       capture_pipeline(enqueue_pipeline, buffers, audio_stream, imu_stream,
-                        capture_start, imu_ready, stages, &stage_graph,
-                        &stage_graph_exec) != EXIT_SUCCESS))
-    return EXIT_FAILURE;
-  // One iteration, uninstrumented (instrumented when staged): a graph replay,
-  // or the same work enqueued directly.
-  const auto launch = [&](bool staged) {
+  // In graph mode each set gets its own pair of graphs (its host buffers are
+  // baked into the copy nodes).
+  if (use_graph) {
+    for (int set = 0; set < rotation; ++set) {
+      if (capture_pipeline(enqueue_pipeline, sets[set], audio_stream,
+                           imu_stream, capture_start, imu_ready, StageEvents{},
+                           &graphs[set], &graph_execs[set]) != EXIT_SUCCESS ||
+          capture_pipeline(enqueue_pipeline, sets[set], audio_stream,
+                           imu_stream, capture_start, imu_ready, stages,
+                           &stage_graphs[set],
+                           &stage_graph_execs[set]) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+    }
+  }
+  // One iteration on input set `set`, uninstrumented (instrumented when
+  // staged): a graph replay, or the same work enqueued directly.
+  const auto launch = [&](bool staged, int set) {
     if (!use_graph)
-      return enqueue_iteration(enqueue_pipeline, buffers, audio_stream,
+      return enqueue_iteration(enqueue_pipeline, sets[set], audio_stream,
                                imu_stream, capture_start, imu_ready,
                                staged ? stages : StageEvents{});
-    CUDA_CHECK(cudaGraphLaunch(staged ? stage_graph_exec : graph_exec,
-                               audio_stream));
+    CUDA_CHECK(cudaGraphLaunch(
+        staged ? stage_graph_execs[set] : graph_execs[set], audio_stream));
     return EXIT_SUCCESS;
   };
 
   // End-to-end: uninstrumented. Warm-up policy: run for at least
   // kWarmupSeconds (so GPU clocks leave their idle state; one launch is not
   // enough at small shapes), then GRAPH_REPLAYS back-to-back timed launches.
+  // Every loop rotates over the input sets.
   constexpr double kWarmupSeconds = 0.25;
   const auto warmup_begin = std::chrono::steady_clock::now();
+  int warmup = 0;
   do {
-    if (launch(false) != EXIT_SUCCESS)
+    if (launch(false, warmup++ % rotation) != EXIT_SUCCESS)
       return EXIT_FAILURE;
     CUDA_CHECK(cudaStreamSynchronize(audio_stream));
   } while (std::chrono::duration<double>(std::chrono::steady_clock::now() -
@@ -510,7 +610,7 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   CUDA_CHECK(cudaEventRecord(timing_start, audio_stream));
   for (int replay = 0; replay < GRAPH_REPLAYS; ++replay) {
     nvtx_push("msa.end_to_end");
-    const int status = launch(false);
+    const int status = launch(false, replay % rotation);
     nvtx_pop();
     if (status != EXIT_SUCCESS)
       return EXIT_FAILURE;
@@ -521,16 +621,19 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, timing_start, timing_stop));
 
   // Stages: instrumented, one warm-up launch, then GRAPH_REPLAYS launches
-  // each synchronized so every replay's stage events can be read.
+  // each synchronized so every replay's stage events can be read. They
+  // cover every set at least once, so each set's host output comes from its
+  // own latest run when it is verified.
+  const int stage_replays = std::max(GRAPH_REPLAYS, rotation);
   std::vector<double> attention_us;
   std::vector<double> through_statistics_us;
-  attention_us.reserve(GRAPH_REPLAYS);
-  through_statistics_us.reserve(GRAPH_REPLAYS);
-  if (launch(true) != EXIT_SUCCESS)
+  attention_us.reserve(stage_replays);
+  through_statistics_us.reserve(stage_replays);
+  if (launch(true, 0) != EXIT_SUCCESS)
     return EXIT_FAILURE;
   CUDA_CHECK(cudaStreamSynchronize(audio_stream));
-  for (int replay = 0; replay < GRAPH_REPLAYS; ++replay) {
-    if (launch(true) != EXIT_SUCCESS)
+  for (int replay = 0; replay < stage_replays; ++replay) {
+    if (launch(true, replay % rotation) != EXIT_SUCCESS)
       return EXIT_FAILURE;
     CUDA_CHECK(cudaStreamSynchronize(audio_stream));
     float stage_ms = 0.0f;
@@ -548,11 +651,22 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   const float* statistics = buffers.h_statistics;
   const float combined = statistics[2] + 3.0f * statistics[0] +
                          7.0f * statistics[1] + 11.0f * statistics[3];
+  // Seed and rotation are only printed when they differ from the original
+  // single-set run, so existing variants' output is unchanged.
+  char seed_text[32] = "";
+  if (seed_given)
+    std::snprintf(seed_text, sizeof(seed_text), ", seed=0x%08x", seed);
+  char rotation_text[32] = "";
+  if (rotation != 1)
+    std::snprintf(rotation_text, sizeof(rotation_text), ", rotate=%d",
+                  rotation);
   std::cout << "variant: " << variant_name << " (" << BATCH_COUNT << "x"
             << TOKEN_COUNT << "x" << CONTEXT_COUNT << ", replays="
             << GRAPH_REPLAYS << ", inputs="
             << (mode == InputMode::kRepeat ? "repeat" : "random")
-            << ", launch=" << (use_graph ? "graph" : "direct") << ")\n"
+            << seed_text
+            << ", launch=" << (use_graph ? "graph" : "direct")
+            << rotation_text << ")\n"
             << "attention checksum: " << statistics[2] << '\n'
             << "projection energy: " << statistics[0] << '\n'
             << "attention sum: " << statistics[1] << '\n'
@@ -581,16 +695,59 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
             << " through_statistics_us=" << through_statistics.median
             << " through_statistics_min_us=" << through_statistics.minimum
             << " through_statistics_max_us=" << through_statistics.maximum
-            << " attention_flops=" << kAttentionFlops << '\n';
+            << " attention_flops=" << kAttentionFlops;
+  if (rotation != 1)
+    std::cout << " rotate=" << rotation;
+  std::cout << '\n';
 
-  const bool passed = verify(mode, buffers.h_audio, buffers.h_imu,
-                             buffers.h_output, buffers.h_statistics);
+  // Every set against its own reference; main.c's constants only for set 0.
+  bool passed = true;
+  for (int set = 0; set < rotation; ++set) {
+    char label[32] = "";
+    if (rotation != 1) {
+      std::snprintf(label, sizeof(label), "set %d: ", set);
+      const float* s = sets[set].h_statistics;
+      std::cout << label << "attention checksum " << s[2]
+                << ", projection energy " << s[0] << ", attention sum "
+                << s[1] << ", attention max " << s[3] << '\n';
+    }
+    const auto verify_begin = std::chrono::steady_clock::now();
+    const bool set_passed =
+        verify(mode, set == 0, label, sets[set].h_audio, sets[set].h_imu,
+               sets[set].h_output, sets[set].h_statistics);
+    if (rotation != 1)
+      std::cout << label << (set_passed ? "passed" : "FAILED")
+                << " (CPU reference "
+                << std::chrono::duration<double>(
+                       std::chrono::steady_clock::now() - verify_begin)
+                       .count()
+                << " s)\n";
+    passed = passed && set_passed;
+  }
+
+  if (dump_path != nullptr) {
+    FILE* file = std::fopen(dump_path, "wb");
+    bool written = file != nullptr;
+    for (int set = 0; written && set < rotation; ++set)
+      written = std::fwrite(sets[set].h_output, sizeof(float),
+                            kFeatureElements, file) == kFeatureElements &&
+                std::fwrite(sets[set].h_statistics, sizeof(float),
+                            kStatisticsElements, file) == kStatisticsElements;
+    if (file != nullptr && std::fclose(file) != 0)
+      written = false;
+    if (!written) {
+      std::cerr << "could not write " << dump_path << '\n';
+      passed = false;
+    }
+  }
 
   if (use_graph) {
-    CUDA_CHECK(cudaGraphExecDestroy(stage_graph_exec));
-    CUDA_CHECK(cudaGraphDestroy(stage_graph));
-    CUDA_CHECK(cudaGraphExecDestroy(graph_exec));
-    CUDA_CHECK(cudaGraphDestroy(graph));
+    for (int set = 0; set < rotation; ++set) {
+      CUDA_CHECK(cudaGraphExecDestroy(stage_graph_execs[set]));
+      CUDA_CHECK(cudaGraphDestroy(stage_graphs[set]));
+      CUDA_CHECK(cudaGraphExecDestroy(graph_execs[set]));
+      CUDA_CHECK(cudaGraphDestroy(graphs[set]));
+    }
   }
   CUDA_CHECK(cudaEventDestroy(stages.statistics_stop));
   CUDA_CHECK(cudaEventDestroy(stages.attention_stop));
@@ -608,10 +765,12 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   CUDA_CHECK(cudaFree(buffers.d_projected_audio));
   CUDA_CHECK(cudaFree(buffers.d_imu));
   CUDA_CHECK(cudaFree(buffers.d_audio));
-  CUDA_CHECK(cudaFreeHost(buffers.h_statistics));
-  CUDA_CHECK(cudaFreeHost(buffers.h_output));
-  CUDA_CHECK(cudaFreeHost(buffers.h_imu));
-  CUDA_CHECK(cudaFreeHost(buffers.h_audio));
+  for (int set = rotation - 1; set >= 0; --set) {
+    CUDA_CHECK(cudaFreeHost(sets[set].h_statistics));
+    CUDA_CHECK(cudaFreeHost(sets[set].h_output));
+    CUDA_CHECK(cudaFreeHost(sets[set].h_imu));
+    CUDA_CHECK(cudaFreeHost(sets[set].h_audio));
+  }
 
   std::cout << (passed ? "PASSED" : "FAILED") << '\n';
   return passed ? EXIT_SUCCESS : EXIT_FAILURE;

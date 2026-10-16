@@ -21,7 +21,9 @@
 // --launch=graph (the default) captures the kernels-only and end-to-end work
 // into CUDA graphs and replays them; --launch=direct enqueues the same stream
 // operations directly on every iteration. Each timed iteration is an NVTX
-// range (anomaly.kernels, anomaly.end_to_end).
+// range (anomaly.kernels, anomaly.end_to_end). --dump=<file> writes the count
+// and the float32 result of the correctness pass (the format anomaly_mse_sota
+// --dump uses for its set 0), for compare_sota.sh.
 #include <cuda_runtime.h>
 
 #include <algorithm>
@@ -216,6 +218,7 @@ struct Options {
   std::string launch = "graph";  // graph | direct
   int replays = 10000;
   unsigned seed = 1;
+  std::string dump;
 };
 
 bool parse_options(int argc, char** argv, Options& options) {
@@ -237,10 +240,13 @@ bool parse_options(int argc, char** argv, Options& options) {
       options.replays = std::atoi(v);
     else if (const char* v = value("--seed="))
       options.seed = static_cast<unsigned>(std::strtoul(v, nullptr, 10));
+    else if (const char* v = value("--dump="))
+      options.dump = v;
     else {
       std::fprintf(stderr,
                    "usage: %s [--count=N] [--inputs=smoke|random] "
-                   "[--launch=graph|direct] [--replays=R] [--seed=S]\n",
+                   "[--launch=graph|direct] [--replays=R] [--seed=S] "
+                   "[--dump=FILE]\n",
                    argv[0]);
       return false;
     }
@@ -407,6 +413,18 @@ int main(int argc, char** argv) {
   const bool smokeShape = smoke && count == kSmokeCount;
   const bool smokeOracle =
       !smokeShape || std::fabs(gpu - kSmokeExpected) <= kSmokeTolerance;
+  if (!options.dump.empty()) {
+    FILE* file = std::fopen(options.dump.c_str(), "w");
+    if (!file) {
+      std::fprintf(stderr, "cannot write %s\n", options.dump.c_str());
+      return EXIT_FAILURE;
+    }
+    uint32_t bits;
+    std::memcpy(&bits, &gpu, sizeof(bits));
+    std::fprintf(file, "count=%zu set=0 result=%.9g bits=0x%08x\n", count, gpu,
+                 bits);
+    std::fclose(file);
+  }
 
   double kernelMicroseconds = 0.0, endToEndMicroseconds = 0.0;
   if (time_launches([&] { return launch(0); }, stream, options.replays,

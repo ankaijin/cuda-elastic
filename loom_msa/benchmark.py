@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
-"""Repeated baseline-vs-optimized comparison for every shape and input set.
+"""Repeated baseline / optimized / SOTA comparison for every shape and input.
 
-Each repeat runs the baseline and optimized binaries back to back (interleaved,
-so thermal or clock drift affects both), samples GPU clocks while each run
-executes, and requires the run to pass the harness's reference check. Reported
-values are the median across repeats with the min-max spread.
+Each repeat runs the baseline, optimized and SOTA binaries back to back
+(interleaved, so thermal or clock drift affects all of them), samples GPU
+clocks while each run executes, and requires the run to pass the harness's
+reference check. Reported values are the median across repeats with the
+min-max spread.
 
 Metrics (all from the harness, see msa_harness.cuh):
   end_to_end_us          uninstrumented graph, back-to-back replays (mean)
   attention_us           attention kernel, median over synchronized replays
   through_statistics_us  attention start -> statistics end; for the optimized
                          split context this includes merging the partials
-Effective throughput uses the same algorithmic FLOP count for both variants.
+  The SOTA variant (msa_sota.cu) fuses the merge and statistics into its
+  attention kernel(s) (a separate merge kernel at the medium shape), and its
+  attention stage spans all of its attention launches, which overlap the
+  chunked imu copy; see msa_sota.cu. It runs at its default rotation over
+  3 input sets (msa_harness.cuh --rotate); baseline and optimized use 1.
+Effective throughput uses the same algorithmic FLOP count for every variant.
 
 --launch graph direct also runs every variant with --launch=direct (the same
 work enqueued without a CUDA graph). Graph runs keep their variant name as the
@@ -32,7 +38,7 @@ GPU = subprocess.run([str(HERE.parent / "gpu.sh"), "name"], check=True,
 BUILD = HERE.parent / GPU / "loom_msa" / "build"
 SHAPES = ["4x4", "medium", "large"]
 INPUTS = ["random", "repeat"]  # random is the primary performance input
-VARIANTS = ["baseline", "optimized"]
+VARIANTS = ["baseline", "optimized", "sota"]
 METRICS = ["end_to_end_us", "attention_us", "through_statistics_us"]
 LAUNCHES = ["graph", "direct"]
 
@@ -161,6 +167,7 @@ def main():
         for launch in args.launch:
             b = summary[key("baseline", launch)]
             o = summary[key("optimized", launch)]
+            t = summary[key("sota", launch)]
             prefix = "" if launch == "graph" else f"{launch} "
             for metric, label in [("attention_us", "attention kernel"),
                                   ("through_statistics_us",
@@ -172,12 +179,16 @@ def main():
                 saved = b[metric]["median"] - o[metric]["median"]
                 line(f"{prefix}{label} speedup:", f"{speedup:.2f}x")
                 line(f"{prefix}{label} time saved:", fmt_saved(saved))
+                line(f"{prefix}sota {label}:", fmt_us(t[metric]))
+                line(f"{prefix}sota {label} speedup vs optimized:",
+                     f"{o[metric]['median'] / t[metric]['median']:.2f}x")
             for metric, label in [("attention_us", "kernel"),
                                   ("through_statistics_us",
                                    "through statistics")]:
                 line(f"{prefix}effective TFLOP/s ({label}):",
                      f"baseline {flops / (b[metric]['median'] * 1e6):.4g}, "
-                     f"optimized {flops / (o[metric]['median'] * 1e6):.4g}")
+                     f"optimized {flops / (o[metric]['median'] * 1e6):.4g}, "
+                     f"sota {flops / (t[metric]['median'] * 1e6):.4g}")
         if "graph" in args.launch and "direct" in args.launch:
             for variant in VARIANTS:
                 graph = summary[variant]["end_to_end_us"]["median"]

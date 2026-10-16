@@ -14,6 +14,16 @@ Columns of each summary sheet:
   Direct launch  the same stream operations enqueued directly, without a graph
                  (each harness's direct mode: llama2c `direct`, loom_msa and
                  mlperf `--launch=direct`, pagerank PAGERANK_LAUNCH=direct)
+  SOTA           the state-of-the-art version of the workload (<name>_sota.cu):
+                 the fastest implementation found, free to change kernels and
+                 data movement, launched whichever way is fastest (SOTA_LAUNCH).
+                 It does the same work per iteration (every timed iteration
+                 copies the full input from the host and the full output back)
+                 and rotates over 3 different inputs, checking every output,
+                 so caching across iterations cannot pass. llama2c is the
+                 exception: its inputs stay device-resident in both versions.
+                 SOTA speedup = Graph time / SOTA time; kernel rows compare the
+                 ncu time of all kernels doing that row's work in one iteration.
 
 Kernel rows use the ncu kernel duration (gpu__time_duration.sum, mean over
 the profiled launches of that kernel). End-to-end rows use the benchmark's
@@ -97,6 +107,32 @@ LAUNCH_PROFILES = [
 EXTENSIONS = {"ncu": "ncu-rep", "nsys": "sqlite"}
 MODES = ("graph", "direct")
 
+# The SOTA binaries' launch mode (the faster one; see each <name>_sota.cu)
+# and profile files: (input key, tool, file pattern with {stamp}).
+SOTA_LAUNCH = {"llama": "graph", "loom": "direct", "pagerank": "direct",
+               "anomaly": "graph", "kws": "direct", "vww": "direct"}
+SOTA_PROFILES = [
+    ("llama", "ncu", "llama2c/profiles/ncu-sota-large-b1024-graph-{stamp}.ncu-rep"),
+    ("llama", "nsys", "llama2c/profiles/nsys-sota-b1024-graph-{stamp}.sqlite"),
+    ("llama", "runs", "llama2c/profiles/sota-runs-b1024-{stamp}.txt"),
+    ("loom", "ncu", "loom_msa/profiles/ncu-all-kernels-msa_sota_large_1chunk-direct-{stamp}.ncu-rep"),
+    ("loom", "nsys", "loom_msa/profiles/nsys-msa_sota_large-direct-{stamp}.sqlite"),
+    ("pagerank", "ncu", "pagerank/profiles/ncu-pagerank-sota-direct-{stamp}.ncu-rep"),
+    ("pagerank", "nsys", "pagerank/profiles/nsys-sota-direct-{stamp}.sqlite"),
+    ("anomaly", "ncu", "mlperf-anomaly/profiles/ncu-anomaly_mse_sota-graph-{stamp}.ncu-rep"),
+    ("anomaly", "nsys", "mlperf-anomaly/profiles/nsys-anomaly_mse_sota-graph-{stamp}.sqlite"),
+    ("kws", "ncu", "mlperf-classification/profiles/ncu-kws_postprocess_sota-direct-{stamp}.ncu-rep"),
+    ("kws", "nsys", "mlperf-classification/profiles/nsys-kws_postprocess_sota-direct-{stamp}.sqlite"),
+    ("vww", "ncu", "mlperf-classification/profiles/ncu-vww_preprocess_sota-direct-{stamp}.ncu-rep"),
+    ("vww", "nsys", "mlperf-classification/profiles/nsys-vww_preprocess_sota-direct-{stamp}.sqlite"),
+]
+
+
+def sota_profiles(stamp):
+    """Input keys <key>_sota_<tool> of SOTA_PROFILES; stamp None = the latest."""
+    return {f"{key}_sota_{tool}": pattern.format(stamp=stamp or "*")
+            for key, tool, pattern in SOTA_PROFILES}
+
 
 def launch_profiles(stamp):
     """Input keys <key>_<tool>_<mode> of LAUNCH_PROFILES. stamp: one timestamp
@@ -115,6 +151,8 @@ def launch_profiles(stamp):
     return files
 
 
+SOTA_STAMP_RTX3090 = "20261016-145900"
+
 # Published specs. Both GPUs have a 384-bit GDDR6X bus and a PCIe 4.0 x16 link.
 RTX3090 = GPU("rtx3090", "RTX 3090 (sm_86, 24 GB)", "CUDA 13.3",
               {"sms": 82, "boost_ghz": 1.695, "dram_gbps": 19.5}, {
@@ -126,6 +164,7 @@ RTX3090 = GPU("rtx3090", "RTX 3090 (sm_86, 24 GB)", "CUDA 13.3",
     "loom_benchmark": "loom_msa/build/benchmark.json",
     "loom_benchmark_txt": "loom_msa/build/benchmark.txt",
     **launch_profiles("20261015-224015"),
+    **sota_profiles(SOTA_STAMP_RTX3090),
 }, {
     "pagerank_timing": "The binary's own cudaEvent timing in the same runs: 7.658 / 7.686 ms "
                        "(graph / direct) with transfers, 4.862 / 4.885 ms compute only.",
@@ -141,6 +180,7 @@ RTX4090 = GPU("rtx4090", "RTX 4090 (sm_89, 24 GB)", "CUDA 12.5",
     "loom_benchmark": "loom_msa/build/benchmark.json",
     "loom_benchmark_txt": "loom_msa/build/benchmark.txt",
     **launch_profiles(None),
+    **sota_profiles(None),
 }, {
     "pagerank_timing": "A separate uninstrumented run of the binary "
                        "(profiles/bench-20261015-091815.txt): 5.714 ms with transfers, "
@@ -330,9 +370,11 @@ def sweep_row(path, **match):
 class Cell:
     """One measurement: a value in microseconds and the files behind it."""
 
-    def __init__(self, us=None, ncu=None, nsys=None, csv=None, empty="", predict=None):
+    def __init__(self, us=None, ncu=None, nsys=None, csv=None, empty="", predict=None, vs=None):
         self.us, self.ncu, self.nsys, self.csv = us, ncu, nsys, csv
         self.empty = empty
+        # SOTA cells: the CUDA Graph version's time for the same work.
+        self.vs = vs
         # How to predict this value on another GPU from this GPU's ncu report:
         # ("kernel", report, kernel, grid) or ("app", report, runs in report).
         self.predict = predict
@@ -341,9 +383,16 @@ class Cell:
         """The file the value itself was read from."""
         return self.ncu or self.csv or self.nsys
 
+    def sota_speedup(self):
+        if self.us is None or self.vs is None:
+            return None
+        return self.vs / self.us
+
 
 NCU_PENDING = "pending (ncu not run yet)"
 DIRECT_PENDING = "pending (direct mode not profiled yet)"
+SOTA_PENDING = "pending (SOTA not profiled yet)"
+PENDING = (NCU_PENDING, DIRECT_PENDING, SOTA_PENDING)
 
 
 def ncu_cell(path, kernel, grid=None, nsys=None, pending=NCU_PENDING):
@@ -353,8 +402,45 @@ def ncu_cell(path, kernel, grid=None, nsys=None, pending=NCU_PENDING):
                 predict=("kernel", path, kernel, grid))
 
 
+def ncu_iteration_us(path, kernels, iterations=1, grid=None):
+    """Summed ncu time of every launch of `kernels` (name prefixes) in a
+    report covering `iterations` iterations, per iteration."""
+    launches = [r for k in kernels for r in kernel_launches(path, k, grid)]
+    if not launches:
+        raise ValueError(f"{kernels} (grid={grid}) not found in {path}")
+    return sum(launch_us(r) for r in launches) / iterations
+
+
+def graph_kernels_us(cell, kernels):
+    """CUDA Graph time of the baseline kernels a SOTA kernel row replaces:
+    the sum of each kernel's mean launch time in the graph cell's report."""
+    if cell.ncu is None:
+        return None
+    return sum(ncu_kernel_us(cell.ncu, k)[0] for k in kernels)
+
+
+def sota_kernel_cell(gpu, key, kernels, vs, iterations=1, grid=None):
+    path, nsys = gpu.file(f"{key}_sota_ncu"), gpu.file(f"{key}_sota_nsys")
+    if path is None:
+        return Cell(nsys=nsys, empty=SOTA_PENDING)
+    return Cell(ncu_iteration_us(path, kernels, iterations, grid), ncu=path, nsys=nsys, vs=vs)
+
+
+def sota_app_cell(gpu, key, range_name, vs):
+    """SOTA whole-application cell from the NVTX ranges of its nsys trace."""
+    nsys = gpu.file(f"{key}_sota_nsys")
+    if nsys is None:
+        return Cell(empty=SOTA_PENDING), None
+    measured = nsys_iteration(nsys, range_name)
+    return Cell(measured[0], nsys=nsys, ncu=None, vs=vs), measured
+
+
+def sota_note(key, text):
+    return f" SOTA (launch={SOTA_LAUNCH[key]}): {text}"
+
+
 # ------------------------------------------------------------------- rows ---
-# Each row: (workload, kernel/stage, problem size, metric, graph, direct, notes)
+# Each row: (workload, kernel/stage, problem size, metric, graph, direct, sota, notes)
 # One problem size per workload (the largest tested): the dominant kernel, when
 # one kernel dominates, and the whole application.
 
@@ -387,15 +473,33 @@ def llama2c_rows(gpu):
     else:
         largest = "Largest kernel. "
     reruns = " / ".join(f"{1e3 * nsys_log_ms_per_iter(nsys[m]):.1f}" for m in nsys)
+    kernels = ("rmsnorm_kernel", "softmax_kernel", "matmul_coalesced_kernel")
+    # The SOTA ncu report covers 3 iterations of one fused launch each.
+    sota_matmul = sota_kernel_cell(gpu, "llama", ("llama2c_sota_kernel",),
+                                   graph_kernels_us(matmul["graph"], kernels), iterations=3)
+    runs = gpu.file("llama_sota_runs")
+    if runs:
+        times = [float(t) for t in re.findall(r"gpu_ms_per_iter=([\d.]+)", (REPO / runs).read_text())]
+        sota_app = Cell(1e3 * statistics.mean(times), csv=runs, nsys=gpu.file("llama_sota_nsys"),
+                        vs=app["graph"].us)
+    else:
+        times, sota_app = [], Cell(empty=SOTA_PENDING)
     return [
         (w, "matmul_coalesced_kernel", size, KERNEL_TIME, matmul["graph"], matmul["direct"],
+         sota_matmul,
          largest + "It is a matrix-vector product, so its time does not grow with batch; the "
          "three kernels run concurrently on separate streams, so their times overlap. "
-         + share(matmul["graph"], app["graph"])),
+         + share(matmul["graph"], app["graph"])
+         + sota_note("llama", "one fused kernel (llama2c_sota_kernel, one block per 64 KiB row, "
+                     "each row read once from registers) computes rmsnorm, softmax and the "
+                     "matmul, so its time is compared with the three graph kernels' summed ncu "
+                     + (f"time ({sota_matmul.vs:,.1f} us)." if sota_matmul.vs else "time."))),
         (w, f"{WHOLE_APP} (rmsnorm + softmax + matmul iteration)", size,
-         "Iteration time (cudaEvent)", app["graph"], app["direct"],
+         "Iteration time (cudaEvent)", app["graph"], app["direct"], sota_app,
          "Mean of 3 interleaved trials from the GPU-filling sweep; no per-iteration copies. "
-         f"The nsys traces rerun this configuration ({reruns} us per iteration)."),
+         f"The nsys traces rerun this configuration ({reruns} us per iteration)."
+         + sota_note("llama", f"mean of {len(times)} runs of llama2c_sota (cudaEvent), the same "
+                     "device-resident nocopy configuration.")),
     ]
 
 
@@ -415,14 +519,33 @@ def loom_rows(gpu):
                              pending=NCU_PENDING if m == "graph" or nsys[m] else DIRECT_PENDING)
                  for m in MODES}
     modes = "both launch modes" if app["direct"].us is not None else "CUDA graph only"
+    kernels = ("project_audio_kernel", "project_imu_kernel", "fuse_attention_kernel",
+               "reduce_statistics_kernel")
+    sota_attention = sota_kernel_cell(gpu, "loom", ("msa_sota_attention_kernel",),
+                                      graph_kernels_us(attention["graph"], kernels))
+    launch = SOTA_LAUNCH["loom"]
+    run = summary.get("sota" if launch == "graph" else f"sota_{launch}")
+    sota_app = (Cell(run["end_to_end_us"]["median"], csv=gpu.file("loom_benchmark_txt"),
+                     nsys=gpu.file("loom_sota_nsys"), vs=app["graph"].us) if run
+                else Cell(empty=SOTA_PENDING))
     return [
         (w, "fuse_attention_kernel", size, KERNEL_TIME, attention["graph"], attention["direct"],
+         sota_attention,
          "Single-pass online softmax, shared-memory context tiles, 8-way context split "
-         "(FlashAttention-style). " + share(attention["graph"], app["graph"])),
+         "(FlashAttention-style). " + share(attention["graph"], app["graph"])
+         + sota_note("loom", "msa_sota_attention_kernel (13-way context split, 8 queries per "
+                     "thread) with the projections folded into its loads and the split merge and "
+                     "statistics into its last block. msa_sota_large runs it as 13 concurrent "
+                     "launches, one per imu copy chunk, which ncu would serialize, so ncu profiles "
+                     "msa_sota_large_1chunk, the same kernel as one launch. Compared with the four "
+                     "graph kernels' summed ncu "
+                     + (f"time ({sota_attention.vs:,.1f} us)." if sota_attention.vs else "time."))),
         (w, f"{WHOLE_APP} (H2D + kernels + D2H)", size, "Iteration time (cudaEvent)",
-         app["graph"], app["direct"],
+         app["graph"], app["direct"], sota_app,
          f"benchmark.py: median of 5 runs, random inputs, {modes}. Includes H2D input and D2H "
-         "output copies."),
+         "output copies."
+         + sota_note("loom", "msa_sota in the same benchmark.py runs, rotating over 3 random "
+                     "input sets; output written straight to pinned host memory.")),
     ]
 
 
@@ -448,23 +571,56 @@ def pagerank_rows(gpu):
                  f"~{statistics.mean(chunks):.0f} us each. 19 full iterations = ")
     else:
         first = "the first iteration runs as 8 upload-overlapped chunks. "
+    sota_ncu = gpu.file("pagerank_sota_ncu")
+    if sota_ncu:
+        # Iterations 1-19 (the first runs on the CSR during the upload); the
+        # last of them runs as two launches, one wave over half the parts each.
+        sota_update = sota_kernel_cell(gpu, "pagerank", ("binned_update_kernel",), update["graph"].us,
+                                       iterations=19)
+    else:
+        sota_update = Cell(empty=SOTA_PENDING)
+    sota_app, sota_measured = sota_app_cell(gpu, "pagerank", "pagerank.full", app["graph"].us)
     return [
         (w, "pagerank_update (one iteration)", size, KERNEL_TIME, update["graph"], update["direct"],
+         sota_update,
          "Pull gather of precomputed contributions. Full-graph iterations only; "
-         + first + share(update["graph"], app["graph"], 19)),
+         + first + share(update["graph"], app["graph"], 19)
+         + sota_note("pagerank", "binned_update_kernel, summed over iterations 1-19 / 19: a "
+                     "cooperative pull over destination parts that fit in shared memory, with "
+                     "edges sorted by source sector on the GPU during the upload (5.4M instead "
+                     "of 16.8M gathered sectors per iteration).")),
         (w, f"{WHOLE_APP} (H2D + 20 iterations + D2H)", size, "Iteration time (nsys)",
-         app["graph"], app["direct"],
+         app["graph"], app["direct"], sota_app,
          iteration_note(measured) + " The CSR graph is uploaded from pinned memory in 8 chunks "
-         "overlapped with the first iteration. " + gpu.notes["pagerank_timing"]),
+         "overlapped with the first iteration. " + gpu.notes["pagerank_timing"]
+         + (sota_note("pagerank", f"median GPU span of the {sota_measured[1]} pagerank.full NVTX "
+                      "ranges, rotating over 3 inputs (the benchmark graph and two random graphs "
+                      "of the same size); includes the on-GPU edge sort.")
+            if sota_measured else "")),
     ]
 
 
 def mlperf_rows(gpu):
     rows = []
-    for w, kernel, size, key in (
-            ("mlperf-tiny anomaly", "mse_partial_kernel", "64M elements", "anomaly"),
-            ("mlperf-tiny KWS", "kws_postprocess_kernel", "12 classes x 4M rows", "kws"),
-            ("mlperf-tiny VWW", "vww_preprocess_kernel", "256M bytes", "vww")):
+    for w, kernel, size, key, replaced, sota_kernel, kernel_text, app_text in (
+            ("mlperf-tiny anomaly", "mse_partial_kernel", "64M elements", "anomaly",
+             ("mse_partial_kernel", "mse_finalize_kernel"), "mse_sota_kernel",
+             "mse_sota_kernel, one single-pass reduction (the last block finishes the sum), "
+             "compared with mse_partial_kernel + mse_finalize_kernel.",
+             "the float input is copied in shrinking chunks while a second stream reduces each "
+             "chunk as it lands; the result is written straight to pinned host memory."),
+            ("mlperf-tiny KWS", "kws_postprocess_kernel", "12 classes x 4M rows", "kws",
+             ("kws_postprocess_kernel",), "kws_postprocess_sota_kernel",
+             "kws_postprocess_sota_kernel on device buffers (kernels-only), one row per thread "
+             "with rows staged through shared memory for coalesced 16 B loads and stores.",
+             "one zero-copy kernel reads the int8 rows from and writes the probabilities and "
+             "argmax to mapped pinned host memory, so both PCIe directions stream at once."),
+            ("mlperf-tiny VWW", "vww_preprocess_kernel", "256M bytes", "vww",
+             ("vww_preprocess_kernel",), "vww_preprocess_sota_kernel",
+             "vww_preprocess_sota_kernel on device buffers (kernels-only), four 16 B vectors "
+             "per thread.",
+             "64 chunks of 4 MiB on separate copy-in, compute and copy-out streams, so H2D and "
+             "D2H overlap.")):
         ncu = {m: gpu.file(f"{key}_ncu_{m}") for m in MODES}
         nsys = {m: gpu.file(f"{key}_nsys_{m}") for m in MODES}
         app, measured = {}, {}
@@ -478,15 +634,27 @@ def mlperf_rows(gpu):
                          pending=NCU_PENDING if m == "graph" or nsys[m] else DIRECT_PENDING)
              for m in MODES}
         only = "" if kernel == "mse_partial_kernel" else "Only kernel in the application. "
-        rows += [(w, kernel, size, KERNEL_TIME, k["graph"], k["direct"],
-                  only + share(k["graph"], app["graph"])),
+        sota_k = sota_kernel_cell(gpu, key, (sota_kernel,), graph_kernels_us(k["graph"], replaced))
+        sota_app, sota_measured = sota_app_cell(gpu, key, f"{key}.end_to_end", app["graph"].us)
+        app_note = (f"median GPU span of the {sota_measured[1]} {key}.end_to_end NVTX ranges, "
+                    f"rotating over 3 inputs; " if sota_measured else "")
+        rows += [(w, kernel, size, KERNEL_TIME, k["graph"], k["direct"], sota_k,
+                  only + share(k["graph"], app["graph"]) + sota_note(key, kernel_text)),
                  (w, f"{WHOLE_APP} (H2D + kernels + D2H)", size, "Iteration time (nsys)",
-                  app["graph"], app["direct"], iteration_note(measured))]
+                  app["graph"], app["direct"], sota_app,
+                  iteration_note(measured) + sota_note(key, app_text_prefix(app_note, app_text)))]
     return rows
 
 
+def app_text_prefix(prefix, text):
+    return prefix + text if prefix else text[0].upper() + text[1:]
+
+
 def gpu_rows(gpu):
-    return llama2c_rows(gpu) + loom_rows(gpu) + pagerank_rows(gpu) + mlperf_rows(gpu)
+    rows = llama2c_rows(gpu) + loom_rows(gpu) + pagerank_rows(gpu) + mlperf_rows(gpu)
+    # Drop the SOTA part of the notes where the SOTA has no measurement yet.
+    return [(*r[:-1], r[-1].split(" SOTA (launch=")[0].rstrip() if r[6].us is None else r[-1])
+            for r in rows]
 
 
 # ------------------------------------------------------------ predictions ---
@@ -592,11 +760,11 @@ BOLD = Font(bold=True)
 GREY = Font(italic=True, color="808080")
 HEADER_FILL = PatternFill("solid", fgColor="1F3864")
 HEADER_FONT = Font(bold=True, color="FFFFFF")
-GROUP_FILLS = ["E2EFDA", "FCE4D6"]
+GROUP_FILLS = ["E2EFDA", "FCE4D6", "DDEBF7"]
 THIN = Side(style="thin", color="BFBFBF")
 BOX = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
 WRAP = Alignment(wrap_text=True, vertical="top")
-GROUPS = ["CUDA Graph", "Direct launch (no graph)"]
+GROUPS = ["CUDA Graph", "Direct launch (no graph)", "SOTA (state of the art)"]
 
 
 def put_link(ws, row, col, path, text):
@@ -621,9 +789,11 @@ def build_summary(ws, gpu, rows, baseline=None):
                 "Each value links to its "
                 "source; the ncu-rep / nsys sqlite columns link the profile files on GitHub. "
                 "ncu replays each kernel in isolation, so ncu kernel times barely change with "
-                "launch mode; the CUDA Graph benefit (launch overhead) shows in end-to-end rows.")
+                "launch mode; the CUDA Graph benefit (launch overhead) shows in end-to-end rows. "
+                "SOTA = the fastest implementation found (<name>_sota.cu), same work per "
+                "iteration, launched whichever way is fastest; SOTA speedup = Graph / SOTA.")
     ws["A2"].alignment = Alignment(wrap_text=True)
-    ws.merge_cells("A2:M2")
+    ws.merge_cells("A2:Q2")
     ws.row_dimensions[2].height = 45
 
     fixed = ["Workload", "Kernel / stage", "Problem size", "GPU", "Metric"]
@@ -650,6 +820,10 @@ def build_summary(ws, gpu, rows, baseline=None):
         ws.cell(hr, col, "Graph speedup\n(Direct / Graph)")
         ws.merge_cells(start_row=hr, start_column=col, end_row=sr, end_column=col)
         notes_col = col + 1
+    sota_col = notes_col
+    ws.cell(hr, sota_col, "SOTA speedup\n(Graph / SOTA)")
+    ws.merge_cells(start_row=hr, start_column=sota_col, end_row=sr, end_column=sota_col)
+    notes_col += 1
     ws.cell(hr, notes_col, "Notes")
     ws.merge_cells(start_row=hr, start_column=notes_col, end_row=sr, end_column=notes_col)
     last_col = notes_col
@@ -687,7 +861,7 @@ def build_summary(ws, gpu, rows, baseline=None):
             for c in range(gc, gc + 3):
                 ws.cell(r, c).fill = PatternFill("solid", fgColor=fill)
                 ws.cell(r, c).alignment = WRAP
-        g, d = (get_column_letter(c) for c in group_cols)
+        g, d, _ = (get_column_letter(c) for c in group_cols)
         if baseline:
             base_r, prediction = baseline[i]
             if prediction:
@@ -700,6 +874,9 @@ def build_summary(ws, gpu, rows, baseline=None):
         else:
             speedups = (ws.cell(r, col, f'=IF(AND(ISNUMBER({g}{r}),ISNUMBER({d}{r})),'
                                         f'{d}{r}/{g}{r},"")'),)
+        sota = cells[2].sota_speedup()
+        speedups += (ws.cell(r, sota_col, round(sota, 3) if sota else
+                             ("pending" if cells[2].us is None else "")),)
         for f in speedups:
             f.number_format = '0.00"x"'
             f.alignment = Alignment(horizontal="center", vertical="top")
@@ -718,8 +895,8 @@ def build_summary(ws, gpu, rows, baseline=None):
             ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=last_col)
             ws.row_dimensions[r].height = 48
 
-    widths = ([22, 30, 24, 14, 16] + [13, 22, 22] * 2
-              + ([11, 13] if baseline else [14]) + [60])
+    widths = ([22, 30, 24, 14, 16] + [13, 22, 22] * 3
+              + ([11, 13] if baseline else [14]) + [14, 60])
     for i, w in enumerate(widths, 1):
         ws.column_dimensions[get_column_letter(i)].width = w
     ws.freeze_panes = ws.cell(sr + 1, 3)
@@ -782,7 +959,7 @@ def write_markdown(results, predictions):
     predictions: per non-BASELINE GPU, each row's predicted speedup or None."""
     def fmt(c):
         if c.us is None:
-            return c.empty if c.empty in (NCU_PENDING, DIRECT_PENDING) else "—"
+            return c.empty if c.empty in PENDING else "—"
         return f"[{c.us:,.2f}]({link(c.value_file())})"
 
     def files(c):
@@ -802,6 +979,16 @@ def write_markdown(results, predictions):
         "",
         "**Direct** = the same kernels and copies enqueued directly, without a CUDA Graph "
         "(each harness's direct-launch mode). — = not available.",
+        "",
+        "**SOTA** = the state-of-the-art version of each workload (`<name>_sota.cu`): the fastest "
+        "implementation found after researching published libraries and kernels, free to change "
+        "kernels and data movement and launched whichever way is fastest. It does the same work "
+        "per iteration: every timed iteration copies the full input from the host and the full "
+        "output back, and it rotates over 3 different inputs and checks every output, so caching "
+        "across iterations would fail (llama2c's inputs stay on the GPU in both versions). "
+        "Outputs match the Graph and Direct versions (each workload's `compare_sota.sh`). "
+        "**SOTA speedup** = Graph time / SOTA time; kernel rows compare the ncu time of all the "
+        "kernels doing that row's work in one iteration (see the spreadsheet notes).",
     ]
     base_rows = dict(results)[BASELINE]
     for gpu, rows in results:
@@ -815,10 +1002,10 @@ def write_markdown(results, predictions):
             f"GPU: NVIDIA GeForce {gpu.label}. Binaries built with {gpu.toolkit}.",
             "",
             "| Workload | Kernel / stage | Problem size | Metric | CUDA Graph | Graph profiles | "
-            f"Direct | Direct profiles | {speedup_heads} |",
-            "|---|---|---|---|--:|---|--:|---|--:|" + ("--:|" if compare else ""),
+            f"Direct | Direct profiles | SOTA | SOTA profiles | {speedup_heads} | SOTA speedup |",
+            "|---|---|---|---|--:|---|--:|---|--:|---|--:|--:|" + ("--:|" if compare else ""),
         ]
-        for i, (workload, kernel, size, metric, graph, direct, _) in enumerate(rows):
+        for i, (workload, kernel, size, metric, graph, direct, sota, _) in enumerate(rows):
             if compare:
                 base, prediction = base_rows[i][4], predictions[gpu][i]
                 speedup = " | ".join((
@@ -827,8 +1014,11 @@ def write_markdown(results, predictions):
             else:
                 speedup = (f"{direct.us / graph.us:.2f}x"
                            if direct.us is not None and graph.us is not None else "")
+            ratio = sota.sota_speedup()
+            sota_speedup = f"{ratio:.2f}x" if ratio else ("pending" if sota.us is None else "")
             lines.append(f"| {workload} | {kernel} | {size} | {metric} | {fmt(graph)} | "
-                         f"{files(graph)} | {fmt(direct)} | {files(direct)} | {speedup} |")
+                         f"{files(graph)} | {fmt(direct)} | {files(direct)} | {fmt(sota)} | "
+                         f"{files(sota)} | {speedup} | {sota_speedup} |")
         if compare:
             lines += ["", "### How the predicted speedup is calculated", ""]
             lines += [x for paragraph in METHOD for x in (paragraph, "")]

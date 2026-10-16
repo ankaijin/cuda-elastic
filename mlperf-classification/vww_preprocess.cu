@@ -11,6 +11,9 @@
 // The default (--count=16 --inputs=smoke) is Loom's smoke workload; 27648 is
 // upstream's real kVwwInputSize (96 x 96 x 3). Output is checked bytewise
 // against a host copy of the Loom loop, which is also the smoke check.
+//
+// --dump=FILE writes the host output of the correctness iteration: count
+// int8 bytes.
 #include <cstdint>
 #include <random>
 #include <vector>
@@ -141,6 +144,9 @@ int main(int argc, char** argv) {
     if (hostCentered[index] != expected[index] && mismatches++ < 5)
       std::fprintf(stderr, "element %zu: input %d, gpu %d, loom %d\n", index,
                    hostInput[index], hostCentered[index], expected[index]);
+  if (!options.dump.empty() &&
+      !write_dump(options.dump, {{hostCentered, count}}))
+    return EXIT_FAILURE;
 
   double kernelMicroseconds = 0.0, endToEndMicroseconds = 0.0;
   if (time_launches([&] { return launch(0); }, stream, options.replays,

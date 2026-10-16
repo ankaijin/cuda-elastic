@@ -6,6 +6,9 @@
 #                         Its stdout must equal the expected-smoke oracle and it
 #                         exits 0 iff the smoke check passes.
 #   build/anomaly_mse     CUDA port of mlperf_tiny_anomaly_mse_kernel.
+#   build/anomaly_mse_sota  fastest version on the RTX 3090 (anomaly_mse_sota.cu):
+#                         chunked copy/compute pipeline or zero-copy, one
+#                         single-pass kernel, rotating over 3 input sets.
 #
 # Shapes run by `make check` (each with smoke and random inputs):
 #   smoke  16 elements, Loom's smoke workload and oracle
@@ -16,6 +19,10 @@
 # binary reports the measured total as "timed total".
 # `make check LAUNCH=direct` runs the same checks with the work launched
 # directly instead of as CUDA graphs.
+# `make sota` builds the SOTA binary; `make check-sota` runs it on the same
+# shapes and inputs plus two odd counts (SOTA_SHAPES), with its default
+# rotation over 3 input sets; `make check` runs both. compare_sota.sh compares
+# the outputs of the baseline (graph and direct) and the SOTA.
 SHELL := /bin/bash
 # Binaries go to <repo>/<gpu>/mlperf-anomaly/build (see gpu.sh), so builds for
 # different GPUs never overwrite each other. Override with GPU=... ARCH=...
@@ -46,9 +53,18 @@ LOOM_INCLUDES := -I$(LOOM)/mlperf-tiny-anomaly-include -I$(UPSTREAM) -I$(APP) \
 
 # name:count:replays
 SHAPES := smoke:16:440000 model:640:358000 large:67108864:688
+# The SOTA adds two odd counts (not multiples of 4 or of its 4096-element
+# chunk alignment): one on its zero-copy path, one on its copy pipeline.
+SOTA_SHAPES := $(SHAPES) odd:1000003:45000 odd-large:16777219:2800
+SOTA_LAUNCH ?= $(LAUNCH)
+# Optional command prefix for every binary run, e.g.
+#   make check RUN="flock /tmp/cuda-elastic-gpu.lock"
+RUN ?=
 INPUTS := smoke random
 
-all: $(BUILD)/loom_reference $(BUILD)/anomaly_mse
+all: $(BUILD)/loom_reference $(BUILD)/anomaly_mse $(BUILD)/anomaly_mse_sota
+
+sota: $(BUILD)/anomaly_mse_sota
 
 $(BUILD):
 	mkdir -p $@
@@ -69,18 +85,32 @@ $(BUILD)/loom_reference: $(BUILD)/mlperf-tiny.stamp \
 $(BUILD)/anomaly_mse: anomaly_mse.cu | $(BUILD)
 	$(NVCC) $(NVCCFLAGS) -o $@ $<
 
-check: all
+$(BUILD)/anomaly_mse_sota: anomaly_mse_sota.cu | $(BUILD)
+	$(NVCC) $(NVCCFLAGS) -o $@ $<
+
+check: all check-baseline check-sota
+
+check-baseline: $(BUILD)/loom_reference $(BUILD)/anomaly_mse
 	$(BUILD)/loom_reference > $(BUILD)/loom_reference.out
 	cmp $(BUILD)/loom_reference.out $(LOOM)/mlperf-tiny-anomaly-expected-smoke.txt
 	@for shape in $(SHAPES); do \
 	  IFS=: read name count replays <<< "$$shape"; \
 	  for inputs in $(INPUTS); do \
-	    $(BUILD)/anomaly_mse --count=$$count --inputs=$$inputs \
+	    $(RUN) $(BUILD)/anomaly_mse --count=$$count --inputs=$$inputs \
 	      --launch=$(LAUNCH) --replays=$$replays || exit 1; \
+	  done; \
+	done
+
+check-sota: $(BUILD)/anomaly_mse_sota
+	@for shape in $(SOTA_SHAPES); do \
+	  IFS=: read name count replays <<< "$$shape"; \
+	  for inputs in $(INPUTS); do \
+	    $(RUN) $(BUILD)/anomaly_mse_sota --count=$$count --inputs=$$inputs \
+	      --launch=$(SOTA_LAUNCH) --replays=$$replays || exit 1; \
 	  done; \
 	done
 
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all check clean
+.PHONY: all sota check check-baseline check-sota clean

@@ -14,6 +14,9 @@
 // workload; 12 is also upstream's real kCategoryCount. Every row is checked
 // bitwise (probabilities and index) against a host copy of the Loom loop, and
 // row 0 of the smoke inputs against the smoke oracle.
+//
+// --dump=FILE writes the host outputs of the correctness iteration: batch x
+// count float32 probabilities, row-major, then batch int32 indices.
 #include <cfloat>
 #include <climits>
 #include <cstdint>
@@ -224,6 +227,10 @@ int main(int argc, char** argv) {
   const bool smokeOracle = !smokeShape || (hostBest[0] == 5 &&
                                            hostProbabilities[5] == 1.5f &&
                                            hostProbabilities[0] == -1.0f);
+  if (!options.dump.empty() &&
+      !write_dump(options.dump, {{hostProbabilities, elements * sizeof(float)},
+                                 {hostBest, batch * sizeof(int)}}))
+    return EXIT_FAILURE;
 
   double kernelMicroseconds = 0.0, endToEndMicroseconds = 0.0;
   if (time_launches([&] { return launch(0); }, stream, options.replays,

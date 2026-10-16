@@ -4,9 +4,16 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # Binaries and profiles live in <repo>/<gpu>/loom_msa/ (see gpu.sh).
 GPU_DIR="${GPU_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)/$("$SCRIPT_DIR/../gpu.sh" name)/loom_msa}"
-# Defaults to the build the results spreadsheet uses (make builds it). Override
+# Defaults to the build the results spreadsheet uses (make builds it);
+# VARIANT=sota profiles build/msa_sota_large (make sota) instead. Override
 # to profile another variant, e.g. BIN=$GPU_DIR/build/msa_optimized_medium
-BIN="${BIN:-$GPU_DIR/build/msa_optimized_large}"
+VARIANT="${VARIANT:-baseline}"
+case "$VARIANT" in
+  baseline) BIN="${BIN:-$GPU_DIR/build/msa_optimized_large}" ;;
+  sota) BIN="${BIN:-$GPU_DIR/build/msa_sota_large}"
+        NCU_BIN="${NCU_BIN:-$GPU_DIR/build/msa_sota_large_1chunk}" ;;
+  *) echo "VARIANT must be baseline or sota" >&2; exit 2 ;;
+esac
 # ARGS go to the binary; the default is the spreadsheet's random inputs.
 # LAUNCH=direct profiles the direct-launch mode instead of graph replays (the
 # msa_* harness binaries take --launch); set TIMESTAMP to give graph and
@@ -14,7 +21,8 @@ BIN="${BIN:-$GPU_DIR/build/msa_optimized_large}"
 LAUNCH="${LAUNCH:-graph}"
 read -r -a BIN_ARGS <<< "${ARGS:---inputs=random} --launch=$LAUNCH"
 OUT_DIR="$GPU_DIR/profiles"
-STAMP="$(basename "$BIN")-$LAUNCH-${TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
+TIMESTAMP="${TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
+STAMP="$(basename "$BIN")-$LAUNCH-$TIMESTAMP"
 
 if [[ ! -x "$BIN" ]]; then
   echo "error: $BIN not built; run make in $SCRIPT_DIR (or set BIN)" >&2
@@ -37,20 +45,26 @@ case "${1:-all}" in
     ;;
 
   ncu)
-    # Each iteration runs four kernels (graph nodes in graph mode), in this
-    # order: audio projection, IMU projection, attention, and statistics
-    # reduction. Skip the first warm-up iteration's four, then capture one
-    # launch of each from the second.
+    # Baseline: each iteration runs four kernels (graph nodes in graph
+    # mode), in this order: audio projection, IMU projection, attention, and
+    # statistics reduction. SOTA: msa_sota_large runs 13 concurrent
+    # msa_sota_attention_kernel launches (one per imu chunk), which ncu would
+    # serialize, so ncu profiles msa_sota_large_1chunk (NCU_BIN): the same
+    # kernel as one launch per iteration (the last block of each query block
+    # merges the splits and the statistics). Skip the first warm-up
+    # iteration's kernels, then capture every launch of the second.
+    if [[ "$VARIANT" == sota ]]; then PER_ITER=1; else PER_ITER=4; fi
+    NCU_BIN="${NCU_BIN:-$BIN}"
     ncu \
       --set basic \
-      --launch-skip 4 \
-      --launch-count 4 \
+      --launch-skip "${NCU_SKIP:-$PER_ITER}" \
+      --launch-count "${NCU_COUNT:-$PER_ITER}" \
       --replay-mode kernel \
       --graph-profiling node \
       --target-processes application-only \
-      --export "$OUT_DIR/ncu-all-kernels-$STAMP" \
+      --export "$OUT_DIR/ncu-all-kernels-$(basename "$NCU_BIN")-$LAUNCH-$TIMESTAMP" \
       --force-overwrite \
-      "$BIN" "${BIN_ARGS[@]}"
+      "$NCU_BIN" "${BIN_ARGS[@]}"
     ;;
 
   all)

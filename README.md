@@ -1,8 +1,8 @@
 # cuda-elastic
 
-Hand-written CUDA ports of the kernels in several Loom application workloads, each with a harness that runs the same work two ways, captured once into a **CUDA Graph** and replayed, or **launched directly** on every iteration, and checks the GPU result against a CPU reference. The repository also holds the Nsight Compute and Nsight Systems profiles of every run, on an RTX 3090 and an RTX 4090, and a spreadsheet built from them.
+Hand-written CUDA ports of the kernels in several Loom application workloads, each with a harness that runs the same work two ways, captured once into a **CUDA Graph** and replayed, or **launched directly** on every iteration, and checks the GPU result against a CPU reference. Each workload also has a **SOTA** version, the fastest implementation found for the RTX 3090 (see [SOTA versions](#sota-versions)). The repository also holds the Nsight Compute and Nsight Systems profiles of every run, on an RTX 3090 and an RTX 4090, and a spreadsheet built from them.
 
-**Results:** [`results/README.md`](results/README.md) has the summary tables (kernel and whole-application time per workload, graph vs. direct, and RTX 4090 vs. RTX 3090, predicted and measured), and [`results/cuda_performance.xlsx`](results/cuda_performance.xlsx) has the full ncu metrics. Every number links to the profile it was read from.
+**Results:** [`results/README.md`](results/README.md) has the summary tables (kernel and whole-application time per workload, graph vs. direct vs. SOTA, and RTX 4090 vs. RTX 3090, predicted and measured), and [`results/cuda_performance.xlsx`](results/cuda_performance.xlsx) has the full ncu metrics. Every number links to the profile it was read from.
 
 ## Workloads
 
@@ -66,13 +66,33 @@ llama2c/profile_cuda.sh run graph auto 1024 16384 8192 1 100 copy coalesced
 pagerank/profile_cuda.sh check
 ```
 
-The llama2c arguments are `[graph|direct] [launches|auto] [batch] [size] [rows] [repeats] [warmup_ms] [copy|nocopy] [naive|coalesced]`. PageRank is configured by environment variables: `PAGERANK_MODE` (`validate`, `bench` or `all`), `PAGERANK_LAUNCH` (`graph` or `direct`), `PAGERANK_BLOCK_SIZE`, `PAGERANK_PIN_HOST`, `PAGERANK_UPLOAD_CHUNKS` and `GRAPH_REPLAYS`.
+The llama2c arguments are `[graph|direct] [launches|auto] [batch] [size] [rows] [repeats] [warmup_ms] [copy|nocopy] [naive|coalesced]`, plus optional `random[=SEED]` (seeded inputs in [-1, 1), checked against a double-precision reference) and `--dump=FILE` (see `llama2c/llama2c_common.h`). PageRank is configured by environment variables: `PAGERANK_MODE` (`validate`, `bench` or `all`), `PAGERANK_LAUNCH` (`graph` or `direct`), `PAGERANK_BLOCK_SIZE`, `PAGERANK_PIN_HOST`, `PAGERANK_UPLOAD_CHUNKS` and `GRAPH_REPLAYS`.
 
-loom_msa also has a repeated, interleaved baseline vs. optimized benchmark that reports medians and spread:
+loom_msa also has a repeated, interleaved baseline vs. optimized vs. SOTA benchmark that reports medians and spread:
 
 ```bash
 make -C loom_msa benchmark
 ```
+
+## SOTA versions
+
+Each workload has a `<name>_sota.cu`: the fastest implementation found for the RTX 3090 after researching published libraries and kernels (each source's header lists what was tried and measured). They don't follow the Loom source, but they do the same work and produce the same output:
+
+- **Same work per iteration.** Every timed iteration copies the full input from pinned host memory (by memcpy or zero-copy reads) and the full output back. llama2c is the exception: its inputs stay on the GPU in both versions, as weights would in real inference.
+- **No caching across iterations.** Each SOTA binary except llama2c's rotates over 3 different inputs (`--rotate=K`, `PAGERANK_ROTATE` for PageRank) and checks every output against its own CPU reference, so a version that reused an earlier iteration's data would fail.
+- **Same output.** The SOTA versions reuse the baselines' oracles and tolerances, and each workload's `compare_sota.sh` compares their dumped outputs with the graph and direct baselines on every input mode and several seeds: bitwise for the MLPerf ports, within the oracle tolerance elsewhere.
+- **Launch mode.** Each one launches whichever way measured faster (graph or direct).
+
+| Workload | SOTA source | Approach |
+|---|---|---|
+| llama2c | `llama2c_sota.cu` | One fused kernel per iteration, one block per 64 KiB row held in registers, so each input is read once |
+| loom_msa | `msa_sota.cu` | Split-context attention with 8 queries per thread, projections folded into the loads, lazy softmax rescaling, the split merge and statistics in the last block, output written straight to host memory |
+| PageRank | `pagerank_sota.cu` | Edges sorted by source sector on the GPU while the graph uploads, then a cooperative pull over destination parts that fit in shared memory |
+| anomaly | `anomaly_mse_sota.cu` | Single-pass reduction overlapped with a chunked upload; zero-copy below 16M elements |
+| KWS | `kws_postprocess_sota.cu` | One zero-copy kernel, one row per thread, coalesced through shared memory |
+| VWW | `vww_preprocess_sota.cu` | 4 MiB chunks on separate copy-in, compute and copy-out streams |
+
+Every workload's directory has a Makefile with `sota` and `check-sota` targets (`make check` in loom_msa and the MLPerf ports runs the SOTA checks too) and a `compare_sota.sh` (`make compare` in llama2c and PageRank, `make compare-sota` in loom_msa). `VARIANT=sota ./profile_cuda.sh ...` profiles the SOTA binary.
 
 ## Profile
 

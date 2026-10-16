@@ -16,6 +16,8 @@
 #include <cstring>
 #include <limits>
 
+#include "llama2c_common.h"
+
 #if defined(__has_include)
 #  if __has_include(<nvtx3/nvToolsExt.h>)
 #    include <nvtx3/nvToolsExt.h>
@@ -48,7 +50,6 @@ constexpr double kAutoTargetMs = 50.0;
 constexpr int kAutoMinLaunches = 20;
 constexpr int kAutoMaxLaunches = 5000;
 constexpr int kReductionThreads = 256;
-constexpr float kRmsEpsilon = 1.0e-5f;
 
 // One block handles one llama2.c vector. Shared-memory reductions expose the
 // parallelism that the smoke implementation's scalar loop leaves implicit.
@@ -158,17 +159,6 @@ __global__ void matmul_coalesced_kernel(float* output, const float* input,
     output[row] = sum;
 }
 
-static bool approximately_equal(float actual, float expected, float tolerance) {
-  return std::fabs(actual - expected) <= tolerance;
-}
-
-static bool approximately_equal_relative(float actual, float expected,
-                                         float relative_tolerance,
-                                         float absolute_tolerance) {
-  return std::fabs(actual - expected) <=
-         absolute_tolerance + relative_tolerance * std::fabs(expected);
-}
-
 static void nvtx_push(const char *label) {
 #if LLAMA2C_HAS_NVTX
   nvtxRangePushA(label);
@@ -196,12 +186,14 @@ struct Options {
   // Pick the launch count after warm-up so every timed loop lasts about
   // kAutoTargetMs, whatever the per-iteration cost.
   bool auto_launches = false;
+  // Input mode and --dump (see llama2c_common.h).
+  InputOptions inputs;
 };
 
 static void usage(const char *program) {
   std::fprintf(stderr,
       "Usage: %s [graph|direct] [launches|auto] [batch] [size] [rows] [repeats] [warmup_ms]"
-      " [copy|nocopy] [naive|coalesced]\n",
+      " [copy|nocopy] [naive|coalesced] [deterministic|random[=SEED]] [--dump=FILE]\n",
       program);
 }
 
@@ -217,6 +209,8 @@ static bool positive_int(const char *text, int *value) {
 static bool parse_options(int argc, char **argv, Options *options) {
   int positional = 0;
   for (int index = 1; index < argc; ++index) {
+    if (parse_input_option(argv[index], &options->inputs))
+      continue;
     if (std::strcmp(argv[index], "graph") == 0) {
       options->graph = true;
       continue;
@@ -257,57 +251,8 @@ static bool parse_options(int argc, char **argv, Options *options) {
       return false;
     ++positional;
   }
+  input_options_from_env(&options->inputs);
   return true;
-}
-
-static bool validate_outputs(const std::vector<float> &input,
-                             const std::vector<float> &normalized,
-                             const std::vector<float> &softmax,
-                             const std::vector<float> &product,
-                             const std::vector<float> &weight,
-                             int batch, int size, int rows) {
-  bool valid = true;
-  const float rms_tolerance = 3.0e-4f;
-  const float softmax_relative_tolerance = 1.0e-3f;
-  const float softmax_absolute_tolerance = 1.0e-9f;
-  for (int vector = 0; vector < batch; ++vector) {
-    const size_t offset = static_cast<size_t>(vector) * size;
-    double square_sum = 0.0;
-    for (int index = 0; index < size; ++index) {
-      const float value = input[offset + index];
-      square_sum += static_cast<double>(value) * value;
-    }
-    const float scale = 1.0f / std::sqrt(static_cast<float>(square_sum / size) + kRmsEpsilon);
-    double probability_sum = 0.0;
-    float maximum = -FLT_MAX;
-    for (int index = 0; index < size; ++index)
-      maximum = std::fmax(maximum, input[offset + index]);
-    double exp_sum = 0.0;
-    for (int index = 0; index < size; ++index)
-      exp_sum += std::exp(static_cast<double>(input[offset + index] - maximum));
-    for (int index = 0; index < size; ++index) {
-      const float expected = input[offset + index] * scale * weight[index];
-      valid = approximately_equal(normalized[offset + index], expected, rms_tolerance) && valid;
-      const float expected_probability = static_cast<float>(
-          std::exp(static_cast<double>(input[offset + index] - maximum)) / exp_sum);
-      valid = approximately_equal_relative(softmax[offset + index], expected_probability,
-                                           softmax_relative_tolerance,
-                                           softmax_absolute_tolerance) && valid;
-      probability_sum += softmax[offset + index];
-    }
-    valid = std::isfinite(probability_sum) &&
-            std::fabs(probability_sum - 1.0) <= 3.0e-4 && valid;
-    for (int index = 0; index < size; ++index) {
-      // Every output must remain finite and positive, including vectors beyond
-      // vector zero. The per-element reference comparison above catches value
-      // and ordering errors.
-      if (!std::isfinite(softmax[offset + index]) || softmax[offset + index] <= 0.0f)
-        valid = false;
-    }
-  }
-  for (int row = 0; row < rows; ++row)
-    valid = approximately_equal(product[row], input[static_cast<size_t>(row) % size], 1.0e-4f) && valid;
-  return valid;
 }
 
 int main(int argc, char **argv) {
@@ -318,16 +263,9 @@ int main(int argc, char **argv) {
   }
   const size_t vector_elements = static_cast<size_t>(options.batch) * options.size;
   const size_t matrix_elements = static_cast<size_t>(options.rows) * options.size;
-  std::vector<float> h_input(vector_elements), h_weight(options.size, 1.0f),
-      h_probabilities(vector_elements), h_matrix(matrix_elements);
-  for (size_t i = 0; i < vector_elements; ++i) {
-    h_input[i] = 1.0f + (i % 4);
-    h_probabilities[i] = 1.0f + (i % 4);
-  }
-  for (int row = 0; row < options.rows; ++row)
-    for (int col = 0; col < options.size; ++col)
-      h_matrix[static_cast<size_t>(row) * options.size + col] =
-          (col == (row % options.size)) ? 1.0f : 0.0f;
+  std::vector<float> h_input, h_weight, h_probabilities, h_matrix;
+  fill_inputs(options.inputs, options.batch, options.size, options.rows,
+              &h_input, &h_probabilities, &h_weight, &h_matrix);
 
   float *d_input = nullptr, *d_weight = nullptr, *d_probabilities = nullptr;
   float* d_softmax = nullptr;
@@ -525,22 +463,32 @@ int main(int argc, char **argv) {
   };
   if (!options.copy_outputs)
     copy_outputs_to_host();
-  const bool valid = validate_outputs(h_input, std::vector<float>(h_normalized, h_normalized + vector_elements),
-                                      std::vector<float>(h_softmax, h_softmax + vector_elements),
-                                      std::vector<float>(h_product, h_product + options.rows), h_weight,
-                                      options.batch, options.size, options.rows);
+  std::vector<float> product_tolerance;
+  std::vector<double> product_reference;
+  bool valid = validate_all(options.inputs, h_input, h_probabilities, h_weight, h_matrix,
+                            std::vector<float>(h_normalized, h_normalized + vector_elements),
+                            std::vector<float>(h_softmax, h_softmax + vector_elements),
+                            std::vector<float>(h_product, h_product + options.rows),
+                            options.batch, options.size, options.rows, &product_tolerance,
+                            &product_reference);
   if (!valid)
     std::fprintf(stderr, "Output validation failed\n");
+  if (!options.inputs.dump_path.empty() &&
+      !write_dump(options.inputs.dump_path, options.inputs, options.batch, options.size,
+                  options.rows, h_normalized, h_softmax, h_product, product_tolerance,
+                  product_reference))
+    valid = false;
   const double gpu_ms_per_iter = gpu_ms / options.launches;
   const double achieved_gbps = min_bytes_per_iter / (gpu_ms_per_iter * 1.0e6);
-  std::printf("mode=%s matmul=%s launches=%d batch=%d size=%d rows=%d repeats=%d copies=%d warmup_ms=%d warmup_iterations=%d gpu_ms=%.6f gpu_ms_per_iter=%.6f wall_ms=%.6f wall_ms_per_iter=%.6f submit_us=%.3f submit_us_per_iter=%.3f graph_capture_ms=%.6f graph_instantiate_ms=%.6f graph_upload_ms=%.6f rms_waves=%.3f softmax_waves=%.3f matmul_waves=%.3f min_waves=%.3f min_bytes_per_iter=%.0f achieved_gbps=%.1f valid=%d\n",
+  std::printf("mode=%s matmul=%s launches=%d batch=%d size=%d rows=%d repeats=%d copies=%d warmup_ms=%d warmup_iterations=%d gpu_ms=%.6f gpu_ms_per_iter=%.6f wall_ms=%.6f wall_ms_per_iter=%.6f submit_us=%.3f submit_us_per_iter=%.3f graph_capture_ms=%.6f graph_instantiate_ms=%.6f graph_upload_ms=%.6f rms_waves=%.3f softmax_waves=%.3f matmul_waves=%.3f min_waves=%.3f min_bytes_per_iter=%.0f achieved_gbps=%.1f valid=%d inputs=%s seed=%llu\n",
               options.graph ? "graph" : "direct", options.coalesced_matmul ? "coalesced" : "naive",
               options.launches, options.batch, options.size,
               options.rows, options.repeats, options.copy_outputs ? 1 : 0, options.warmup_ms,
               warmup_iterations, gpu_ms, gpu_ms_per_iter, wall_ms, wall_ms / options.launches,
               submit_us, submit_us / options.launches, graph_capture_ms, graph_instantiate_ms,
               graph_upload_ms, rms_waves, softmax_waves, matmul_waves, min_waves, min_bytes_per_iter,
-              achieved_gbps, valid ? 1 : 0);
+              achieved_gbps, valid ? 1 : 0, options.inputs.random ? "random" : "deterministic",
+              static_cast<unsigned long long>(options.inputs.seed));
 
   if (executable != nullptr) CUDA_CHECK(cudaGraphExecDestroy(executable));
   if (graph != nullptr) CUDA_CHECK(cudaGraphDestroy(graph));

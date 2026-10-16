@@ -16,7 +16,11 @@ STAMP="$(date +%Y%m%d-%H%M%S)"
 command -v ncu >/dev/null || { echo "error: ncu not in PATH" >&2; exit 127; }
 for bin in llama2c/llama2c_cuda_graph loom_msa/build/msa_optimized_large \
            pagerank/gapbs_pagerank_cuda_graph mlperf-anomaly/build/anomaly_mse \
-           mlperf-classification/build/kws_postprocess mlperf-classification/build/vww_preprocess; do
+           mlperf-classification/build/kws_postprocess mlperf-classification/build/vww_preprocess \
+           llama2c/build/llama2c_sota loom_msa/build/msa_sota_large_1chunk \
+           pagerank/build/pagerank_sota mlperf-anomaly/build/anomaly_mse_sota \
+           mlperf-classification/build/kws_postprocess_sota \
+           mlperf-classification/build/vww_preprocess_sota; do
   [[ -x "$OUT/$bin" ]] || { echo "error: $OUT/$bin missing; build it first" >&2; exit 1; }
 done
 MARK="$(mktemp)"
@@ -52,6 +56,21 @@ for mode in graph direct; do
      APP=kws LAUNCH=$mode TIMESTAMP=$STAMP ./profile_cuda.sh ncu &&
      APP=vww LAUNCH=$mode TIMESTAMP=$STAMP ./profile_cuda.sh ncu)
 done
+
+# The SOTA binaries, each in its own launch mode (SOTA_LAUNCH in
+# results/build_spreadsheet.py). llama2c: three iterations of the one fused
+# kernel, device-resident (nocopy) like the baseline's whole-application row.
+echo "### SOTA"
+ncu --set basic --launch-skip 0 --launch-count 3 --replay-mode kernel \
+  --graph-profiling node --target-processes application-only \
+  --export "$OUT/llama2c/profiles/ncu-sota-large-b1024-graph-$STAMP" --force-overwrite \
+  "$OUT/llama2c/build/llama2c_sota" graph 5 1024 16384 8192 1 1 nocopy coalesced
+(cd "$ROOT/loom_msa" && VARIANT=sota LAUNCH=direct TIMESTAMP=$STAMP ./profile_cuda.sh ncu)
+VARIANT=sota TIMESTAMP=$STAMP "$ROOT/pagerank/profile_cuda.sh" ncu
+(cd "$ROOT/mlperf-anomaly" && VARIANT=sota LAUNCH=graph TIMESTAMP=$STAMP ./profile_cuda.sh ncu)
+(cd "$ROOT/mlperf-classification" &&
+   VARIANT=sota APP=kws LAUNCH=direct TIMESTAMP=$STAMP ./profile_cuda.sh ncu &&
+   VARIANT=sota APP=vww LAUNCH=direct TIMESTAMP=$STAMP ./profile_cuda.sh ncu)
 
 echo "### done; new ncu reports:"
 find "$OUT" -name '*.ncu-rep' -newer "$MARK" | sort

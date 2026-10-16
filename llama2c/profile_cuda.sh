@@ -4,8 +4,29 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # Binaries and profiles go to <repo>/<gpu>/llama2c/ (see gpu.sh).
 GPU_DIR="${GPU_DIR:-$SCRIPT_DIR/../$("$SCRIPT_DIR/../gpu.sh" name)/llama2c}"
-BIN="${BIN:-$GPU_DIR/llama2c_cuda_graph}"
-SRC="$SCRIPT_DIR/llama2c_cuda_graph.cu"
+# VARIANT=baseline (default) profiles llama2c_cuda_graph.cu; VARIANT=sota
+# profiles llama2c_sota.cu, built to <repo>/<gpu>/llama2c/build/llama2c_sota
+# (the same binary `make -C llama2c sota` builds). The SOTA issues one kernel
+# launch per iteration in nocopy mode, so its ncu default launch count is 1.
+VARIANT="${VARIANT:-baseline}"
+case "$VARIANT" in
+  baseline)
+    BIN="${BIN:-$GPU_DIR/llama2c_cuda_graph}"
+    SRC="$SCRIPT_DIR/llama2c_cuda_graph.cu"
+    NVCC_EXTRA=()
+    NCU_LAUNCH_COUNT="${NCU_LAUNCH_COUNT:-3}"
+    NCU_NAME=llama2c
+    NSYS_PREFIX= ;;
+  sota)
+    BIN="${BIN:-$GPU_DIR/build/llama2c_sota}"
+    SRC="$SCRIPT_DIR/llama2c_sota.cu"
+    NVCC_EXTRA=(-std=c++17 -lineinfo)
+    NCU_LAUNCH_COUNT="${NCU_LAUNCH_COUNT:-1}"
+    NCU_NAME=llama2c-sota
+    NSYS_PREFIX=sota- ;;
+  *) printf 'error: VARIANT must be baseline or sota\n' >&2; exit 2 ;;
+esac
+HEADER="$SCRIPT_DIR/llama2c_common.h"
 OUT_DIR="${OUT_DIR:-$GPU_DIR/profiles}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 NVCC="${NVCC:-nvcc}"
@@ -13,14 +34,15 @@ read -r -a NVCC_FLAGS <<< "${NVCC_FLAGS:--arch=$("$SCRIPT_DIR/../gpu.sh" arch)}"
 
 usage() {
   printf 'Usage: %s [build|run|nsys|nsys-node|ncu|sweep|sweep-fill|plot-sweep|plot-nodes|isolate|all] [args...]\n' "$0"
-  printf '  run [graph|direct] [launches|auto] [batch] [size] [rows] [repeats] [warmup_ms] [copy|nocopy] [naive|coalesced]\n'
+  printf '  env VARIANT=baseline|sota selects the binary (default baseline)\n'
+  printf '  run [graph|direct] [launches|auto] [batch] [size] [rows] [repeats] [warmup_ms] [copy|nocopy] [naive|coalesced] [deterministic|random[=SEED]] [--dump=FILE]\n'
   printf '  nsys-node [graph|direct] [launches|auto] [batch] [size] [rows] [repeats] [warmup_ms] [copy|nocopy] [naive|coalesced]\n'
   printf '  sweep / sweep-fill: env SWEEP_CONFIGS, SWEEP_LAUNCHES, SWEEP_MATMUL, SWEEP_TRIALS, SWEEP_WARMUP_MS\n'
   printf '  plot-sweep <sweep.csv> [options]\n  plot-nodes <direct.sqlite> [graph.sqlite] [options]\n'
 }
 require_tool() { command -v "$1" >/dev/null || { printf 'error: %s is not installed or not in PATH\n' "$1" >&2; exit 127; }; }
-build() { require_tool "$NVCC"; mkdir -p "$(dirname "$BIN")"; "$NVCC" "${NVCC_FLAGS[@]}" -O3 -o "$BIN" "$SRC"; }
-ensure_bin() { [[ -x "$BIN" && "$BIN" -nt "$SRC" ]] || build; }
+build() { require_tool "$NVCC"; mkdir -p "$(dirname "$BIN")"; "$NVCC" "${NVCC_FLAGS[@]}" "${NVCC_EXTRA[@]}" -O3 -o "$BIN" "$SRC"; }
+ensure_bin() { [[ -x "$BIN" && "$BIN" -nt "$SRC" && "$BIN" -nt "$HEADER" ]] || build; }
 run() { ensure_bin; "$BIN" "$@"; }
 profile_nsys() {
   local granularity="$1"; shift
@@ -29,15 +51,15 @@ profile_nsys() {
   require_tool nsys; ensure_bin; mkdir -p "$OUT_DIR"
   nsys profile --trace=cuda,nvtx --cuda-graph-trace="$granularity" --sample=none \
     --cpuctxsw=none --force-overwrite=true --export=sqlite \
-    --output="$OUT_DIR/nsys-${granularity}-${mode}-$STAMP" "$BIN" "$mode" "$@"
+    --output="$OUT_DIR/nsys-${NSYS_PREFIX}${granularity}-${mode}-$STAMP" "$BIN" "$mode" "$@"
 }
 profile_ncu() {
   local mode="${1:-graph}"
   if (($#)); then shift; fi
   require_tool ncu; ensure_bin; mkdir -p "$OUT_DIR"
-  ncu --set basic --launch-skip 0 --launch-count 3 --replay-mode kernel \
+  ncu --set basic --launch-skip 0 --launch-count "$NCU_LAUNCH_COUNT" --replay-mode kernel \
     --graph-profiling node --target-processes application-only \
-    --export "$OUT_DIR/ncu-llama2c-${mode}-$STAMP" --force-overwrite "$BIN" "$mode" "$@"
+    --export "$OUT_DIR/ncu-${NCU_NAME}-${mode}-$STAMP" --force-overwrite "$BIN" "$mode" "$@"
 }
 # Shared sweep driver: $1 = CSV name prefix, $2 = default configs,
 # $3 = default launch count (a number or "auto"), $4 = default matmul variant.

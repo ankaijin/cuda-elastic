@@ -14,3 +14,7 @@
 # Per-GPU mlperf-tiny build trees (upstream clone, Loom reference builds)
 /*/mlperf-anomaly/build/
 /*/mlperf-classification/build/
+/*/pagerank/build/
+
+# llama2c builds (make -C llama2c sota / baseline)
+/*/llama2c/build/
