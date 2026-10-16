@@ -11,18 +11,24 @@ the largest problem size tested: the dominant kernel (when one dominates) and
 the whole application.
 Columns of each summary sheet:
   CUDA Graph     the workload launched as a CUDA Graph
-  Direct launch  the same kernels launched directly (only llama2c has this mode)
+  Direct launch  the same stream operations enqueued directly, without a graph
+                 (each harness's direct mode: llama2c `direct`, loom_msa and
+                 mlperf `--launch=direct`, pagerank PAGERANK_LAUNCH=direct)
 
 Kernel rows use the ncu kernel duration (gpu__time_duration.sum, mean over
 the profiled launches of that kernel). End-to-end rows use the benchmark's
 own timing (cudaEvent per iteration / graph replay) or, where only an nsys
-trace exists, the median graph replay span from that trace. A kernel row whose
-ncu report does not exist yet (profile_ncu_all.sh not run) reads "pending".
+trace exists, the median GPU span of one iteration in that trace: the work
+inside each NVTX range around a timed iteration or, in traces from before the
+harnesses had NVTX ranges, each graph replay. A cell whose profile does not
+exist yet (profile_ncu_all.sh or the direct-mode profiles not run on that GPU)
+reads "pending".
 
 Requires: ncu (Nsight Compute CLI) on PATH and openpyxl.
 Usage:    python3 results/build_spreadsheet.py
 """
 
+import bisect
 import csv
 import io
 import json
@@ -47,7 +53,9 @@ GITHUB = "https://github.com/ankaijin/cuda-elastic/blob"
 
 class GPU:
     """One GPU's results: the folder its outputs live in and, per input, the
-    file to read (a glob; the latest match by name, i.e. by timestamp, wins)."""
+    file to read: a glob, or a tuple of globs, whose match with the latest
+    timestamp (YYYYMMDD-HHMMSS) in its name wins. Inputs not listed, or with no
+    match, read as None."""
 
     def __init__(self, folder, label, toolkit, specs, files, notes):
         self.folder, self.label, self.toolkit = folder, label, toolkit
@@ -58,8 +66,53 @@ class GPU:
         return self.label.split(" (")[0]
 
     def file(self, key):
-        matches = sorted((REPO / self.folder).glob(self.files[key]))
-        return str(matches[-1].relative_to(REPO)) if matches else None
+        patterns = self.files.get(key, ())
+        if isinstance(patterns, str):
+            patterns = (patterns,)
+        matches = [m for p in patterns for m in (REPO / self.folder).glob(p)]
+        if not matches:
+            return None
+
+        def stamp(path):
+            found = re.findall(r"\d{8}-\d{6}", path.name)
+            return (found[-1] if found else "", path.name)
+        return str(max(matches, key=stamp).relative_to(REPO))
+
+
+# Profile file name prefixes of the workloads with a --launch / PAGERANK_LAUNCH
+# switch: (input key, tool, prefix). The profile scripts name their output
+# <prefix><graph|direct>-<timestamp>.
+LAUNCH_PROFILES = [
+    ("loom", "ncu", "loom_msa/profiles/ncu-all-kernels-msa_optimized_large-"),
+    ("loom", "nsys", "loom_msa/profiles/nsys-msa_optimized_large-"),
+    ("pagerank", "ncu", "pagerank/profiles/ncu-pagerank-"),
+    ("pagerank", "nsys", "pagerank/profiles/nsys-"),
+    ("anomaly", "ncu", "mlperf-anomaly/profiles/ncu-anomaly_mse-"),
+    ("anomaly", "nsys", "mlperf-anomaly/profiles/nsys-anomaly_mse-"),
+    ("kws", "ncu", "mlperf-classification/profiles/ncu-kws_postprocess-"),
+    ("kws", "nsys", "mlperf-classification/profiles/nsys-kws_postprocess-"),
+    ("vww", "ncu", "mlperf-classification/profiles/ncu-vww_preprocess-"),
+    ("vww", "nsys", "mlperf-classification/profiles/nsys-vww_preprocess-"),
+]
+EXTENSIONS = {"ncu": "ncu-rep", "nsys": "sqlite"}
+MODES = ("graph", "direct")
+
+
+def launch_profiles(stamp):
+    """Input keys <key>_<tool>_<mode> of LAUNCH_PROFILES. stamp: one timestamp
+    for every file, or None for the latest of each; profiles taken before the
+    harnesses had a direct mode carry no mode in their names
+    (<prefix>2026...) and count as graph runs."""
+    files = {}
+    for key, tool, prefix in LAUNCH_PROFILES:
+        ext = EXTENSIONS[tool]
+        for mode in MODES:
+            if stamp:
+                files[f"{key}_{tool}_{mode}"] = f"{prefix}{mode}-{stamp}.{ext}"
+            else:
+                files[f"{key}_{tool}_{mode}"] = (f"{prefix}{mode}-*.{ext}",) + (
+                    (f"{prefix}2*.{ext}",) if mode == "graph" else ())
+    return files
 
 
 # Published specs. Both GPUs have a 384-bit GDDR6X bus and a PCIe 4.0 x16 link.
@@ -72,19 +125,10 @@ RTX3090 = GPU("rtx3090", "RTX 3090 (sm_86, 24 GB)", "CUDA 13.3",
     "llama_ncu_direct": "llama2c/profiles/ncu-large-coalesced-b1024-direct-20261014-215130.ncu-rep",
     "loom_benchmark": "loom_msa/build/benchmark.json",
     "loom_benchmark_txt": "loom_msa/build/benchmark.txt",
-    "loom_ncu": "loom_msa/profiles/ncu-all-kernels-msa_optimized_large-20260925-142052.ncu-rep",
-    "loom_nsys": "loom_msa/profiles/nsys-msa_optimized_large-20260925-142045.sqlite",
-    "pagerank_ncu": "pagerank/profiles/ncu-pagerank-20261007-152417.ncu-rep",
-    "pagerank_nsys": "pagerank/profiles/nsys-20261007-152346.sqlite",
-    "anomaly_ncu": "mlperf-anomaly/profiles/ncu-anomaly_mse-20261007-144943.ncu-rep",
-    "anomaly_nsys": "mlperf-anomaly/profiles/nsys-anomaly_mse-20261007-144939.sqlite",
-    "kws_ncu": "mlperf-classification/profiles/ncu-kws_postprocess-20261007-144950.ncu-rep",
-    "kws_nsys": "mlperf-classification/profiles/nsys-kws_postprocess-20261007-144947.sqlite",
-    "vww_ncu": "mlperf-classification/profiles/ncu-vww_preprocess-20261007-144958.ncu-rep",
-    "vww_nsys": "mlperf-classification/profiles/nsys-vww_preprocess-20261007-144953.sqlite",
+    **launch_profiles("20261015-224015"),
 }, {
-    "pagerank_timing": "The binary's own cudaEvent timing in the same run: 7.684 ms with "
-                       "transfers, 4.841 ms compute only.",
+    "pagerank_timing": "The binary's own cudaEvent timing in the same runs: 7.658 / 7.686 ms "
+                       "(graph / direct) with transfers, 4.862 / 4.885 ms compute only.",
 })
 
 RTX4090 = GPU("rtx4090", "RTX 4090 (sm_89, 24 GB)", "CUDA 12.5",
@@ -96,16 +140,7 @@ RTX4090 = GPU("rtx4090", "RTX 4090 (sm_89, 24 GB)", "CUDA 12.5",
     "llama_ncu_direct": "llama2c/profiles/ncu-large-coalesced-b1024-direct-*.ncu-rep",
     "loom_benchmark": "loom_msa/build/benchmark.json",
     "loom_benchmark_txt": "loom_msa/build/benchmark.txt",
-    "loom_ncu": "loom_msa/profiles/ncu-all-kernels-msa_optimized_large-*.ncu-rep",
-    "loom_nsys": "loom_msa/profiles/nsys-msa_optimized_large-*.sqlite",
-    "pagerank_ncu": "pagerank/profiles/ncu-pagerank-*.ncu-rep",
-    "pagerank_nsys": "pagerank/profiles/nsys-*.sqlite",
-    "anomaly_ncu": "mlperf-anomaly/profiles/ncu-anomaly_mse-*.ncu-rep",
-    "anomaly_nsys": "mlperf-anomaly/profiles/nsys-anomaly_mse-*.sqlite",
-    "kws_ncu": "mlperf-classification/profiles/ncu-kws_postprocess-*.ncu-rep",
-    "kws_nsys": "mlperf-classification/profiles/nsys-kws_postprocess-*.sqlite",
-    "vww_ncu": "mlperf-classification/profiles/ncu-vww_preprocess-*.ncu-rep",
-    "vww_nsys": "mlperf-classification/profiles/nsys-vww_preprocess-*.sqlite",
+    **launch_profiles(None),
 }, {
     "pagerank_timing": "A separate uninstrumented run of the binary "
                        "(profiles/bench-20261015-091815.txt): 5.714 ms with transfers, "
@@ -209,6 +244,68 @@ def nsys_node_replay_us(path):
     return statistics.median(durations), len(durations)
 
 
+def nsys_nvtx_span_us(path, range_name):
+    """Median GPU span (first start to last end) of the work enqueued inside
+    each NVTX push/pop range named range_name, in an nsys trace taken with
+    --trace=cuda,nvtx, and the number of ranges; None when the trace has no
+    such range. A range's work is every kernel, memcpy and whole-graph
+    execution whose correlationId belongs to a runtime API call made on the
+    range's thread while it was open: the launches and copies of a direct
+    iteration, or a cudaGraphLaunch (its nodes with --cuda-graph-trace=node,
+    the whole graph with =graph)."""
+    with sqlite3.connect(REPO / path) as db:
+        tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+        if "NVTX_EVENTS" not in tables:
+            return None
+        ranges = db.execute(
+            "SELECT n.start, n.end, n.globalTid FROM NVTX_EVENTS n "
+            "LEFT JOIN StringIds s ON s.id = n.textId "
+            "WHERE n.eventType = 59 AND COALESCE(n.text, s.value) = ?", (range_name,)).fetchall()
+        if not ranges:
+            return None
+        calls = {}
+        for start, tid, corr in db.execute(
+                "SELECT start, globalTid, correlationId FROM CUPTI_ACTIVITY_KIND_RUNTIME "
+                "ORDER BY start"):
+            starts, corrs = calls.setdefault(tid, ([], []))
+            starts.append(start)
+            corrs.append(corr)
+        work = {}
+        for table in ("CUPTI_ACTIVITY_KIND_KERNEL", "CUPTI_ACTIVITY_KIND_MEMCPY",
+                      "CUPTI_ACTIVITY_KIND_GRAPH_TRACE"):
+            if table in tables:
+                for corr, start, end in db.execute(
+                        f"SELECT correlationId, start, end FROM {table}"):
+                    work.setdefault(corr, []).append((start, end))
+    spans = []
+    for start, end, tid in ranges:
+        starts, corrs = calls.get(tid, ([], []))
+        first, last = bisect.bisect_left(starts, start), bisect.bisect_right(starts, end)
+        intervals = [w for corr in corrs[first:last] for w in work.get(corr, [])]
+        if intervals:
+            spans.append((max(e for _, e in intervals) - min(s for s, _ in intervals)) / 1e3)
+    return statistics.median(spans), len(spans)
+
+
+def nsys_iteration(path, range_name):
+    """(median us, count, unit) of one end-to-end iteration in an nsys trace:
+    the NVTX ranges named range_name where the trace has them, else (traces
+    from before the harnesses had NVTX ranges) the graph replays with copies."""
+    nvtx = nsys_nvtx_span_us(path, range_name)
+    if nvtx:
+        return nvtx + (f"{range_name} NVTX ranges",)
+    return nsys_node_replay_us(path) + ("graph replays with copies",)
+
+
+def iteration_note(measured):
+    """Note for an end-to-end row from nsys_iteration's result per mode."""
+    counts = " / ".join(str(measured[m][1]) for m in measured)
+    modes = " (graph / direct)" if len(measured) > 1 else ""
+    units = {measured[m][2] for m in measured}
+    unit = units.pop() if len(units) == 1 else " / ".join(measured[m][2] for m in measured)
+    return f"Median GPU span of the {counts}{modes} {unit} in the nsys traces."
+
+
 def nsys_log_ms_per_iter(sqlite_path):
     """gpu_ms_per_iter the binary printed during an nsys run (the .log beside the trace)."""
     log = (REPO / sqlite_path).with_suffix(".log")
@@ -246,16 +343,14 @@ class Cell:
 
 
 NCU_PENDING = "pending (ncu not run yet)"
+DIRECT_PENDING = "pending (direct mode not profiled yet)"
 
 
-def ncu_cell(path, kernel, grid=None, nsys=None):
+def ncu_cell(path, kernel, grid=None, nsys=None, pending=NCU_PENDING):
     if path is None:
-        return Cell(nsys=nsys, empty=NCU_PENDING)
+        return Cell(nsys=nsys, empty=pending)
     return Cell(ncu_kernel_us(path, kernel, grid)[0], ncu=path, nsys=nsys,
                 predict=("kernel", path, kernel, grid))
-
-
-GRAPH_ONLY = Cell(empty="n/a (graph-only harness)")
 
 
 # ------------------------------------------------------------------- rows ---
@@ -307,45 +402,60 @@ def llama2c_rows(gpu):
 def loom_rows(gpu):
     w = "loom_msa (multi-sensor attention)"
     size = "25,000 queries x 250,000 context"
-    nsys = gpu.file("loom_nsys")
-    benchmark = loom_benchmark(gpu.file("loom_benchmark"))
-    app = Cell(benchmark[("1x25000x250000", "random")]["optimized"]["end_to_end_us"]["median"],
-               csv=gpu.file("loom_benchmark_txt"), nsys=nsys,
-               predict=("app", gpu.file("loom_ncu"), 1))
-    attention = ncu_cell(gpu.file("loom_ncu"), "fuse_attention_kernel", nsys=nsys)
+    nsys = {m: gpu.file(f"loom_nsys_{m}") for m in MODES}
+    ncu = {m: gpu.file(f"loom_ncu_{m}") for m in MODES}
+    summary = loom_benchmark(gpu.file("loom_benchmark"))[("1x25000x250000", "random")]
+    app = {}
+    for m in MODES:
+        run = summary.get("optimized" if m == "graph" else f"optimized_{m}")
+        app[m] = (Cell(run["end_to_end_us"]["median"], csv=gpu.file("loom_benchmark_txt"),
+                       nsys=nsys[m], predict=("app", ncu[m], 1)) if run
+                  else Cell(nsys=nsys[m], empty=DIRECT_PENDING))
+    attention = {m: ncu_cell(ncu[m], "fuse_attention_kernel", nsys=nsys[m],
+                             pending=NCU_PENDING if m == "graph" or nsys[m] else DIRECT_PENDING)
+                 for m in MODES}
+    modes = "both launch modes" if app["direct"].us is not None else "CUDA graph only"
     return [
-        (w, "fuse_attention_kernel", size, KERNEL_TIME, attention, GRAPH_ONLY,
+        (w, "fuse_attention_kernel", size, KERNEL_TIME, attention["graph"], attention["direct"],
          "Single-pass online softmax, shared-memory context tiles, 8-way context split "
-         "(FlashAttention-style). " + share(attention, app)),
-        (w, f"{WHOLE_APP} (graph replay)", size, "Replay time (cudaEvent)", app, GRAPH_ONLY,
-         "benchmark.py: median of 5 runs, random inputs. Includes H2D input and D2H output copies."),
+         "(FlashAttention-style). " + share(attention["graph"], app["graph"])),
+        (w, f"{WHOLE_APP} (H2D + kernels + D2H)", size, "Iteration time (cudaEvent)",
+         app["graph"], app["direct"],
+         f"benchmark.py: median of 5 runs, random inputs, {modes}. Includes H2D input and D2H "
+         "output copies."),
     ]
 
 
 def pagerank_rows(gpu):
     w = "pagerank (GAPBS)"
     size = "2^20 vertices, 16 edges/vertex, 20 iterations"
-    ncu = gpu.file("pagerank_ncu")
-    nsys = gpu.file("pagerank_nsys")
-    replay_us, n = nsys_node_replay_us(nsys)
-    app = Cell(replay_us, nsys=nsys, predict=("app", ncu, 1))
-    update = ncu_cell(ncu, "pagerank_update", grid=32768, nsys=nsys)
-    if ncu:
-        chunks = [launch_us(r) for r in kernel_launches(ncu, "pagerank_update")
+    ncu = {m: gpu.file(f"pagerank_ncu_{m}") for m in MODES}
+    nsys = {m: gpu.file(f"pagerank_nsys_{m}") for m in MODES}
+    app, measured = {}, {}
+    for m in MODES:
+        if nsys[m]:
+            measured[m] = nsys_iteration(nsys[m], "pagerank.full")
+            app[m] = Cell(measured[m][0], nsys=nsys[m], predict=("app", ncu[m], 1))
+        else:
+            app[m] = Cell(empty=DIRECT_PENDING)
+    update = {m: ncu_cell(ncu[m], "pagerank_update", grid=32768, nsys=nsys[m],
+                          pending=NCU_PENDING if m == "graph" or nsys[m] else DIRECT_PENDING)
+              for m in MODES}
+    if ncu["graph"]:
+        chunks = [launch_us(r) for r in kernel_launches(ncu["graph"], "pagerank_update")
                   if number(r["launch__grid_size"][0]) != 32768]
         first = (f"the first iteration runs as {len(chunks)} upload-overlapped chunks of "
                  f"~{statistics.mean(chunks):.0f} us each. 19 full iterations = ")
     else:
         first = "the first iteration runs as 8 upload-overlapped chunks. "
     return [
-        (w, "pagerank_update (one iteration)", size, KERNEL_TIME, update, GRAPH_ONLY,
+        (w, "pagerank_update (one iteration)", size, KERNEL_TIME, update["graph"], update["direct"],
          "Pull gather of precomputed contributions. Full-graph iterations only; "
-         + first + share(update, app, 19)),
-        (w, f"{WHOLE_APP} (graph replay: H2D + 20 iterations)", size, "Replay time (nsys)",
-         app, GRAPH_ONLY,
-         f"Median span of the {n} replays with transfers in the nsys node trace. The CSR graph "
-         "is uploaded from pinned memory in 8 chunks overlapped with the first iteration. "
-         + gpu.notes["pagerank_timing"]),
+         + first + share(update["graph"], app["graph"], 19)),
+        (w, f"{WHOLE_APP} (H2D + 20 iterations + D2H)", size, "Iteration time (nsys)",
+         app["graph"], app["direct"],
+         iteration_note(measured) + " The CSR graph is uploaded from pinned memory in 8 chunks "
+         "overlapped with the first iteration. " + gpu.notes["pagerank_timing"]),
     ]
 
 
@@ -355,15 +465,23 @@ def mlperf_rows(gpu):
             ("mlperf-tiny anomaly", "mse_partial_kernel", "64M elements", "anomaly"),
             ("mlperf-tiny KWS", "kws_postprocess_kernel", "12 classes x 4M rows", "kws"),
             ("mlperf-tiny VWW", "vww_preprocess_kernel", "256M bytes", "vww")):
-        nsys = gpu.file(f"{key}_nsys")
-        replay_us, n = nsys_node_replay_us(nsys)
-        app = Cell(replay_us, nsys=nsys, predict=("app", gpu.file(f"{key}_ncu"), 1))
-        k = ncu_cell(gpu.file(f"{key}_ncu"), kernel, nsys=nsys)
+        ncu = {m: gpu.file(f"{key}_ncu_{m}") for m in MODES}
+        nsys = {m: gpu.file(f"{key}_nsys_{m}") for m in MODES}
+        app, measured = {}, {}
+        for m in MODES:
+            if nsys[m]:
+                measured[m] = nsys_iteration(nsys[m], f"{key}.end_to_end")
+                app[m] = Cell(measured[m][0], nsys=nsys[m], predict=("app", ncu[m], 1))
+            else:
+                app[m] = Cell(empty=DIRECT_PENDING)
+        k = {m: ncu_cell(ncu[m], kernel, nsys=nsys[m],
+                         pending=NCU_PENDING if m == "graph" or nsys[m] else DIRECT_PENDING)
+             for m in MODES}
         only = "" if kernel == "mse_partial_kernel" else "Only kernel in the application. "
-        rows += [(w, kernel, size, KERNEL_TIME, k, GRAPH_ONLY, only + share(k, app)),
-                 (w, f"{WHOLE_APP} (graph replay: H2D + kernels + D2H)", size, "Replay time (nsys)",
-                  app, GRAPH_ONLY,
-                  f"Median span of the {n} end-to-end replays in the nsys node trace.")]
+        rows += [(w, kernel, size, KERNEL_TIME, k["graph"], k["direct"],
+                  only + share(k["graph"], app["graph"])),
+                 (w, f"{WHOLE_APP} (H2D + kernels + D2H)", size, "Iteration time (nsys)",
+                  app["graph"], app["direct"], iteration_note(measured))]
     return rows
 
 
@@ -664,7 +782,7 @@ def write_markdown(results, predictions):
     predictions: per non-BASELINE GPU, each row's predicted speedup or None."""
     def fmt(c):
         if c.us is None:
-            return c.empty if c.empty == NCU_PENDING else "—"
+            return c.empty if c.empty in (NCU_PENDING, DIRECT_PENDING) else "—"
         return f"[{c.us:,.2f}]({link(c.value_file())})"
 
     def files(c):
@@ -682,8 +800,8 @@ def write_markdown(results, predictions):
         "[`cuda_performance.xlsx`](cuda_performance.xlsx) has one sheet per GPU plus the ncu "
         "metrics of every profiled launch.",
         "",
-        "**Direct** = the same kernels launched without a CUDA Graph (only llama2c has this "
-        "mode; the other harnesses are graph-only). — = not available.",
+        "**Direct** = the same kernels and copies enqueued directly, without a CUDA Graph "
+        "(each harness's direct-launch mode). — = not available.",
     ]
     base_rows = dict(results)[BASELINE]
     for gpu, rows in results:
