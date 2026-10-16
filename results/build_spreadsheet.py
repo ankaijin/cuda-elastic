@@ -33,6 +33,7 @@ import subprocess
 from pathlib import Path
 
 from openpyxl import Workbook
+from openpyxl.comments import Comment
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
@@ -48,9 +49,9 @@ class GPU:
     """One GPU's results: the folder its outputs live in and, per input, the
     file to read (a glob; the latest match by name, i.e. by timestamp, wins)."""
 
-    def __init__(self, folder, label, toolkit, files, notes):
+    def __init__(self, folder, label, toolkit, specs, files, notes):
         self.folder, self.label, self.toolkit = folder, label, toolkit
-        self.files, self.notes = files, notes
+        self.specs, self.files, self.notes = specs, files, notes
 
     @property
     def sheet(self):
@@ -61,7 +62,9 @@ class GPU:
         return str(matches[-1].relative_to(REPO)) if matches else None
 
 
-RTX3090 = GPU("rtx3090", "RTX 3090 (sm_86, 24 GB)", "CUDA 13.3", {
+# Published specs. Both GPUs have a 384-bit GDDR6X bus and a PCIe 4.0 x16 link.
+RTX3090 = GPU("rtx3090", "RTX 3090 (sm_86, 24 GB)", "CUDA 13.3",
+              {"sms": 82, "boost_ghz": 1.695, "dram_gbps": 19.5}, {
     "llama_sweep": "llama2c/profiles/sweep-fill-20261002-152612-speedup.csv",
     "llama_nsys_graph": "llama2c/profiles/nsys-b1024-graph-20261014-215130.sqlite",
     "llama_nsys_direct": "llama2c/profiles/nsys-b1024-direct-20261014-215130.sqlite",
@@ -84,7 +87,8 @@ RTX3090 = GPU("rtx3090", "RTX 3090 (sm_86, 24 GB)", "CUDA 13.3", {
                        "transfers, 4.841 ms compute only.",
 })
 
-RTX4090 = GPU("rtx4090", "RTX 4090 (sm_89, 24 GB)", "CUDA 12.5", {
+RTX4090 = GPU("rtx4090", "RTX 4090 (sm_89, 24 GB)", "CUDA 12.5",
+              {"sms": 128, "boost_ghz": 2.52, "dram_gbps": 21.0}, {
     "llama_sweep": "llama2c/profiles/sweep-fill-*-speedup.csv",
     "llama_nsys_graph": "llama2c/profiles/nsys-node-graph-*.sqlite",
     "llama_nsys_direct": "llama2c/profiles/nsys-node-direct-*.sqlite",
@@ -109,6 +113,7 @@ RTX4090 = GPU("rtx4090", "RTX 4090 (sm_89, 24 GB)", "CUDA 12.5", {
 })
 
 GPUS = [RTX3090, RTX4090]
+BASELINE = RTX3090  # the other GPUs' sheets compare against it
 
 
 # ---------------------------------------------------------------- loaders ---
@@ -228,9 +233,12 @@ def sweep_row(path, **match):
 class Cell:
     """One measurement: a value in microseconds and the files behind it."""
 
-    def __init__(self, us=None, ncu=None, nsys=None, csv=None, empty=""):
+    def __init__(self, us=None, ncu=None, nsys=None, csv=None, empty="", predict=None):
         self.us, self.ncu, self.nsys, self.csv = us, ncu, nsys, csv
         self.empty = empty
+        # How to predict this value on another GPU from this GPU's ncu report:
+        # ("kernel", report, kernel, grid) or ("app", report, runs in report).
+        self.predict = predict
 
     def value_file(self):
         """The file the value itself was read from."""
@@ -243,7 +251,8 @@ NCU_PENDING = "pending (ncu not run yet)"
 def ncu_cell(path, kernel, grid=None, nsys=None):
     if path is None:
         return Cell(nsys=nsys, empty=NCU_PENDING)
-    return Cell(ncu_kernel_us(path, kernel, grid)[0], ncu=path, nsys=nsys)
+    return Cell(ncu_kernel_us(path, kernel, grid)[0], ncu=path, nsys=nsys,
+                predict=("kernel", path, kernel, grid))
 
 
 GRAPH_ONLY = Cell(empty="n/a (graph-only harness)")
@@ -271,7 +280,9 @@ def llama2c_rows(gpu):
     row = sweep_row(sweep, batch=1024, size=16384, rows=8192, repeats=1)
     nsys = {m: gpu.file(f"llama_nsys_{m}") for m in ("graph", "direct")}
     ncu = {m: gpu.file(f"llama_ncu_{m}") for m in nsys}
-    app = {m: Cell(float(row[f"{m}_gpu_ms"]) * 1e3, csv=sweep, nsys=nsys[m]) for m in nsys}
+    # The ncu report covers 3 iterations.
+    app = {m: Cell(float(row[f"{m}_gpu_ms"]) * 1e3, csv=sweep, nsys=nsys[m],
+                   predict=("app", ncu[m], 3)) for m in nsys}
     matmul = {m: ncu_cell(ncu[m], "matmul_coalesced_kernel", nsys=nsys[m]) for m in nsys}
     if ncu["graph"]:
         s = ncu_time_shares(ncu["graph"])
@@ -299,7 +310,8 @@ def loom_rows(gpu):
     nsys = gpu.file("loom_nsys")
     benchmark = loom_benchmark(gpu.file("loom_benchmark"))
     app = Cell(benchmark[("1x25000x250000", "random")]["optimized"]["end_to_end_us"]["median"],
-               csv=gpu.file("loom_benchmark_txt"), nsys=nsys)
+               csv=gpu.file("loom_benchmark_txt"), nsys=nsys,
+               predict=("app", gpu.file("loom_ncu"), 1))
     attention = ncu_cell(gpu.file("loom_ncu"), "fuse_attention_kernel", nsys=nsys)
     return [
         (w, "fuse_attention_kernel", size, KERNEL_TIME, attention, GRAPH_ONLY,
@@ -316,7 +328,7 @@ def pagerank_rows(gpu):
     ncu = gpu.file("pagerank_ncu")
     nsys = gpu.file("pagerank_nsys")
     replay_us, n = nsys_node_replay_us(nsys)
-    app = Cell(replay_us, nsys=nsys)
+    app = Cell(replay_us, nsys=nsys, predict=("app", ncu, 1))
     update = ncu_cell(ncu, "pagerank_update", grid=32768, nsys=nsys)
     if ncu:
         chunks = [launch_us(r) for r in kernel_launches(ncu, "pagerank_update")
@@ -345,7 +357,7 @@ def mlperf_rows(gpu):
             ("mlperf-tiny VWW", "vww_preprocess_kernel", "256M bytes", "vww")):
         nsys = gpu.file(f"{key}_nsys")
         replay_us, n = nsys_node_replay_us(nsys)
-        app = Cell(replay_us, nsys=nsys)
+        app = Cell(replay_us, nsys=nsys, predict=("app", gpu.file(f"{key}_ncu"), 1))
         k = ncu_cell(gpu.file(f"{key}_ncu"), kernel, nsys=nsys)
         only = "" if kernel == "mse_partial_kernel" else "Only kernel in the application. "
         rows += [(w, kernel, size, KERNEL_TIME, k, GRAPH_ONLY, only + share(k, app)),
@@ -357,6 +369,102 @@ def mlperf_rows(gpu):
 
 def gpu_rows(gpu):
     return llama2c_rows(gpu) + loom_rows(gpu) + pagerank_rows(gpu) + mlperf_rows(gpu)
+
+
+# ------------------------------------------------------------ predictions ---
+# Predicted speedup of a GPU over BASELINE, from BASELINE's ncu reports and the
+# two GPUs' published specs; METHOD explains it.
+
+BOUND_PCT = 60  # a kernel below this on every unit is latency-bound
+
+METHOD = [
+    "The predicted speedup uses only the RTX 3090's ncu reports and the two GPUs' published "
+    "specs (RTX 3090: 82 SMs, 1.695 GHz boost, 19.5 Gbps GDDR6X; RTX 4090: 128 SMs, 2.52 GHz "
+    "boost, 21 Gbps GDDR6X; both 384-bit, PCIe 4.0 x16), so it is fixed before any 4090 "
+    "measurement. Each unit's peak scales by its hardware ratio: SM compute by SMs x SM clock, "
+    "L1/L2 cache throughput assumed to scale the same way, DRAM by memory data rate "
+    "(the 3090's own SM and memory clocks come from its ncu report: 1.69 GHz and 18.98 Gbps, "
+    "so the ratios are about 2.32x and 1.11x).",
+    f"Kernel rows: ncu gives each launch's SM, memory (L1/L2) and DRAM throughput as a percent "
+    f"of the 3090's peak. Keeping the work per unit fixed, a unit at u% that is r times faster "
+    f"needs u/r% of the old time, and the slowest unit sets the new time: speedup = max(u) / "
+    f"max(u / r). So a DRAM-bound kernel gets ~1.11x and a compute- or cache-bound one ~2.32x. "
+    f"A launch below {BOUND_PCT}% on every unit is latency-bound and gets the SM clock ratio "
+    f"(1.49x). A kernel with several launches combines them weighted by time.",
+    "Whole-application rows: the kernels in that workload's ncu report (one run of the "
+    "application) scale by their predicted speedups; the rest of the 3090 time (H2D/D2H copies "
+    "over the same PCIe 4.0 link, launch gaps) is assumed unchanged. Where the kernels overlap "
+    "(llama2c's three streams; their summed time exceeds the iteration time), the whole time "
+    "scales with the kernels.",
+    "Not modelled: cache capacity (the 4090's L2 is 72 MB vs 6 MB, so data that spilled to DRAM "
+    "on the 3090 can stay in L2), kernels overlapping copies (pagerank's first iteration), "
+    "clocks above rated boost, and compiler differences (CUDA 13.3 vs 12.5). Measured = "
+    "3090 time / 4090 time for the CUDA Graph column; kernel rows read pending until the 4090 "
+    "ncu reports exist.",
+]
+
+
+def pct(row, metric):
+    return number(row[metric][0])
+
+
+def launch_speedup(row, target):
+    """Predicted speedup on `target` of one launch in a BASELINE ncu report,
+    and the reason."""
+    base, new = BASELINE.specs, target.specs
+    sm_ghz = number(row["gpc__cycles_elapsed.avg.per_second"][0])
+    dram_gbps = 2 * number(row["dram__cycles_elapsed.avg.per_second"][0])  # GDDR6X: 2 bits/cycle
+    compute = new["sms"] * new["boost_ghz"] / (base["sms"] * sm_ghz)
+    units = {  # percent of the baseline's peak, and how much faster that peak is on target
+        "SM": (pct(row, "sm__throughput.avg.pct_of_peak_sustained_elapsed"), compute),
+        "L1/L2": (pct(row, "gpu__compute_memory_throughput.avg.pct_of_peak_sustained_elapsed"),
+                  compute),
+        "DRAM": (pct(row, "gpu__dram_throughput.avg.pct_of_peak_sustained_elapsed"),
+                 new["dram_gbps"] / dram_gbps),
+    }
+    busiest = max(units, key=lambda k: units[k][0])
+    peak = units[busiest][0]
+    if peak < BOUND_PCT:
+        clock = new["boost_ghz"] / sm_ghz
+        return clock, (f"Latency-bound (busiest unit {busiest} {peak:.0f}% < {BOUND_PCT}%): "
+                       f"SM clock {new['boost_ghz']} / {sm_ghz:.2f} GHz = {clock:.2f}x.")
+    limit = max(units, key=lambda k: units[k][0] / units[k][1])
+    u, r = units[limit]
+    why = {
+        "SM": f"SMs x clock {new['sms']} x {new['boost_ghz']} / ({base['sms']} x {sm_ghz:.2f}) "
+              f"GHz = {r:.2f}x",
+        "L1/L2": f"assumed to scale with SMs x clock, {r:.2f}x",
+        "DRAM": f"data rate {new['dram_gbps']:g} / {dram_gbps:.2f} Gbps = {r:.2f}x",
+    }[limit]
+    others = ", ".join(f"{k} {v[0]:.0f}%" for k, v in units.items() if k != limit)
+    text = f"{limit}-bound ({limit} {u:.0f}% busy; {others}): {why}"
+    if u < peak:
+        text += f"; {busiest} is busier but speeds up more, so {limit} limits"
+    return peak / (u / r), text + "."
+
+
+def predicted_speedup(cell, target):
+    """(speedup, reason) of a BASELINE cell on `target`, or None."""
+    if cell.predict is None or cell.predict[1] is None:
+        return None
+    kind, path, *rest = cell.predict
+    launches = kernel_launches(path, *rest) if kind == "kernel" else ncu_rows(path)
+    times = [launch_us(r) for r in launches]
+    preds = [launch_speedup(r, target) for r in launches]
+    kernels = sum(times)
+    new_kernels = sum(t / s for t, (s, _) in zip(times, preds))
+    if kind == "kernel":
+        return kernels / new_kernels, max(zip(times, preds))[1][1]
+    runs, = rest
+    kernels, new_kernels = kernels / runs, new_kernels / runs
+    k = kernels / new_kernels
+    if kernels >= cell.us:
+        return k, (f"Kernels overlap (their summed ncu time is {100 * kernels / cell.us:.0f}% of "
+                   f"this time), so all of it scales with the kernels' {k:.2f}x.")
+    other = cell.us - kernels
+    return cell.us / (other + new_kernels), (
+        f"Kernels are {100 * kernels / cell.us:.0f}% of the {BASELINE.sheet} time and predicted "
+        f"{k:.2f}x faster; the other {100 * other / cell.us:.0f}% (copies, gaps) is unchanged.")
 
 
 # ----------------------------------------------------------------- styling ---
@@ -380,7 +488,11 @@ def put_link(ws, row, col, path, text):
     return c
 
 
-def build_summary(ws, gpu, rows):
+def build_summary(ws, gpu, rows, baseline=None):
+    """Writes one GPU's summary sheet and returns each row's sheet row number.
+    baseline: per row, (its row number on the BASELINE sheet, predicted
+    speedup or None); given, the speedup columns compare against BASELINE
+    instead of Direct / Graph."""
     ws.title = gpu.sheet
     ws["A1"] = f"CUDA performance results (latest runs): {gpu.sheet}"
     ws["A1"].font = Font(bold=True, size=14)
@@ -410,11 +522,19 @@ def build_summary(ws, gpu, rows):
             ws.cell(sr, col + j, sub)
         group_cols.append(col)
         col += 3
-    tail = ["Graph speedup\n(Direct / Graph)", "Notes"]
-    for j, h in enumerate(tail):
-        ws.cell(hr, col + j, h)
-        ws.merge_cells(start_row=hr, start_column=col + j, end_row=sr, end_column=col + j)
-    last_col = col + len(tail) - 1
+    if baseline:
+        ws.cell(hr, col, f"Speedup vs {BASELINE.sheet} (CUDA Graph time)")
+        ws.merge_cells(start_row=hr, start_column=col, end_row=hr, end_column=col + 1)
+        ws.cell(sr, col, "Predicted")
+        ws.cell(sr, col + 1, f"Measured\n({BASELINE.sheet} / {gpu.sheet})")
+        notes_col = col + 2
+    else:
+        ws.cell(hr, col, "Graph speedup\n(Direct / Graph)")
+        ws.merge_cells(start_row=hr, start_column=col, end_row=sr, end_column=col)
+        notes_col = col + 1
+    ws.cell(hr, notes_col, "Notes")
+    ws.merge_cells(start_row=hr, start_column=notes_col, end_row=sr, end_column=notes_col)
+    last_col = notes_col
     for r in (hr, sr):
         for c in range(1, last_col + 1):
             cell = ws.cell(r, c)
@@ -424,12 +544,14 @@ def build_summary(ws, gpu, rows):
 
     r = sr + 1
     previous = None
-    for workload, kernel, size, metric, *cells, notes in rows:
+    positions = []
+    for i, (workload, kernel, size, metric, *cells, notes) in enumerate(rows):
         if previous is not None and workload != previous:
             r += 1  # blank spacer between workloads
         previous = workload
-        for i, v in enumerate((workload, kernel, size, gpu.label, metric), 1):
-            ws.cell(r, i, v).alignment = WRAP
+        positions.append(r)
+        for j, v in enumerate((workload, kernel, size, gpu.label, metric), 1):
+            ws.cell(r, j, v).alignment = WRAP
         ws.cell(r, 1).font = BOLD
         for cell_spec, gc, fill in zip(cells, group_cols, GROUP_FILLS):
             t = ws.cell(r, gc)
@@ -448,18 +570,42 @@ def build_summary(ws, gpu, rows):
                 ws.cell(r, c).fill = PatternFill("solid", fgColor=fill)
                 ws.cell(r, c).alignment = WRAP
         g, d = (get_column_letter(c) for c in group_cols)
-        f = ws.cell(r, col, f'=IF(AND(ISNUMBER({g}{r}),ISNUMBER({d}{r})),{d}{r}/{g}{r},"")')
-        f.number_format = '0.00"x"'
-        f.alignment = Alignment(horizontal="center", vertical="top")
-        ws.cell(r, col + 1, notes).alignment = WRAP
+        if baseline:
+            base_r, prediction = baseline[i]
+            if prediction:
+                p = ws.cell(r, col, round(prediction[0], 3))
+                p.comment = Comment(prediction[1], "build_spreadsheet.py", width=320, height=140)
+            base = f"'{BASELINE.sheet}'!{g}{base_r}"
+            m = ws.cell(r, col + 1, f'=IF(AND(ISNUMBER({base}),ISNUMBER({g}{r})),'
+                                    f'{base}/{g}{r},"pending")')
+            speedups = (ws.cell(r, col), m)
+        else:
+            speedups = (ws.cell(r, col, f'=IF(AND(ISNUMBER({g}{r}),ISNUMBER({d}{r})),'
+                                        f'{d}{r}/{g}{r},"")'),)
+        for f in speedups:
+            f.number_format = '0.00"x"'
+            f.alignment = Alignment(horizontal="center", vertical="top")
+        ws.cell(r, notes_col, notes).alignment = WRAP
         for c in range(1, last_col + 1):
             ws.cell(r, c).border = BOX
         r += 1
 
-    widths = [22, 30, 24, 14, 16] + [13, 22, 22] * 2 + [14, 60]
+    if baseline:
+        r += 1
+        ws.cell(r, 1, "How the predicted speedup is calculated "
+                      "(hover a Predicted value for that row's reason)").font = BOLD
+        for paragraph in METHOD:
+            r += 1
+            ws.cell(r, 1, paragraph).alignment = WRAP
+            ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=last_col)
+            ws.row_dimensions[r].height = 48
+
+    widths = ([22, 30, 24, 14, 16] + [13, 22, 22] * 2
+              + ([11, 13] if baseline else [14]) + [60])
     for i, w in enumerate(widths, 1):
         ws.column_dimensions[get_column_letter(i)].width = w
     ws.freeze_panes = ws.cell(sr + 1, 3)
+    return positions
 
 
 NCU_DETAIL_METRICS = [
@@ -513,8 +659,9 @@ def build_ncu_details(wb, gpu, rows):
     ws.freeze_panes = "A2"
 
 
-def write_markdown(results):
-    """GitHub-readable copy of the summary sheets; values link to their source files."""
+def write_markdown(results, predictions):
+    """GitHub-readable copy of the summary sheets; values link to their source files.
+    predictions: per non-BASELINE GPU, each row's predicted speedup or None."""
     def fmt(c):
         if c.us is None:
             return c.empty if c.empty == NCU_PENDING else "—"
@@ -538,7 +685,11 @@ def write_markdown(results):
         "**Direct** = the same kernels launched without a CUDA Graph (only llama2c has this "
         "mode; the other harnesses are graph-only). — = not available.",
     ]
+    base_rows = dict(results)[BASELINE]
     for gpu, rows in results:
+        compare = gpu is not BASELINE
+        speedup_heads = (f"Predicted vs {BASELINE.sheet} | Measured vs {BASELINE.sheet}"
+                         if compare else "Graph speedup")
         lines += [
             "",
             f"## {gpu.sheet}",
@@ -546,14 +697,26 @@ def write_markdown(results):
             f"GPU: NVIDIA GeForce {gpu.label}. Binaries built with {gpu.toolkit}.",
             "",
             "| Workload | Kernel / stage | Problem size | Metric | CUDA Graph | Graph profiles | "
-            "Direct | Direct profiles | Graph speedup |",
-            "|---|---|---|---|--:|---|--:|---|--:|",
+            f"Direct | Direct profiles | {speedup_heads} |",
+            "|---|---|---|---|--:|---|--:|---|--:|" + ("--:|" if compare else ""),
         ]
-        for workload, kernel, size, metric, graph, direct, _ in rows:
-            speedup = (f"{direct.us / graph.us:.2f}x"
-                       if direct.us is not None and graph.us is not None else "")
+        for i, (workload, kernel, size, metric, graph, direct, _) in enumerate(rows):
+            if compare:
+                base, prediction = base_rows[i][4], predictions[gpu][i]
+                speedup = " | ".join((
+                    f"{prediction[0]:.2f}x" if prediction else "",
+                    f"{base.us / graph.us:.2f}x" if graph.us is not None else "pending"))
+            else:
+                speedup = (f"{direct.us / graph.us:.2f}x"
+                           if direct.us is not None and graph.us is not None else "")
             lines.append(f"| {workload} | {kernel} | {size} | {metric} | {fmt(graph)} | "
                          f"{files(graph)} | {fmt(direct)} | {files(direct)} | {speedup} |")
+        if compare:
+            lines += ["", "### How the predicted speedup is calculated", ""]
+            lines += [x for paragraph in METHOD for x in (paragraph, "")]
+            lines += ["Each row's prediction:", ""]
+            lines += [f"- {w} / {k}: **{pr[0]:.2f}x**. {pr[1]}"
+                      for (w, k, *_), pr in zip(rows, predictions[gpu]) if pr]
     lines += ["", "Regenerate (needs `ncu` on PATH and `pip install openpyxl`):", "",
               "```bash", "python3 results/build_spreadsheet.py", "```", ""]
     MD_OUT.write_text("\n".join(lines))
@@ -561,15 +724,24 @@ def write_markdown(results):
 
 def main():
     results = [(gpu, gpu_rows(gpu)) for gpu in GPUS]
+    base_rows = dict(results)[BASELINE]
+    predictions = {}
+    for gpu, rows in results:
+        if gpu is not BASELINE:
+            assert [r[:2] for r in rows] == [r[:2] for r in base_rows], "rows must line up"
+            predictions[gpu] = [predicted_speedup(r[4], gpu) for r in base_rows]
     wb = Workbook()
     wb.remove(wb.active)
+    positions = {}  # BASELINE comes first in GPUS, so its rows are placed first
     for gpu, rows in results:
-        build_summary(wb.create_sheet(), gpu, rows)
+        baseline = (list(zip(positions[BASELINE], predictions[gpu]))
+                    if gpu is not BASELINE else None)
+        positions[gpu] = build_summary(wb.create_sheet(), gpu, rows, baseline)
     for gpu, rows in results:
         build_ncu_details(wb, gpu, rows)
     wb.calculation.fullCalcOnLoad = True  # openpyxl does not evaluate the speedup formulas
     wb.save(OUT)
-    write_markdown(results)
+    write_markdown(results, predictions)
     print(f"wrote {OUT.relative_to(REPO)} and {MD_OUT.relative_to(REPO)} "
           f"({', '.join(f'{len(rows)} {gpu.sheet} rows' for gpu, rows in results)})")
 
