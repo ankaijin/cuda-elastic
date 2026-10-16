@@ -13,7 +13,9 @@
 #   large  64M elements
 # Each shape pins its --replays so the timed graph replays (kernels-only plus
 # end-to-end, excluding warm-up) total about 10 s on the RTX 3090; the
-# binary reports the measured total as "graph total".
+# binary reports the measured total as "timed total".
+# `make check LAUNCH=direct` runs the same checks with the work launched
+# directly instead of as CUDA graphs.
 SHELL := /bin/bash
 # Binaries go to <repo>/<gpu>/mlperf-anomaly/build (see gpu.sh), so builds for
 # different GPUs never overwrite each other. Override with GPU=... ARCH=...
@@ -26,6 +28,7 @@ NVCCFLAGS ?= -O3 -std=c++17 -arch=$(ARCH) -lineinfo --fmad=false \
              -Xcompiler -ffp-contract=off
 BUILD := $(ROOT)/$(GPU)/mlperf-anomaly/build
 LOOM := loom
+LAUNCH ?= graph
 
 MLPERF_TINY_URL := https://github.com/mlcommons/tiny.git
 MLPERF_TINY_COMMIT := 4addd0fa08d216e20637637874e084895f289da4
@@ -73,7 +76,7 @@ check: all
 	  IFS=: read name count replays <<< "$$shape"; \
 	  for inputs in $(INPUTS); do \
 	    $(BUILD)/anomaly_mse --count=$$count --inputs=$$inputs \
-	      --replays=$$replays || exit 1; \
+	      --launch=$(LAUNCH) --replays=$$replays || exit 1; \
 	  done; \
 	done
 

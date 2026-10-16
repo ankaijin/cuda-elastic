@@ -4,8 +4,11 @@ set -euo pipefail
 # Profiles one classification kernel at its large shape (random inputs).
 #   APP=kws ./profile_cuda.sh   build/kws_postprocess, 12 x 4M rows (default)
 #   APP=vww ./profile_cuda.sh   build/vww_preprocess, 256M bytes
-# Override the arguments with ARGS.
+# Override the arguments with ARGS. LAUNCH=direct profiles the direct-launch
+# mode instead of graph replays; set TIMESTAMP to give graph and direct runs
+# the same file suffix.
 APP="${APP:-kws}"
+LAUNCH="${LAUNCH:-graph}"
 # Binaries and profiles live in <repo>/<gpu>/mlperf-classification/ (see gpu.sh).
 GPU_DIR="${GPU_DIR:-../$(../gpu.sh name)/mlperf-classification}"
 case "$APP" in
@@ -22,15 +25,16 @@ case "$APP" in
     exit 2
     ;;
 esac
+ARGS="$ARGS --launch=$LAUNCH"
 OUT_DIR="$GPU_DIR/profiles"
-STAMP="$(basename "$BIN")-$(date +%Y%m%d-%H%M%S)"
+STAMP="$(basename "$BIN")-$LAUNCH-${TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 
 mkdir -p "$OUT_DIR"
 
 case "${1:-all}" in
   nsys)
     nsys profile \
-      --trace=cuda \
+      --trace=cuda,nvtx \
       --cuda-graph-trace=node \
       --sample=none \
       --cpuctxsw=none \
@@ -41,8 +45,8 @@ case "${1:-all}" in
     ;;
 
   ncu)
-    # Each graph holds one kernel node. Skip the correctness replay's node
-    # and capture the first kernels-only replay.
+    # Each iteration runs one kernel (one graph node in graph mode). Skip
+    # the correctness iteration's and capture the first kernels-only one.
     ncu \
       --set full \
       --launch-skip 1 \

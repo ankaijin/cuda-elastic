@@ -7,8 +7,14 @@ GPU_DIR="${GPU_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)/$("$SCRIPT_DIR/../gpu.sh" name
 # Defaults to the build the results spreadsheet uses (make builds it). Override
 # to profile another variant, e.g. BIN=$GPU_DIR/build/msa_optimized_medium
 BIN="${BIN:-$GPU_DIR/build/msa_optimized_large}"
+# ARGS go to the binary; the default is the spreadsheet's random inputs.
+# LAUNCH=direct profiles the direct-launch mode instead of graph replays (the
+# msa_* harness binaries take --launch); set TIMESTAMP to give graph and
+# direct runs the same file suffix.
+LAUNCH="${LAUNCH:-graph}"
+read -r -a BIN_ARGS <<< "${ARGS:---inputs=random} --launch=$LAUNCH"
 OUT_DIR="$GPU_DIR/profiles"
-STAMP="$(basename "$BIN")-$(date +%Y%m%d-%H%M%S)"
+STAMP="$(basename "$BIN")-$LAUNCH-${TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 
 if [[ ! -x "$BIN" ]]; then
   echo "error: $BIN not built; run make in $SCRIPT_DIR (or set BIN)" >&2
@@ -20,21 +26,21 @@ mkdir -p "$OUT_DIR"
 case "${1:-all}" in
   nsys)
     nsys profile \
-      --trace=cuda \
+      --trace=cuda,nvtx \
       --cuda-graph-trace=graph \
       --sample=none \
       --cpuctxsw=none \
       --stats=true \
       --force-overwrite=true \
       --output="$OUT_DIR/nsys-$STAMP" \
-      "$BIN"
+      "$BIN" "${BIN_ARGS[@]}"
     ;;
 
   ncu)
-    # The captured graph contains four kernel nodes, in this order:
-    # audio projection, IMU projection, attention, and statistics reduction.
-    # Skip the four warm-up nodes, then capture one launch of each node from
-    # the first measured graph replay.
+    # Each iteration runs four kernels (graph nodes in graph mode), in this
+    # order: audio projection, IMU projection, attention, and statistics
+    # reduction. Skip the first warm-up iteration's four, then capture one
+    # launch of each from the second.
     ncu \
       --set basic \
       --launch-skip 4 \
@@ -44,7 +50,7 @@ case "${1:-all}" in
       --target-processes application-only \
       --export "$OUT_DIR/ncu-all-kernels-$STAMP" \
       --force-overwrite \
-      "$BIN"
+      "$BIN" "${BIN_ARGS[@]}"
     ;;
 
   all)

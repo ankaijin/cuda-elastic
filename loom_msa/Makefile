@@ -15,6 +15,9 @@ NVCC ?= nvcc
 CC ?= cc
 NVCCFLAGS ?= -O3 -std=c++17 -arch=$(ARCH) -lineinfo -Xcompiler -fopenmp
 BUILD := $(ROOT)/$(GPU)/loom_msa/build
+# `make check LAUNCH=direct` runs the checks with the pipeline launched
+# directly instead of as a CUDA graph.
+LAUNCH ?= graph
 
 SHAPE_4x4 := -DTOKEN_COUNT=4 -DCONTEXT_COUNT=4 -DGRAPH_REPLAYS=5000
 SHAPE_medium := -DTOKEN_COUNT=1000 -DCONTEXT_COUNT=50000 -DGRAPH_REPLAYS=5000
@@ -42,7 +45,7 @@ check: all
 	$(BUILD)/reference
 	@for bin in $(CUDA_TARGETS); do \
 	  for inputs in repeat random; do \
-	    ./$$bin --inputs=$$inputs || exit 1; \
+	    $$bin --inputs=$$inputs --launch=$(LAUNCH) || exit 1; \
 	  done; \
 	done
 

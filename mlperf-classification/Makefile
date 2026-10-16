@@ -18,7 +18,9 @@
 #        upstream's kVwwInputSize), large 256M; smoke and random inputs
 # Each shape pins its --replays so the timed graph replays (kernel-only plus
 # end-to-end, excluding warm-up) total about 10 s on the RTX 3090; the
-# binaries report the measured total as "graph total".
+# binaries report the measured total as "timed total".
+# `make check LAUNCH=direct` runs the same checks with the work launched
+# directly instead of as CUDA graphs.
 SHELL := /bin/bash
 # Binaries go to <repo>/<gpu>/mlperf-classification/build (see gpu.sh), so builds for
 # different GPUs never overwrite each other. Override with GPU=... ARCH=...
@@ -31,6 +33,7 @@ NVCCFLAGS ?= -O3 -std=c++17 -arch=$(ARCH) -lineinfo --fmad=false \
              -Xcompiler -ffp-contract=off
 BUILD := $(ROOT)/$(GPU)/mlperf-classification/build
 LOOM := loom
+LAUNCH ?= graph
 
 MLPERF_TINY_URL := https://github.com/mlcommons/tiny.git
 MLPERF_TINY_COMMIT := 4addd0fa08d216e20637637874e084895f289da4
@@ -90,14 +93,14 @@ check: all
 	  IFS=: read count batch replays <<< "$$shape"; \
 	  for inputs in $(KWS_INPUTS); do \
 	    $(BUILD)/kws_postprocess --count=$$count --batch=$$batch \
-	      --inputs=$$inputs --replays=$$replays || exit 1; \
+	      --inputs=$$inputs --launch=$(LAUNCH) --replays=$$replays || exit 1; \
 	  done; \
 	done
 	@for shape in $(VWW_SHAPES); do \
 	  IFS=: read count replays <<< "$$shape"; \
 	  for inputs in $(VWW_INPUTS); do \
 	    $(BUILD)/vww_preprocess --count=$$count --inputs=$$inputs \
-	      --replays=$$replays || exit 1; \
+	      --launch=$(LAUNCH) --replays=$$replays || exit 1; \
 	  done; \
 	done
 

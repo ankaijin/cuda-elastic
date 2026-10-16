@@ -1,1 +1,1 @@
-nvcc 
+nvcc -arch=sm_86

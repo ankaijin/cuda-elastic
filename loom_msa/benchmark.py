@@ -12,6 +12,10 @@ Metrics (all from the harness, see msa_harness.cuh):
   through_statistics_us  attention start -> statistics end; for the optimized
                          split context this includes merging the partials
 Effective throughput uses the same algorithmic FLOP count for both variants.
+
+--launch graph direct also runs every variant with --launch=direct (the same
+work enqueued without a CUDA graph). Graph runs keep their variant name as the
+key in benchmark.json; direct runs are stored as "<variant>_direct".
 """
 import argparse
 import json
@@ -30,22 +34,28 @@ SHAPES = ["4x4", "medium", "large"]
 INPUTS = ["random", "repeat"]  # random is the primary performance input
 VARIANTS = ["baseline", "optimized"]
 METRICS = ["end_to_end_us", "attention_us", "through_statistics_us"]
+LAUNCHES = ["graph", "direct"]
 
 
-def run_once(binary, inputs):
+def key(variant, launch):
+    return variant if launch == "graph" else f"{variant}_{launch}"
+
+
+def run_once(binary, inputs, launch="graph"):
     sampler = subprocess.Popen(
         ["nvidia-smi",
          "--query-gpu=clocks.sm,pstate,temperature.gpu,utilization.gpu",
          "--format=csv,noheader,nounits", "-lms", "100"],
         stdout=subprocess.PIPE, text=True)
     try:
-        result = subprocess.run([str(binary), f"--inputs={inputs}"],
+        result = subprocess.run([str(binary), f"--inputs={inputs}",
+                                 f"--launch={launch}"],
                                 capture_output=True, text=True)
     finally:
         sampler.terminate()
         samples, _ = sampler.communicate()
     if result.returncode != 0 or "PASSED" not in result.stdout:
-        sys.exit(f"{binary.name} --inputs={inputs} failed:\n"
+        sys.exit(f"{binary.name} --inputs={inputs} --launch={launch} failed:\n"
                  f"{result.stdout}{result.stderr}")
     line = next(l for l in result.stdout.splitlines()
                 if l.startswith("metrics:"))
@@ -93,6 +103,8 @@ def main():
     parser.add_argument("--repeats", type=int, default=5)
     parser.add_argument("--shapes", nargs="+", default=SHAPES, choices=SHAPES)
     parser.add_argument("--inputs", nargs="+", default=INPUTS, choices=INPUTS)
+    parser.add_argument("--launch", nargs="+", default=["graph"],
+                        choices=LAUNCHES)
     parser.add_argument("--json", default=str(BUILD / "benchmark.json"))
     args = parser.parse_args()
 
@@ -100,42 +112,45 @@ def main():
     # idle GPU.
     run_once(BUILD / "msa_optimized_medium", "random")
 
+    configs = [(v, l) for l in args.launch for v in VARIANTS]
+    keys = [key(v, l) for v, l in configs]
     results = {}
     for shape in args.shapes:
         for inputs in args.inputs:
-            runs = {v: [] for v in VARIANTS}
+            runs = {k: [] for k in keys}
             for repeat in range(args.repeats):
-                for variant in VARIANTS:
+                for variant, launch in configs:
                     binary = BUILD / f"msa_{variant}_{shape}"
-                    run = run_once(binary, inputs)
-                    runs[variant].append(run)
-                    print(f"  {shape:6s} {inputs:6s} {variant:9s} "
+                    run = run_once(binary, inputs, launch)
+                    runs[key(variant, launch)].append(run)
+                    print(f"  {shape:6s} {inputs:6s} {key(variant, launch):16s} "
                           f"repeat {repeat + 1}/{args.repeats}: "
                           f"e2e {run['end_to_end_us']:.2f} us, "
                           f"attention {run['attention_us']:.2f} us, "
                           f"SM clock {run['sm_clock_mhz']} MHz",
                           file=sys.stderr)
-            base, opt = runs["baseline"][0], runs["optimized"][0]
-            if (base["shape"], base["replays"]) != (opt["shape"],
-                                                   opt["replays"]):
-                sys.exit(f"shape/replay mismatch: {base['shape']} x "
-                         f"{base['replays']} vs {opt['shape']} x "
-                         f"{opt['replays']}")
+            first = runs[keys[0]][0]
+            for k in keys:
+                other = runs[k][0]
+                if (first["shape"], first["replays"]) != (other["shape"],
+                                                         other["replays"]):
+                    sys.exit(f"shape/replay mismatch: {first['shape']} x "
+                             f"{first['replays']} vs {other['shape']} x "
+                             f"{other['replays']}")
             results[(shape, inputs)] = runs
 
     report = []
     for (shape, inputs), runs in results.items():
-        summary = {v: {m: summarize([r[m] for r in runs[v]]) for m in METRICS}
-                   for v in VARIANTS}
-        first = runs["baseline"][0]
+        summary = {k: {m: summarize([r[m] for r in runs[k]]) for m in METRICS}
+                   for k in runs}
+        first = next(iter(runs.values()))[0]
         flops = first["flops"]
-        clocks = [r["sm_clock_mhz"] for v in VARIANTS for r in runs[v]
+        clocks = [r["sm_clock_mhz"] for k in runs for r in runs[k]
                   if r["sm_clock_mhz"] is not None]
-        pstates = sorted({p for v in VARIANTS for r in runs[v]
+        pstates = sorted({p for k in runs for r in runs[k]
                           for p in r["pstates"]})
-        temperature = max(r["max_temperature_c"] or 0 for v in VARIANTS
-                          for r in runs[v])
-        b, o = summary["baseline"], summary["optimized"]
+        temperature = max(r["max_temperature_c"] or 0 for k in runs
+                          for r in runs[k])
 
         def line(label, value):
             print(f"{label:44s}{value}")
@@ -143,21 +158,33 @@ def main():
         print(f"\nshape: {first['shape']} (replays={first['replays']}, "
               f"inputs={inputs}, repeats={args.repeats}; "
               f"median [min-max])")
-        for metric, label in [("attention_us", "attention kernel"),
-                              ("through_statistics_us",
-                               "attention through statistics"),
-                              ("end_to_end_us", "end-to-end replay")]:
-            line(f"baseline {label}:", fmt_us(b[metric]))
-            line(f"optimized {label}:", fmt_us(o[metric]))
-            speedup = b[metric]["median"] / o[metric]["median"]
-            saved = b[metric]["median"] - o[metric]["median"]
-            line(f"{label} speedup:", f"{speedup:.2f}x")
-            line(f"{label} time saved:", fmt_saved(saved))
-        for metric, label in [("attention_us", "kernel"),
-                              ("through_statistics_us", "through statistics")]:
-            line(f"effective TFLOP/s ({label}):",
-                 f"baseline {flops / (b[metric]['median'] * 1e6):.4g}, "
-                 f"optimized {flops / (o[metric]['median'] * 1e6):.4g}")
+        for launch in args.launch:
+            b = summary[key("baseline", launch)]
+            o = summary[key("optimized", launch)]
+            prefix = "" if launch == "graph" else f"{launch} "
+            for metric, label in [("attention_us", "attention kernel"),
+                                  ("through_statistics_us",
+                                   "attention through statistics"),
+                                  ("end_to_end_us", "end-to-end replay")]:
+                line(f"{prefix}baseline {label}:", fmt_us(b[metric]))
+                line(f"{prefix}optimized {label}:", fmt_us(o[metric]))
+                speedup = b[metric]["median"] / o[metric]["median"]
+                saved = b[metric]["median"] - o[metric]["median"]
+                line(f"{prefix}{label} speedup:", f"{speedup:.2f}x")
+                line(f"{prefix}{label} time saved:", fmt_saved(saved))
+            for metric, label in [("attention_us", "kernel"),
+                                  ("through_statistics_us",
+                                   "through statistics")]:
+                line(f"{prefix}effective TFLOP/s ({label}):",
+                     f"baseline {flops / (b[metric]['median'] * 1e6):.4g}, "
+                     f"optimized {flops / (o[metric]['median'] * 1e6):.4g}")
+        if "graph" in args.launch and "direct" in args.launch:
+            for variant in VARIANTS:
+                graph = summary[variant]["end_to_end_us"]["median"]
+                direct = summary[key(variant, "direct")]["end_to_end_us"][
+                    "median"]
+                line(f"{variant} end-to-end graph speedup:",
+                     f"{direct / graph:.2f}x (direct / graph)")
         line("attention FLOPs (algorithmic):", f"{flops:.4g}")
         line("GPU while busy:",
              f"SM clock median {statistics.median(clocks):.0f} MHz "

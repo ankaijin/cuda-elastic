@@ -1,10 +1,13 @@
 // Shared host harness for the mlperf-tiny classification kernel ports
 // (kws_postprocess.cu, vww_preprocess.cu): error checking, option parsing,
-// and graph-replay timing, so both kernels are measured the same way.
+// and launch timing, so both kernels are measured the same way.
 //
-// Both binaries capture two CUDA graphs: kernels only (inputs resident) and
-// end to end (H2D + kernels + D2H). Each is warmed up, then replayed
-// --replays times between CUDA events.
+// Both binaries run two pieces of work: kernels only (inputs resident) and
+// end to end (H2D + kernels + D2H). With --launch=graph (the default) each is
+// captured once into a CUDA graph and replayed; with --launch=direct the same
+// stream operations are enqueued directly on every iteration. Either way each
+// is warmed up, then run --replays times between CUDA events, each iteration
+// inside an NVTX range.
 #pragma once
 
 #include <cuda_runtime.h>
@@ -14,6 +17,16 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+
+#if defined(__has_include)
+#  if __has_include(<nvtx3/nvToolsExt.h>)
+#    include <nvtx3/nvToolsExt.h>
+#    define CLASSIFICATION_HAS_NVTX 1
+#  endif
+#endif
+#ifndef CLASSIFICATION_HAS_NVTX
+#  define CLASSIFICATION_HAS_NVTX 0
+#endif
 
 #define CUDA_CHECK(call)                                                     \
   do {                                                                       \
@@ -31,12 +44,13 @@ struct Options {
   size_t count = 0;  // set by each binary to its smoke size
   size_t batch = 1;
   std::string inputs = "smoke";
+  std::string launch = "graph";  // graph | direct
   int replays = 10000;
   unsigned seed = 1;
 };
 
 // Parses --count, --batch (if allowBatch), --inputs (one of validInputs,
-// space separated), --replays and --seed.
+// space separated), --launch, --replays and --seed.
 inline bool parse_options(int argc, char** argv, Options& options,
                           bool allowBatch, const char* validInputs) {
   const std::string valid = std::string(" ") + validInputs + " ";
@@ -54,37 +68,78 @@ inline bool parse_options(int argc, char** argv, Options& options,
       options.batch = std::strtoull(v, nullptr, 10);
     else if (const char* v = value("--inputs="))
       options.inputs = v;
+    else if (const char* v = value("--launch="))
+      options.launch = v;
     else if (const char* v = value("--replays="))
       options.replays = std::atoi(v);
     else if (const char* v = value("--seed="))
       options.seed = static_cast<unsigned>(std::strtoul(v, nullptr, 10));
     else {
       std::fprintf(stderr,
-                   "usage: %s [--count=N]%s [--inputs={%s}] [--replays=R] "
-                   "[--seed=S]\n",
+                   "usage: %s [--count=N]%s [--inputs={%s}] "
+                   "[--launch={graph,direct}] [--replays=R] [--seed=S]\n",
                    argv[0], allowBatch ? " [--batch=B]" : "", validInputs);
       return false;
     }
   }
   if (options.count == 0 || options.batch == 0 || options.replays <= 0 ||
-      valid.find(" " + options.inputs + " ") == std::string::npos) {
+      valid.find(" " + options.inputs + " ") == std::string::npos ||
+      (options.launch != "graph" && options.launch != "direct")) {
     std::fprintf(stderr, "invalid options\n");
     return false;
   }
   return true;
 }
 
-// Average microseconds per replay of a captured graph, after warm-up.
-inline int time_graph(cudaGraphExec_t graph, cudaStream_t stream, int replays,
-                      double& microseconds) {
+inline void nvtx_push(const char* label) {
+#if CLASSIFICATION_HAS_NVTX
+  nvtxRangePushA(label);
+#else
+  (void)label;
+#endif
+}
+
+inline void nvtx_pop() {
+#if CLASSIFICATION_HAS_NVTX
+  nvtxRangePop();
+#endif
+}
+
+// Captures the stream work of enqueue() (an int() callable returning
+// EXIT_SUCCESS) into an executable graph.
+template <typename Enqueue>
+inline int capture_graph(Enqueue enqueue, cudaStream_t stream,
+                         cudaGraphExec_t* exec) {
+  cudaGraph_t graph;
+  CUDA_CHECK(cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal));
+  if (enqueue() != EXIT_SUCCESS)
+    return EXIT_FAILURE;
+  CUDA_CHECK(cudaStreamEndCapture(stream, &graph));
+  CUDA_CHECK(cudaGraphInstantiate(exec, graph, 0));
+  CUDA_CHECK(cudaGraphDestroy(graph));
+  return EXIT_SUCCESS;
+}
+
+// Average microseconds per iteration, after warm-up. launch() enqueues one
+// iteration on stream (a graph replay or the direct stream operations) and
+// returns EXIT_SUCCESS; each timed iteration is an NVTX range named range.
+template <typename Launch>
+inline int time_launches(Launch launch, cudaStream_t stream, int replays,
+                         const char* range, double& microseconds) {
   cudaEvent_t start, stop;
   CUDA_CHECK(cudaEventCreate(&start));
   CUDA_CHECK(cudaEventCreate(&stop));
   for (int replay = 0; replay < std::min(replays, kWarmupReplays); ++replay)
-    CUDA_CHECK(cudaGraphLaunch(graph, stream));
+    if (launch() != EXIT_SUCCESS)
+      return EXIT_FAILURE;
   CUDA_CHECK(cudaEventRecord(start, stream));
-  for (int replay = 0; replay < replays; ++replay)
-    CUDA_CHECK(cudaGraphLaunch(graph, stream));
+  for (int replay = 0; replay < replays; ++replay) {
+    nvtx_push(range);
+    const int status = launch();
+    nvtx_pop();
+    if (status != EXIT_SUCCESS)
+      return EXIT_FAILURE;
+  }
   CUDA_CHECK(cudaEventRecord(stop, stream));
   CUDA_CHECK(cudaEventSynchronize(stop));
   float milliseconds = 0.0f;
@@ -95,10 +150,10 @@ inline int time_graph(cudaGraphExec_t graph, cudaStream_t stream, int replays,
   return EXIT_SUCCESS;
 }
 
-// Measured time of both graphs' timed replays, excluding warm-up.
-inline void print_graph_total(int replays, double kernelMicroseconds,
+// Measured time of both timed loops, excluding warm-up.
+inline void print_timed_total(int replays, double kernelMicroseconds,
                               double endToEndMicroseconds) {
-  std::printf("  graph total  %.3f s (replays x (kernel + end-to-end), "
+  std::printf("  timed total  %.3f s (replays x (kernel + end-to-end), "
               "excluding warm-up)\n",
               replays * (kernelMicroseconds + endToEndMicroseconds) / 1.0e6);
 }

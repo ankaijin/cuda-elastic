@@ -101,25 +101,37 @@ int main(int argc, char** argv) {
 
   cudaStream_t stream;
   CUDA_CHECK(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
-  cudaGraph_t graphs[2];
-  cudaGraphExec_t execs[2];
-  for (int endToEnd = 0; endToEnd < 2; ++endToEnd) {
-    CUDA_CHECK(cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal));
+  // endToEnd 0: kernel only. 1: H2D + kernel + D2H.
+  const auto enqueue = [&](int endToEnd) {
     if (endToEnd)
       CUDA_CHECK(cudaMemcpyAsync(deviceInput, hostInput, count,
                                  cudaMemcpyHostToDevice, stream));
     vww_preprocess_kernel<<<blocks, kThreads, 0, stream>>>(
         deviceInput, deviceCentered, count);
+    CUDA_CHECK(cudaGetLastError());
     if (endToEnd)
       CUDA_CHECK(cudaMemcpyAsync(hostCentered, deviceCentered, count,
                                  cudaMemcpyDeviceToHost, stream));
-    CUDA_CHECK(cudaStreamEndCapture(stream, &graphs[endToEnd]));
-    CUDA_CHECK(cudaGraphInstantiate(&execs[endToEnd], graphs[endToEnd], 0));
-  }
+    return EXIT_SUCCESS;
+  };
+  const bool graph = options.launch == "graph";
+  cudaGraphExec_t execs[2] = {};
+  for (int endToEnd = 0; graph && endToEnd < 2; ++endToEnd)
+    if (capture_graph([&] { return enqueue(endToEnd); }, stream,
+                      &execs[endToEnd]))
+      return EXIT_FAILURE;
+  // One iteration: a graph replay, or the same work enqueued directly.
+  const auto launch = [&](int endToEnd) {
+    if (!graph)
+      return enqueue(endToEnd);
+    CUDA_CHECK(cudaGraphLaunch(execs[endToEnd], stream));
+    return EXIT_SUCCESS;
+  };
 
-  // Correctness: one end-to-end replay into a poisoned host output.
+  // Correctness: one end-to-end iteration into a poisoned host output.
   std::memset(hostCentered, 0x55, count);
-  CUDA_CHECK(cudaGraphLaunch(execs[1], stream));
+  if (launch(1))
+    return EXIT_FAILURE;
   CUDA_CHECK(cudaStreamSynchronize(stream));
   CUDA_CHECK(cudaGetLastError());
   std::vector<int8_t> expected(count);
@@ -131,29 +143,30 @@ int main(int argc, char** argv) {
                    hostInput[index], hostCentered[index], expected[index]);
 
   double kernelMicroseconds = 0.0, endToEndMicroseconds = 0.0;
-  if (time_graph(execs[0], stream, options.replays, kernelMicroseconds) ||
-      time_graph(execs[1], stream, options.replays, endToEndMicroseconds))
+  if (time_launches([&] { return launch(0); }, stream, options.replays,
+                    "vww.kernels", kernelMicroseconds) ||
+      time_launches([&] { return launch(1); }, stream, options.replays,
+                    "vww.end_to_end", endToEndMicroseconds))
     return EXIT_FAILURE;
 
   std::printf("mlperf-classification vww preprocess: count=%zu inputs=%s "
-              "blocks=%d replays=%d\n",
-              count, options.inputs.c_str(), blocks, options.replays);
+              "blocks=%d launch=%s replays=%d\n",
+              count, options.inputs.c_str(), blocks, options.launch.c_str(),
+              options.replays);
   std::printf("  check        %s (%zu/%zu bytes equal to loom loop)\n",
               mismatches == 0 ? "pass" : "FAIL", count - mismatches, count);
-  std::printf("  kernel       %.3f us/iter (graph replay)\n",
-              kernelMicroseconds);
-  std::printf("  end-to-end   %.3f us/iter (H2D + kernel + D2H, graph "
-              "replay)\n",
-              endToEndMicroseconds);
+  std::printf("  kernel       %.3f us/iter (%s)\n", kernelMicroseconds,
+              graph ? "graph replay" : "direct launch");
+  std::printf("  end-to-end   %.3f us/iter (H2D + kernel + D2H, %s)\n",
+              endToEndMicroseconds, graph ? "graph replay" : "direct launch");
   std::printf("  bandwidth    %.1f GB/s (kernel, 2 B/element)\n",
               2.0 * static_cast<double>(count) / (kernelMicroseconds * 1.0e3));
-  print_graph_total(options.replays, kernelMicroseconds,
+  print_timed_total(options.replays, kernelMicroseconds,
                     endToEndMicroseconds);
 
-  for (int index = 0; index < 2; ++index) {
-    CUDA_CHECK(cudaGraphExecDestroy(execs[index]));
-    CUDA_CHECK(cudaGraphDestroy(graphs[index]));
-  }
+  for (cudaGraphExec_t exec : execs)
+    if (exec)
+      CUDA_CHECK(cudaGraphExecDestroy(exec));
   CUDA_CHECK(cudaStreamDestroy(stream));
   CUDA_CHECK(cudaFree(deviceInput));
   CUDA_CHECK(cudaFree(deviceCentered));

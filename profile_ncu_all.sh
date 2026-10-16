@@ -36,17 +36,22 @@ for mode in graph direct; do
     "$OUT/llama2c/llama2c_cuda_graph" "$mode" 5 1024 16384 8192 1 1 copy coalesced
 done
 
-echo "### loom_msa"
-(cd "$ROOT/loom_msa" && ./profile_cuda.sh ncu)
+# The other workloads in both launch modes, with one shared file suffix.
+for mode in graph direct; do
+  echo "### loom_msa ($mode)"
+  (cd "$ROOT/loom_msa" && LAUNCH=$mode TIMESTAMP=$STAMP ./profile_cuda.sh ncu)
 
-echo "### pagerank"
-"$ROOT/pagerank/profile_cuda.sh" ncu
+  echo "### pagerank ($mode)"
+  PAGERANK_LAUNCH=$mode TIMESTAMP=$STAMP "$ROOT/pagerank/profile_cuda.sh" ncu
 
-echo "### mlperf-tiny anomaly"
-(cd "$ROOT/mlperf-anomaly" && ./profile_cuda.sh ncu)
+  echo "### mlperf-tiny anomaly ($mode)"
+  (cd "$ROOT/mlperf-anomaly" && LAUNCH=$mode TIMESTAMP=$STAMP ./profile_cuda.sh ncu)
 
-echo "### mlperf-tiny KWS and VWW"
-(cd "$ROOT/mlperf-classification" && APP=kws ./profile_cuda.sh ncu && APP=vww ./profile_cuda.sh ncu)
+  echo "### mlperf-tiny KWS and VWW ($mode)"
+  (cd "$ROOT/mlperf-classification" &&
+     APP=kws LAUNCH=$mode TIMESTAMP=$STAMP ./profile_cuda.sh ncu &&
+     APP=vww LAUNCH=$mode TIMESTAMP=$STAMP ./profile_cuda.sh ncu)
+done
 
 echo "### done; new ncu reports:"
 find "$OUT" -name '*.ncu-rep' -newer "$MARK" | sort

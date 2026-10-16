@@ -7,13 +7,17 @@ SRC="$SCRIPT_DIR/gapbs_pagerank_cuda_graph.cu"
 GPU_DIR="${GPU_DIR:-$SCRIPT_DIR/../$("$SCRIPT_DIR/../gpu.sh" name)/pagerank}"
 BIN="${BIN:-$GPU_DIR/gapbs_pagerank_cuda_graph}"
 OUT_DIR="${OUT_DIR:-$GPU_DIR/profiles}"
-STAMP="$(date +%Y%m%d-%H%M%S)"
+# PAGERANK_LAUNCH=direct profiles the direct-launch mode; output names get
+# a -graph or -direct suffix. Set TIMESTAMP to give both the same suffix.
+LAUNCH="${PAGERANK_LAUNCH:-graph}"
+STAMP="$LAUNCH-${TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 NVCC="${NVCC:-nvcc}"
 read -r -a NVCC_FLAGS <<< "${NVCC_FLAGS:--arch=$("$SCRIPT_DIR/../gpu.sh" arch)}"
 # graph: one range per graph launch.  node: one range per kernel/memcpy node.
 NSYS_GRAPH_TRACE="${NSYS_GRAPH_TRACE:-graph}"
-# One initialize_scores node, one first-iteration pagerank_update node per
-# upload chunk, and nineteen full pagerank_update nodes.
+# One initialize_scores kernel, one first-iteration pagerank_update per
+# upload chunk, and nineteen full pagerank_update kernels (graph nodes in
+# graph mode).
 NCU_LAUNCH_COUNT="${NCU_LAUNCH_COUNT:-$((1 + ${PAGERANK_UPLOAD_CHUNKS:-8} + 19))}"
 # Memory metrics that --set basic omits: DRAM traffic, L1/L2 hit rates, and
 # global-load sectors per request (coalescing).
@@ -49,13 +53,13 @@ sweep() {
 # Profiles skip validation so that the profiled launches are the benchmark's.
 profile_nsys() {
   require_tool nsys; ensure_bin; mkdir -p "$OUT_DIR"
-  PAGERANK_MODE=bench nsys profile --trace=cuda --cuda-graph-trace="$NSYS_GRAPH_TRACE" --sample=none \
+  PAGERANK_MODE=bench PAGERANK_LAUNCH="$LAUNCH" nsys profile --trace=cuda,nvtx --cuda-graph-trace="$NSYS_GRAPH_TRACE" --sample=none \
     --cpuctxsw=none --stats=true --force-overwrite=true \
     --output="$OUT_DIR/nsys-$STAMP" "$BIN"
 }
 profile_ncu() {
   require_tool ncu; ensure_bin; mkdir -p "$OUT_DIR"
-  PAGERANK_MODE=bench GRAPH_REPLAYS="${GRAPH_REPLAYS:-1}" \
+  PAGERANK_MODE=bench PAGERANK_LAUNCH="$LAUNCH" GRAPH_REPLAYS="${GRAPH_REPLAYS:-1}" \
     ncu --set basic --metrics "$NCU_METRICS" \
     --launch-skip 0 --launch-count "$NCU_LAUNCH_COUNT" --replay-mode kernel \
     --graph-profiling node --target-processes application-only \

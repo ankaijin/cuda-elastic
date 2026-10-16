@@ -17,6 +17,11 @@
 // is checked against a double-precision reference with a relative tolerance.
 // The sequential float result of the Loom loop is reported next to it.
 // Built with --fmad=false to match Loom's -ffp-contract=off.
+//
+// --launch=graph (the default) captures the kernels-only and end-to-end work
+// into CUDA graphs and replays them; --launch=direct enqueues the same stream
+// operations directly on every iteration. Each timed iteration is an NVTX
+// range (anomaly.kernels, anomaly.end_to_end).
 #include <cuda_runtime.h>
 
 #include <algorithm>
@@ -28,6 +33,16 @@
 #include <random>
 #include <string>
 #include <vector>
+
+#if defined(__has_include)
+#  if __has_include(<nvtx3/nvToolsExt.h>)
+#    include <nvtx3/nvToolsExt.h>
+#    define ANOMALY_HAS_NVTX 1
+#  endif
+#endif
+#ifndef ANOMALY_HAS_NVTX
+#  define ANOMALY_HAS_NVTX 0
+#endif
 
 #define CUDA_CHECK(call)                                                     \
   do {                                                                       \
@@ -198,6 +213,7 @@ __global__ void __launch_bounds__(kThreads)
 struct Options {
   size_t count = kSmokeCount;
   std::string inputs = "smoke";
+  std::string launch = "graph";  // graph | direct
   int replays = 10000;
   unsigned seed = 1;
 };
@@ -215,6 +231,8 @@ bool parse_options(int argc, char** argv, Options& options) {
       options.count = std::strtoull(v, nullptr, 10);
     else if (const char* v = value("--inputs="))
       options.inputs = v;
+    else if (const char* v = value("--launch="))
+      options.launch = v;
     else if (const char* v = value("--replays="))
       options.replays = std::atoi(v);
     else if (const char* v = value("--seed="))
@@ -222,30 +240,69 @@ bool parse_options(int argc, char** argv, Options& options) {
     else {
       std::fprintf(stderr,
                    "usage: %s [--count=N] [--inputs=smoke|random] "
-                   "[--replays=R] [--seed=S]\n",
+                   "[--launch=graph|direct] [--replays=R] [--seed=S]\n",
                    argv[0]);
       return false;
     }
   }
   if (options.count == 0 || options.replays <= 0 ||
-      (options.inputs != "smoke" && options.inputs != "random")) {
+      (options.inputs != "smoke" && options.inputs != "random") ||
+      (options.launch != "graph" && options.launch != "direct")) {
     std::fprintf(stderr, "invalid options\n");
     return false;
   }
   return true;
 }
 
-// Average microseconds per replay of a captured graph, after warm-up.
-int time_graph(cudaGraphExec_t graph, cudaStream_t stream, int replays,
-               double& microseconds) {
+void nvtx_push(const char* label) {
+#if ANOMALY_HAS_NVTX
+  nvtxRangePushA(label);
+#else
+  (void)label;
+#endif
+}
+
+void nvtx_pop() {
+#if ANOMALY_HAS_NVTX
+  nvtxRangePop();
+#endif
+}
+
+// Captures the stream work of enqueue() (an int() callable returning
+// EXIT_SUCCESS) into an executable graph.
+template <typename Enqueue>
+int capture_graph(Enqueue enqueue, cudaStream_t stream,
+                  cudaGraphExec_t* exec) {
+  cudaGraph_t graph;
+  CUDA_CHECK(cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal));
+  if (enqueue() != EXIT_SUCCESS)
+    return EXIT_FAILURE;
+  CUDA_CHECK(cudaStreamEndCapture(stream, &graph));
+  CUDA_CHECK(cudaGraphInstantiate(exec, graph, 0));
+  CUDA_CHECK(cudaGraphDestroy(graph));
+  return EXIT_SUCCESS;
+}
+
+// Average microseconds per iteration, after warm-up. launch() enqueues one
+// iteration on stream (a graph replay or the direct stream operations) and
+// returns EXIT_SUCCESS; each timed iteration is an NVTX range named range.
+template <typename Launch>
+int time_launches(Launch launch, cudaStream_t stream, int replays,
+                  const char* range, double& microseconds) {
   cudaEvent_t start, stop;
   CUDA_CHECK(cudaEventCreate(&start));
   CUDA_CHECK(cudaEventCreate(&stop));
   for (int replay = 0; replay < std::min(replays, 100); ++replay)
-    CUDA_CHECK(cudaGraphLaunch(graph, stream));
+    if (launch() != EXIT_SUCCESS)
+      return EXIT_FAILURE;
   CUDA_CHECK(cudaEventRecord(start, stream));
-  for (int replay = 0; replay < replays; ++replay)
-    CUDA_CHECK(cudaGraphLaunch(graph, stream));
+  for (int replay = 0; replay < replays; ++replay) {
+    nvtx_push(range);
+    const int status = launch();
+    nvtx_pop();
+    if (status != EXIT_SUCCESS)
+      return EXIT_FAILURE;
+  }
   CUDA_CHECK(cudaEventRecord(stop, stream));
   CUDA_CHECK(cudaEventSynchronize(stop));
   float milliseconds = 0.0f;
@@ -299,12 +356,9 @@ int main(int argc, char** argv) {
   cudaStream_t stream;
   CUDA_CHECK(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
 
-  // Graph 1: kernels only, inputs already resident.
-  // Graph 2: end to end, H2D of both inputs + kernels + D2H of the result.
-  cudaGraph_t graphs[2];
-  cudaGraphExec_t execs[2];
-  for (int endToEnd = 0; endToEnd < 2; ++endToEnd) {
-    CUDA_CHECK(cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal));
+  // endToEnd 0: kernels only, inputs already resident.
+  // endToEnd 1: H2D of both inputs + kernels + D2H of the result.
+  const auto enqueue = [&](int endToEnd) {
     if (endToEnd) {
       CUDA_CHECK(cudaMemcpyAsync(deviceOutput, hostOutput,
                                  count * sizeof(int8_t),
@@ -314,18 +368,33 @@ int main(int argc, char** argv) {
     }
     mse_partial_kernel<<<blocks, kThreads, 0, stream>>>(
         deviceOutput, deviceInput, count, scale, zeroPoint, devicePartials);
+    CUDA_CHECK(cudaGetLastError());
     mse_finalize_kernel<<<1, kThreads, 0, stream>>>(devicePartials, blocks,
                                                     count, deviceResult);
+    CUDA_CHECK(cudaGetLastError());
     if (endToEnd)
       CUDA_CHECK(cudaMemcpyAsync(hostResult, deviceResult, sizeof(float),
                                  cudaMemcpyDeviceToHost, stream));
-    CUDA_CHECK(cudaStreamEndCapture(stream, &graphs[endToEnd]));
-    CUDA_CHECK(cudaGraphInstantiate(&execs[endToEnd], graphs[endToEnd], 0));
-  }
+    return EXIT_SUCCESS;
+  };
+  const bool graph = options.launch == "graph";
+  cudaGraphExec_t execs[2] = {};
+  for (int endToEnd = 0; graph && endToEnd < 2; ++endToEnd)
+    if (capture_graph([&] { return enqueue(endToEnd); }, stream,
+                      &execs[endToEnd]))
+      return EXIT_FAILURE;
+  // One iteration: a graph replay, or the same work enqueued directly.
+  const auto launch = [&](int endToEnd) {
+    if (!graph)
+      return enqueue(endToEnd);
+    CUDA_CHECK(cudaGraphLaunch(execs[endToEnd], stream));
+    return EXIT_SUCCESS;
+  };
 
-  // Correctness: one end-to-end replay from a poisoned result.
+  // Correctness: one end-to-end iteration from a poisoned result.
   *hostResult = NAN;
-  CUDA_CHECK(cudaGraphLaunch(execs[1], stream));
+  if (launch(1))
+    return EXIT_FAILURE;
   CUDA_CHECK(cudaStreamSynchronize(stream));
   CUDA_CHECK(cudaGetLastError());
   const float gpu = *hostResult;
@@ -340,16 +409,18 @@ int main(int argc, char** argv) {
       !smokeShape || std::fabs(gpu - kSmokeExpected) <= kSmokeTolerance;
 
   double kernelMicroseconds = 0.0, endToEndMicroseconds = 0.0;
-  if (time_graph(execs[0], stream, options.replays, kernelMicroseconds) ||
-      time_graph(execs[1], stream, options.replays, endToEndMicroseconds))
+  if (time_launches([&] { return launch(0); }, stream, options.replays,
+                    "anomaly.kernels", kernelMicroseconds) ||
+      time_launches([&] { return launch(1); }, stream, options.replays,
+                    "anomaly.end_to_end", endToEndMicroseconds))
     return EXIT_FAILURE;
   const double bytes = static_cast<double>(count) * (sizeof(int8_t) +
                                                      sizeof(float));
 
   std::printf("mlperf-anomaly mse: count=%zu inputs=%s scale=%g zero_point=%d "
-              "blocks=%d replays=%d\n",
+              "blocks=%d launch=%s replays=%d\n",
               count, options.inputs.c_str(), scale, zeroPoint, blocks,
-              options.replays);
+              options.launch.c_str(), options.replays);
   std::printf("  gpu          %.9g\n", gpu);
   std::printf("  loom loop    %.9g (host, sequential float)%s\n", loom,
               gpu == loom ? ", bitwise equal to gpu" : "");
@@ -360,23 +431,21 @@ int main(int argc, char** argv) {
                 kSmokeTolerance);
   std::printf("  check        %s (abs err %.3e vs double)\n",
               withinTolerance ? "pass" : "FAIL", error);
-  std::printf("  kernels      %.3f us/iter (graph replay)\n",
-              kernelMicroseconds);
-  std::printf("  end-to-end   %.3f us/iter (H2D + kernels + D2H, graph "
-              "replay)\n",
-              endToEndMicroseconds);
+  std::printf("  kernels      %.3f us/iter (%s)\n", kernelMicroseconds,
+              graph ? "graph replay" : "direct launch");
+  std::printf("  end-to-end   %.3f us/iter (H2D + kernels + D2H, %s)\n",
+              endToEndMicroseconds, graph ? "graph replay" : "direct launch");
   std::printf("  bandwidth    %.1f GB/s (kernels, %zu B/element)\n",
               bytes / (kernelMicroseconds * 1.0e3),
               sizeof(int8_t) + sizeof(float));
-  std::printf("  graph total  %.3f s (replays x (kernels + end-to-end), "
+  std::printf("  timed total  %.3f s (replays x (kernels + end-to-end), "
               "excluding warm-up)\n",
               options.replays * (kernelMicroseconds + endToEndMicroseconds) /
                   1.0e6);
 
-  for (int index = 0; index < 2; ++index) {
-    CUDA_CHECK(cudaGraphExecDestroy(execs[index]));
-    CUDA_CHECK(cudaGraphDestroy(graphs[index]));
-  }
+  for (cudaGraphExec_t exec : execs)
+    if (exec)
+      CUDA_CHECK(cudaGraphExecDestroy(exec));
   CUDA_CHECK(cudaStreamDestroy(stream));
   CUDA_CHECK(cudaFree(deviceOutput));
   CUDA_CHECK(cudaFree(deviceInput));

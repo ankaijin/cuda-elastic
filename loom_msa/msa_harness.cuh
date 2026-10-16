@@ -5,6 +5,11 @@
 // comparison lives here: problem shape, input data, H2D/D2H inclusion, graph
 // capture, warm-up policy, replay count, timing, and the correctness oracle.
 //
+// --launch=graph (the default) captures the enqueue function once into a CUDA
+// graph and replays it; --launch=direct calls it on every iteration, with the
+// same fork/join of the two streams that capture uses. Each timed end-to-end
+// iteration is an NVTX range named msa.end_to_end.
+//
 // The oracle is a direct port of main.c's loops, generalized to
 // TOKEN_COUNT x CONTEXT_COUNT and accumulated in double precision.
 #pragma once
@@ -19,6 +24,16 @@
 #include <cstring>
 #include <iostream>
 #include <vector>
+
+#if defined(__has_include)
+#  if __has_include(<nvtx3/nvToolsExt.h>)
+#    include <nvtx3/nvToolsExt.h>
+#    define MSA_HAS_NVTX 1
+#  endif
+#endif
+#ifndef MSA_HAS_NVTX
+#  define MSA_HAS_NVTX 0
+#endif
 
 #ifndef BATCH_COUNT
 #define BATCH_COUNT 1
@@ -80,9 +95,9 @@ struct PipelineBuffers {
   float* d_statistics;
 };
 
-// Stage-timing events. They are recorded as event-record nodes only in a
-// separate instrumented graph; in the end-to-end graph every member is null
-// and record_stage() is a no-op, so that graph is not perturbed.
+// Stage-timing events. They are recorded (as event-record nodes, in graph
+// mode) only in a separate instrumented pass; in the end-to-end pass every
+// member is null and record_stage() is a no-op, so it is not perturbed.
 //   attention_start  -> attention_stop:  attention kernel
 //   attention_start  -> statistics_stop: attention through statistics, which
 //                       for a split context includes merging the partials
@@ -93,13 +108,23 @@ struct StageEvents {
   cudaEvent_t statistics_stop;
 };
 
+// During capture the event becomes an external event-record node, so it is
+// still recorded on every replay; launched directly it is an ordinary record
+// (cudaEventRecordExternal is only valid while capturing).
 inline cudaError_t record_stage(cudaEvent_t event, cudaStream_t stream) {
-  return event != nullptr
+  if (event == nullptr)
+    return cudaSuccess;
+  cudaStreamCaptureStatus status = cudaStreamCaptureStatusNone;
+  const cudaError_t error = cudaStreamIsCapturing(stream, &status);
+  if (error != cudaSuccess)
+    return error;
+  return status == cudaStreamCaptureStatusActive
              ? cudaEventRecordWithFlags(event, stream, cudaEventRecordExternal)
-             : cudaSuccess;
+             : cudaEventRecord(event, stream);
 }
 
-// Enqueues one full pipeline iteration (H2D, kernels, D2H) during capture.
+// Enqueues one full pipeline iteration (H2D, kernels, D2H), during capture
+// or directly.
 // audio_stream is the capture origin; imu_stream has already been forked from
 // it and must be joined back before returning. imu_ready is a spare event for
 // that join. Variants call record_stage() at the three StageEvents points.
@@ -137,6 +162,34 @@ inline Summary summarize(std::vector<double> samples) {
   return {median, samples.front(), samples.back()};
 }
 
+inline void nvtx_push(const char* label) {
+#if MSA_HAS_NVTX
+  nvtxRangePushA(label);
+#else
+  (void)label;
+#endif
+}
+
+inline void nvtx_pop() {
+#if MSA_HAS_NVTX
+  nvtxRangePop();
+#endif
+}
+
+// Forks imu_stream from audio_stream, then enqueues one pipeline iteration,
+// which joins imu_stream back. Graph capture and direct launches both go
+// through here, so they see the same dependencies; in direct mode the fork
+// also keeps imu_stream from running ahead of the previous iteration.
+inline int enqueue_iteration(EnqueuePipeline enqueue_pipeline,
+                             const PipelineBuffers& buffers,
+                             cudaStream_t audio_stream, cudaStream_t imu_stream,
+                             cudaEvent_t fork, cudaEvent_t imu_ready,
+                             const StageEvents& stages) {
+  CUDA_CHECK(cudaEventRecord(fork, audio_stream));
+  CUDA_CHECK(cudaStreamWaitEvent(imu_stream, fork, 0));
+  return enqueue_pipeline(buffers, audio_stream, imu_stream, imu_ready, stages);
+}
+
 inline int capture_pipeline(EnqueuePipeline enqueue_pipeline,
                             const PipelineBuffers& buffers,
                             cudaStream_t audio_stream, cudaStream_t imu_stream,
@@ -144,10 +197,8 @@ inline int capture_pipeline(EnqueuePipeline enqueue_pipeline,
                             const StageEvents& stages, cudaGraph_t* graph,
                             cudaGraphExec_t* graph_exec) {
   CUDA_CHECK(cudaStreamBeginCapture(audio_stream, cudaStreamCaptureModeGlobal));
-  CUDA_CHECK(cudaEventRecord(capture_start, audio_stream));
-  CUDA_CHECK(cudaStreamWaitEvent(imu_stream, capture_start, 0));
-  if (enqueue_pipeline(buffers, audio_stream, imu_stream, imu_ready, stages) !=
-      EXIT_SUCCESS)
+  if (enqueue_iteration(enqueue_pipeline, buffers, audio_stream, imu_stream,
+                        capture_start, imu_ready, stages) != EXIT_SUCCESS)
     return EXIT_FAILURE;
   CUDA_CHECK(cudaStreamEndCapture(audio_stream, graph));
   CUDA_CHECK(cudaGraphInstantiate(graph_exec, *graph, nullptr, nullptr, 0));
@@ -361,13 +412,19 @@ inline bool verify(InputMode mode, const float* audio, const float* imu,
 inline int run_benchmark(int argc, char** argv, const char* variant_name,
                          EnqueuePipeline enqueue_pipeline) {
   InputMode mode = InputMode::kRepeat;
+  bool use_graph = true;
   for (int index = 1; index < argc; ++index) {
     if (std::strcmp(argv[index], "--inputs=random") == 0) {
       mode = InputMode::kRandom;
     } else if (std::strcmp(argv[index], "--inputs=repeat") == 0) {
       mode = InputMode::kRepeat;
+    } else if (std::strcmp(argv[index], "--launch=graph") == 0) {
+      use_graph = true;
+    } else if (std::strcmp(argv[index], "--launch=direct") == 0) {
+      use_graph = false;
     } else {
-      std::cerr << "Usage: " << argv[0] << " [--inputs=repeat|random]\n";
+      std::cerr << "Usage: " << argv[0]
+                << " [--inputs=repeat|random] [--launch=graph|direct]\n";
       return EXIT_FAILURE;
     }
   }
@@ -418,43 +475,63 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   CUDA_CHECK(cudaEventCreate(&stages.attention_stop));
   CUDA_CHECK(cudaEventCreate(&stages.statistics_stop));
 
-  if (capture_pipeline(enqueue_pipeline, buffers, audio_stream, imu_stream,
-                       capture_start, imu_ready, StageEvents{}, &graph,
-                       &graph_exec) != EXIT_SUCCESS ||
-      capture_pipeline(enqueue_pipeline, buffers, audio_stream, imu_stream,
-                       capture_start, imu_ready, stages, &stage_graph,
-                       &stage_graph_exec) != EXIT_SUCCESS)
+  if (use_graph &&
+      (capture_pipeline(enqueue_pipeline, buffers, audio_stream, imu_stream,
+                        capture_start, imu_ready, StageEvents{}, &graph,
+                        &graph_exec) != EXIT_SUCCESS ||
+       capture_pipeline(enqueue_pipeline, buffers, audio_stream, imu_stream,
+                        capture_start, imu_ready, stages, &stage_graph,
+                        &stage_graph_exec) != EXIT_SUCCESS))
     return EXIT_FAILURE;
+  // One iteration, uninstrumented (instrumented when staged): a graph replay,
+  // or the same work enqueued directly.
+  const auto launch = [&](bool staged) {
+    if (!use_graph)
+      return enqueue_iteration(enqueue_pipeline, buffers, audio_stream,
+                               imu_stream, capture_start, imu_ready,
+                               staged ? stages : StageEvents{});
+    CUDA_CHECK(cudaGraphLaunch(staged ? stage_graph_exec : graph_exec,
+                               audio_stream));
+    return EXIT_SUCCESS;
+  };
 
-  // End-to-end: uninstrumented graph. Warm-up policy: replay for at least
+  // End-to-end: uninstrumented. Warm-up policy: run for at least
   // kWarmupSeconds (so GPU clocks leave their idle state; one launch is not
   // enough at small shapes), then GRAPH_REPLAYS back-to-back timed launches.
   constexpr double kWarmupSeconds = 0.25;
   const auto warmup_begin = std::chrono::steady_clock::now();
   do {
-    CUDA_CHECK(cudaGraphLaunch(graph_exec, audio_stream));
+    if (launch(false) != EXIT_SUCCESS)
+      return EXIT_FAILURE;
     CUDA_CHECK(cudaStreamSynchronize(audio_stream));
   } while (std::chrono::duration<double>(std::chrono::steady_clock::now() -
                                          warmup_begin)
                .count() < kWarmupSeconds);
   CUDA_CHECK(cudaEventRecord(timing_start, audio_stream));
-  for (int replay = 0; replay < GRAPH_REPLAYS; ++replay)
-    CUDA_CHECK(cudaGraphLaunch(graph_exec, audio_stream));
+  for (int replay = 0; replay < GRAPH_REPLAYS; ++replay) {
+    nvtx_push("msa.end_to_end");
+    const int status = launch(false);
+    nvtx_pop();
+    if (status != EXIT_SUCCESS)
+      return EXIT_FAILURE;
+  }
   CUDA_CHECK(cudaEventRecord(timing_stop, audio_stream));
   CUDA_CHECK(cudaStreamSynchronize(audio_stream));
   float elapsed_ms = 0.0f;
   CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, timing_start, timing_stop));
 
-  // Stages: instrumented graph, one warm-up launch, then GRAPH_REPLAYS
-  // launches each synchronized so every replay's stage events can be read.
+  // Stages: instrumented, one warm-up launch, then GRAPH_REPLAYS launches
+  // each synchronized so every replay's stage events can be read.
   std::vector<double> attention_us;
   std::vector<double> through_statistics_us;
   attention_us.reserve(GRAPH_REPLAYS);
   through_statistics_us.reserve(GRAPH_REPLAYS);
-  CUDA_CHECK(cudaGraphLaunch(stage_graph_exec, audio_stream));
+  if (launch(true) != EXIT_SUCCESS)
+    return EXIT_FAILURE;
   CUDA_CHECK(cudaStreamSynchronize(audio_stream));
   for (int replay = 0; replay < GRAPH_REPLAYS; ++replay) {
-    CUDA_CHECK(cudaGraphLaunch(stage_graph_exec, audio_stream));
+    if (launch(true) != EXIT_SUCCESS)
+      return EXIT_FAILURE;
     CUDA_CHECK(cudaStreamSynchronize(audio_stream));
     float stage_ms = 0.0f;
     CUDA_CHECK(cudaEventElapsedTime(&stage_ms, stages.attention_start,
@@ -474,13 +551,15 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   std::cout << "variant: " << variant_name << " (" << BATCH_COUNT << "x"
             << TOKEN_COUNT << "x" << CONTEXT_COUNT << ", replays="
             << GRAPH_REPLAYS << ", inputs="
-            << (mode == InputMode::kRepeat ? "repeat" : "random") << ")\n"
+            << (mode == InputMode::kRepeat ? "repeat" : "random")
+            << ", launch=" << (use_graph ? "graph" : "direct") << ")\n"
             << "attention checksum: " << statistics[2] << '\n'
             << "projection energy: " << statistics[0] << '\n'
             << "attention sum: " << statistics[1] << '\n'
             << "attention max: " << statistics[3] << '\n'
             << "combined checksum: " << combined << '\n'
-            << "graph replay average (us): " << end_to_end_us << '\n'
+            << (use_graph ? "graph replay" : "direct launch")
+            << " average (us): " << end_to_end_us << '\n'
             << "attention kernel median (us): " << attention.median
             << " [min " << attention.minimum << ", max " << attention.maximum
             << "]\n"
@@ -494,6 +573,7 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
             << kAttentionFlops / (through_statistics.median * 1.0e6) << '\n'
             << "metrics: shape=" << BATCH_COUNT << "x" << TOKEN_COUNT << "x"
             << CONTEXT_COUNT << " replays=" << GRAPH_REPLAYS
+            << " launch=" << (use_graph ? "graph" : "direct")
             << " end_to_end_us=" << end_to_end_us
             << " attention_us=" << attention.median
             << " attention_min_us=" << attention.minimum
@@ -506,10 +586,12 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   const bool passed = verify(mode, buffers.h_audio, buffers.h_imu,
                              buffers.h_output, buffers.h_statistics);
 
-  CUDA_CHECK(cudaGraphExecDestroy(stage_graph_exec));
-  CUDA_CHECK(cudaGraphDestroy(stage_graph));
-  CUDA_CHECK(cudaGraphExecDestroy(graph_exec));
-  CUDA_CHECK(cudaGraphDestroy(graph));
+  if (use_graph) {
+    CUDA_CHECK(cudaGraphExecDestroy(stage_graph_exec));
+    CUDA_CHECK(cudaGraphDestroy(stage_graph));
+    CUDA_CHECK(cudaGraphExecDestroy(graph_exec));
+    CUDA_CHECK(cudaGraphDestroy(graph));
+  }
   CUDA_CHECK(cudaEventDestroy(stages.statistics_stop));
   CUDA_CHECK(cudaEventDestroy(stages.attention_stop));
   CUDA_CHECK(cudaEventDestroy(stages.attention_start));

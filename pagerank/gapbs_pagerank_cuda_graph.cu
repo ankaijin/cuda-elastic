@@ -12,6 +12,10 @@
 // default) validates first and benchmarks only if validation passes.
 // PAGERANK_BLOCK_SIZE, PAGERANK_PIN_HOST and PAGERANK_UPLOAD_CHUNKS override
 // the defaults in Settings; validation runs with the same settings.
+// PAGERANK_LAUNCH=direct enqueues the same stream operations directly on
+// every run instead of capturing them once into a graph and replaying it
+// (PAGERANK_LAUNCH=graph, the default).  Each timed run is an NVTX range
+// (pagerank.full, pagerank.compute).
 
 #include <cuda_runtime.h>
 
@@ -22,6 +26,16 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
+
+#if defined(__has_include)
+#  if __has_include(<nvtx3/nvToolsExt.h>)
+#    include <nvtx3/nvToolsExt.h>
+#    define PAGERANK_HAS_NVTX 1
+#  endif
+#endif
+#ifndef PAGERANK_HAS_NVTX
+#  define PAGERANK_HAS_NVTX 0
+#endif
 
 #define CUDA_CHECK(call)                                                       \
   do {                                                                         \
@@ -280,6 +294,9 @@ void destroy_streams(Streams& s) {
 
 // Run-wide settings, read from the environment in main.
 struct Settings {
+  // PAGERANK_LAUNCH: graph replays a captured graph, direct enqueues the
+  // same stream operations on every run.
+  bool graph = true;
   int block_size = kDefaultBlockSize;  // PAGERANK_BLOCK_SIZE
   // PAGERANK_PIN_HOST: page-lock the host buffers the graph copies from and
   // to, so the copies run by DMA instead of through the driver's pageable
@@ -292,7 +309,7 @@ struct Settings {
   int upload_chunks = 8;
 };
 
-// Page-locks the host buffers that a captured graph copies from and to, when
+// Page-locks the host buffers that a PageRank run copies from and to, when
 // settings.pin_host is set.  Returns the registered pointers for unpinning.
 std::vector<void*> pin_host_buffers(const Settings& settings, const HostGraph& graph,
                                     const std::vector<float>* initial,
@@ -318,7 +335,7 @@ void unpin_host_buffers(std::vector<void*>& pinned) {
   pinned.clear();
 }
 
-struct CaptureOptions {
+struct RunOptions {
   // nullptr starts the scores uniform (initialize_scores, as in the
   // benchmark); otherwise they are copied from the host.
   const float* initial_scores = nullptr;
@@ -346,15 +363,35 @@ std::vector<int> split_by_edges(const HostGraph& graph, int chunks) {
   return bounds;
 }
 
-// Captures the upload, initialization, the updates and the result download
-// into one executable graph.  Validation and the benchmark share this
-// function so validation exercises the same graph that is timed.
-cudaGraphExec_t capture_pagerank(const Streams& s, const HostGraph& host,
-                                 const DeviceGraph& device,
-                                 const CaptureOptions& options, float* result) {
-  const int vertices = host.vertices;
-  cudaGraph_t graph = nullptr;
+// One PageRank run (the upload, initialization, the updates and the result
+// download), either captured into an executable graph or, when executable is
+// null, enqueued directly on every launch.  Validation and the benchmark
+// share it so validation exercises the same work that is timed.
+struct PagerankRun {
+  const Streams* streams = nullptr;
+  const HostGraph* host = nullptr;
+  const DeviceGraph* device = nullptr;
+  RunOptions options;
+  float* result = nullptr;
+  // Upload chunk boundaries and, for direct launches, the reusable event
+  // that marks each chunk's arrival.
+  std::vector<int> bounds;
+  std::vector<cudaEvent_t> chunk_ready;
   cudaGraphExec_t executable = nullptr;
+};
+
+// Enqueues one run on the streams.  Every run begins by forking the upload
+// stream from the compute stream and ends with the compute stream joined to
+// every upload, so graph capture and direct launches see the same
+// dependencies and the upload stream never runs ahead of the previous run.
+void enqueue_pagerank(const PagerankRun& run) {
+  const Streams& s = *run.streams;
+  const HostGraph& host = *run.host;
+  const DeviceGraph& device = *run.device;
+  const RunOptions& options = run.options;
+  const std::vector<int>& bounds = run.bounds;
+  const std::vector<cudaEvent_t>& chunk_ready = run.chunk_ready;
+  const int vertices = host.vertices;
 
   const int block_size = options.block_size;
   const auto launch_update = [&](int begin, int end, const float* contributions,
@@ -366,21 +403,16 @@ cudaGraphExec_t capture_pagerank(const Streams& s, const HostGraph& host,
     CUDA_CHECK(cudaGetLastError());
   };
 
-  // Begin capture on the compute stream.  The GPU has one host-to-device
-  // copy engine, so all uploads go in order on one stream: row offsets and
+  // The compute stream is the origin.  The GPU has one host-to-device copy
+  // engine, so all uploads go in order on one stream: row offsets and
   // out-degrees first (initialization needs the degrees), then the columns
   // in chunks of whole rows.  Each chunk's first-iteration update waits only
   // for its own chunk, so it overlaps the copies of the chunks after it.
   // Later iterations remain serial because iteration i+1 depends on every
   // contribution written by iteration i.
-  const std::vector<int> bounds =
-      options.include_transfers ? split_by_edges(host, options.upload_chunks)
-                                : std::vector<int>{0, vertices};
-  std::vector<cudaEvent_t> chunk_ready(bounds.size() - 1);
-  CUDA_CHECK(cudaStreamBeginCapture(s.compute, cudaStreamCaptureModeGlobal));
   if (options.include_transfers) {
-    // Waiting on an event recorded by the capturing stream joins the upload
-    // stream to the same graph capture.
+    // During capture, waiting on an event recorded by the capturing stream
+    // joins the upload stream to the same graph capture.
     CUDA_CHECK(cudaEventRecord(s.capture_start, s.compute));
     CUDA_CHECK(cudaStreamWaitEvent(s.upload, s.capture_start, 0));
     CUDA_CHECK(cudaMemcpyAsync(device.row_offsets, host.row_offsets.data(),
@@ -398,7 +430,6 @@ cudaGraphExec_t capture_pagerank(const Streams& s, const HostGraph& host,
                                    host.columns.data() + first_edge,
                                    sizeof(int) * (last_edge - first_edge),
                                    cudaMemcpyHostToDevice, s.upload));
-      CUDA_CHECK(cudaEventCreateWithFlags(&chunk_ready[chunk], cudaEventDisableTiming));
       CUDA_CHECK(cudaEventRecord(chunk_ready[chunk], s.upload));
     }
     CUDA_CHECK(cudaStreamWaitEvent(s.compute, s.metadata_ready, 0));
@@ -433,20 +464,71 @@ cudaGraphExec_t capture_pagerank(const Streams& s, const HostGraph& host,
   if (options.include_transfers && options.iterations == 0)
     for (cudaEvent_t event : chunk_ready) CUDA_CHECK(cudaStreamWaitEvent(s.compute, event, 0));
 
-  // The final copy is ordered after all dependent update nodes.
+  // The final copy is ordered after all dependent updates.
   if (options.include_transfers)
-    CUDA_CHECK(cudaMemcpyAsync(result, device.scores, sizeof(float) * vertices,
+    CUDA_CHECK(cudaMemcpyAsync(run.result, device.scores, sizeof(float) * vertices,
                                cudaMemcpyDeviceToHost, s.compute));
-  CUDA_CHECK(cudaStreamEndCapture(s.compute, &graph));
-  // The captured graph keeps the dependencies, not the events.
-  for (cudaEvent_t event : chunk_ready)
-    if (event) CUDA_CHECK(cudaEventDestroy(event));
-  CUDA_CHECK(cudaGraphInstantiate(&executable, graph, 0));
-  CUDA_CHECK(cudaGraphDestroy(graph));
-  return executable;
 }
 
-// Runs one captured graph and compares every score with the CPU reference.
+// Prepares a run: captures and instantiates its graph when `graph` is set,
+// otherwise keeps the events that direct launches record on every run.
+PagerankRun prepare_pagerank(const Streams& s, const HostGraph& host,
+                             const DeviceGraph& device, const RunOptions& options,
+                             float* result, bool graph) {
+  PagerankRun run;
+  run.streams = &s;
+  run.host = &host;
+  run.device = &device;
+  run.options = options;
+  run.result = result;
+  run.bounds = options.include_transfers ? split_by_edges(host, options.upload_chunks)
+                                         : std::vector<int>{0, host.vertices};
+  run.chunk_ready.resize(run.bounds.size() - 1);
+  for (cudaEvent_t& event : run.chunk_ready)
+    CUDA_CHECK(cudaEventCreateWithFlags(&event, cudaEventDisableTiming));
+  if (graph) {
+    cudaGraph_t captured = nullptr;
+    CUDA_CHECK(cudaStreamBeginCapture(s.compute, cudaStreamCaptureModeGlobal));
+    enqueue_pagerank(run);
+    CUDA_CHECK(cudaStreamEndCapture(s.compute, &captured));
+    // The captured graph keeps the dependencies, not the events.
+    for (cudaEvent_t event : run.chunk_ready) CUDA_CHECK(cudaEventDestroy(event));
+    run.chunk_ready.clear();
+    CUDA_CHECK(cudaGraphInstantiate(&run.executable, captured, 0));
+    CUDA_CHECK(cudaGraphDestroy(captured));
+  }
+  return run;
+}
+
+// Enqueues one run on the compute stream: a graph replay or the direct work.
+void launch_pagerank(const PagerankRun& run) {
+  if (run.executable)
+    CUDA_CHECK(cudaGraphLaunch(run.executable, run.streams->compute));
+  else
+    enqueue_pagerank(run);
+}
+
+void destroy_pagerank(PagerankRun& run) {
+  if (run.executable) CUDA_CHECK(cudaGraphExecDestroy(run.executable));
+  for (cudaEvent_t event : run.chunk_ready) CUDA_CHECK(cudaEventDestroy(event));
+  run = PagerankRun{};
+}
+
+void nvtx_push(const char* label) {
+#if PAGERANK_HAS_NVTX
+  nvtxRangePushA(label);
+#else
+  (void)label;
+#endif
+}
+
+void nvtx_pop() {
+#if PAGERANK_HAS_NVTX
+  nvtxRangePop();
+#endif
+}
+
+// Runs PageRank once and compares every score with the CPU reference.
 // The score sum is a secondary check.  "spread" is (max - min) / mean of the
 // expected scores; near zero means the case cannot detect wrong edges.
 bool validate_case(const Streams& streams, const Settings& settings, const char* name,
@@ -461,16 +543,16 @@ bool validate_case(const Streams& streams, const Settings& settings, const char*
   std::vector<float> actual(vertices);
   std::vector<void*> pinned = pin_host_buffers(settings, graph, initial, actual);
   DeviceGraph device = allocate_device_graph(graph);
-  CaptureOptions options;
+  RunOptions options;
   options.initial_scores = initial ? initial->data() : nullptr;
   options.iterations = iterations;
   options.block_size = settings.block_size;
   options.upload_chunks = settings.upload_chunks;
-  cudaGraphExec_t executable =
-      capture_pagerank(streams, graph, device, options, actual.data());
-  CUDA_CHECK(cudaGraphLaunch(executable, streams.compute));
+  PagerankRun run =
+      prepare_pagerank(streams, graph, device, options, actual.data(), settings.graph);
+  launch_pagerank(run);
   CUDA_CHECK(cudaStreamSynchronize(streams.compute));
-  CUDA_CHECK(cudaGraphExecDestroy(executable));
+  destroy_pagerank(run);
   free_device_graph(device);
   unpin_host_buffers(pinned);
 
@@ -539,20 +621,25 @@ bool run_validation(const Streams& streams, const Settings& settings,
                       &irregular_skewed, 1);
   ok &= validate_case(streams, settings, "irregular, skewed start", irregular,
                       &irregular_skewed, kIterations);
-  std::printf("validation %s (block_size=%d pin_host=%d upload_chunks=%d)\n",
-              ok ? "passed" : "FAILED", settings.block_size, settings.pin_host,
-              settings.upload_chunks);
+  std::printf("validation %s (launch=%s block_size=%d pin_host=%d upload_chunks=%d)\n",
+              ok ? "passed" : "FAILED", settings.graph ? "graph" : "direct",
+              settings.block_size, settings.pin_host, settings.upload_chunks);
   return ok;
 }
 
-// Average milliseconds per launch over `replays` back-to-back launches.
-float time_replays(const Streams& streams, cudaGraphExec_t executable, int replays) {
+// Average milliseconds per run over `replays` back-to-back runs, each an
+// NVTX range named `range`.
+float time_replays(const Streams& streams, const PagerankRun& run, int replays,
+                   const char* range) {
   cudaEvent_t start = nullptr, stop = nullptr;
   CUDA_CHECK(cudaEventCreate(&start));
   CUDA_CHECK(cudaEventCreate(&stop));
   CUDA_CHECK(cudaEventRecord(start, streams.compute));
-  for (int replay = 0; replay < replays; ++replay)
-    CUDA_CHECK(cudaGraphLaunch(executable, streams.compute));
+  for (int replay = 0; replay < replays; ++replay) {
+    nvtx_push(range);
+    launch_pagerank(run);
+    nvtx_pop();
+  }
   CUDA_CHECK(cudaEventRecord(stop, streams.compute));
   CUDA_CHECK(cudaEventSynchronize(stop));
   float elapsed_ms = 0.0f;
@@ -562,47 +649,53 @@ float time_replays(const Streams& streams, cudaGraphExec_t executable, int repla
   return elapsed_ms / replays;
 }
 
-// Times the benchmark graph (upload, twenty iterations, download) and a
-// compute-only graph (initialization and twenty iterations on data already
-// on the device).  The full graph runs first, so a profiler limited to the
-// first launches sees it and the compute-only graph finds the data uploaded.
+// Times the benchmark run (upload, twenty iterations, download) and a
+// compute-only run (initialization and twenty iterations on data already on
+// the device).  The full run goes first, so a profiler limited to the first
+// launches sees it and the compute-only run finds the data uploaded.
 void run_benchmark(const Streams& streams, const Settings& settings,
                    const HostGraph& fixture) {
   std::vector<float> h_result(fixture.vertices);
   std::vector<void*> pinned = pin_host_buffers(settings, fixture, nullptr, h_result);
   DeviceGraph device = allocate_device_graph(fixture);
-  CaptureOptions options;
+  RunOptions options;
   options.block_size = settings.block_size;
   options.upload_chunks = settings.upload_chunks;
-  cudaGraphExec_t full = capture_pagerank(streams, fixture, device, options, h_result.data());
+  PagerankRun full = prepare_pagerank(streams, fixture, device, options, h_result.data(),
+                                      settings.graph);
   options.include_transfers = false;
-  cudaGraphExec_t compute_only = capture_pagerank(streams, fixture, device, options, nullptr);
+  PagerankRun compute_only =
+      prepare_pagerank(streams, fixture, device, options, nullptr, settings.graph);
   // Uploading ahead keeps one-time graph setup out of the timings.
-  CUDA_CHECK(cudaGraphUpload(full, streams.compute));
-  CUDA_CHECK(cudaGraphUpload(compute_only, streams.compute));
+  if (settings.graph) {
+    CUDA_CHECK(cudaGraphUpload(full.executable, streams.compute));
+    CUDA_CHECK(cudaGraphUpload(compute_only.executable, streams.compute));
+  }
 
   int graph_replays = 0;
   if (const char* value = std::getenv("GRAPH_REPLAYS"))
     graph_replays = std::atoi(value);
   if (graph_replays <= 0) {
-    const float replay_ms = time_replays(streams, full, 1);
+    const float replay_ms = time_replays(streams, full, 1, "pagerank.calibrate");
     graph_replays = replay_ms > 0.0f
                         ? static_cast<int>(10000.0f / replay_ms) + 1
                         : 1;
   }
-  const float full_ms = time_replays(streams, full, graph_replays);
-  const float compute_ms = time_replays(streams, compute_only, graph_replays);
+  const float full_ms = time_replays(streams, full, graph_replays, "pagerank.full");
+  const float compute_ms =
+      time_replays(streams, compute_only, graph_replays, "pagerank.compute");
 
-  std::printf("PageRank scores after %d iterations (replays=%d): %.6f %.6f %.6f %.6f\n",
-              kIterations, graph_replays, h_result[0], h_result[1],
+  const char* launch = settings.graph ? "graph" : "direct";
+  std::printf("PageRank scores after %d iterations (launch=%s replays=%d): %.6f %.6f %.6f %.6f\n",
+              kIterations, launch, graph_replays, h_result[0], h_result[1],
               h_result[2], h_result[3]);
-  std::printf("block_size=%d pin_host=%d upload_chunks=%d: %.3f ms per replay with "
+  std::printf("launch=%s block_size=%d pin_host=%d upload_chunks=%d: %.3f ms per replay with "
               "transfers, %.3f ms compute only (%.4f ms per iteration)\n",
-              settings.block_size, settings.pin_host, settings.upload_chunks, full_ms,
-              compute_ms, compute_ms / kIterations);
+              launch, settings.block_size, settings.pin_host, settings.upload_chunks,
+              full_ms, compute_ms, compute_ms / kIterations);
 
-  CUDA_CHECK(cudaGraphExecDestroy(compute_only));
-  CUDA_CHECK(cudaGraphExecDestroy(full));
+  destroy_pagerank(compute_only);
+  destroy_pagerank(full);
   free_device_graph(device);
   unpin_host_buffers(pinned);
 }
@@ -616,6 +709,14 @@ int main() {
     return 2;
   }
   Settings settings;
+  if (const char* value = std::getenv("PAGERANK_LAUNCH")) {
+    const std::string launch = value;
+    if (launch != "graph" && launch != "direct") {
+      std::fprintf(stderr, "PAGERANK_LAUNCH must be graph or direct (got \"%s\")\n", value);
+      return 2;
+    }
+    settings.graph = launch == "graph";
+  }
   const char* block_size_value = std::getenv("PAGERANK_BLOCK_SIZE");
   if (block_size_value) settings.block_size = std::atoi(block_size_value);
   if (settings.block_size < 32 || settings.block_size > 1024 || settings.block_size % 32 != 0) {

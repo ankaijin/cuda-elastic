@@ -3,19 +3,22 @@ set -euo pipefail
 
 # Profiles build/anomaly_mse at the large shape (random inputs).
 # Override the arguments with ARGS, e.g. ARGS="--count=640" ./profile_cuda.sh
+# LAUNCH=direct profiles the direct-launch mode instead of graph replays; set
+# TIMESTAMP to give graph and direct runs the same file suffix.
 # Binaries and profiles live in <repo>/<gpu>/mlperf-anomaly/ (see gpu.sh).
 GPU_DIR="${GPU_DIR:-../$(../gpu.sh name)/mlperf-anomaly}"
 BIN="$GPU_DIR/build/anomaly_mse"
-ARGS="${ARGS:---count=67108864 --inputs=random --replays=20}"
+LAUNCH="${LAUNCH:-graph}"
+ARGS="${ARGS:---count=67108864 --inputs=random --replays=20} --launch=$LAUNCH"
 OUT_DIR="$GPU_DIR/profiles"
-STAMP="$(basename "$BIN")-$(date +%Y%m%d-%H%M%S)"
+STAMP="$(basename "$BIN")-$LAUNCH-${TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 
 mkdir -p "$OUT_DIR"
 
 case "${1:-all}" in
   nsys)
     nsys profile \
-      --trace=cuda \
+      --trace=cuda,nvtx \
       --cuda-graph-trace=node \
       --sample=none \
       --cpuctxsw=none \
@@ -26,9 +29,10 @@ case "${1:-all}" in
     ;;
 
   ncu)
-    # Each graph holds two kernel nodes: mse_partial_kernel, then
-    # mse_finalize_kernel. Skip the correctness replay's two nodes and capture
-    # one launch of each from the first kernels-only replay.
+    # Each iteration runs two kernels (graph nodes in graph mode):
+    # mse_partial_kernel, then mse_finalize_kernel. Skip the correctness
+    # iteration's two and capture one launch of each from the first
+    # kernels-only iteration.
     ncu \
       --set full \
       --launch-skip 2 \
