@@ -1,0 +1,11 @@
+==PROF== Connected to process 2184905 (/home/ankai/cuda/.claude/worktrees/direct-launch-kernel-versions-ac58c1/mlperf-classification/build/kws_postprocess)
+==PROF== Profiling "kws_postprocess_kernel" - 0 (1/1): 0%....50%....100% - 45 passes
+mlperf-classification kws postprocess: count=12 batch=4194304 inputs=random scale=0.0390625 zero_point=-7 launch=graph replays=20
+  row 0        best=1 p[best]=5.23438
+  check        pass (4194304/4194304 rows bitwise equal to loom loop; 97561 rows with a tied maximum)
+  kernel       1063.578 us/iter (graph replay)
+  end-to-end   11390.992 us/iter (H2D + kernel + D2H, graph replay)
+  throughput   3943.6 M rows/s (kernel)
+  timed total  0.249 s (replays x (kernel + end-to-end), excluding warm-up)
+==PROF== Disconnected from process 2184905
+==PROF== Report: /home/ankai/cuda/.claude/worktrees/direct-launch-kernel-versions-ac58c1/mlperf-classification/profiles/ncu-kws_postprocess-graph-20261015-224015.ncu-rep

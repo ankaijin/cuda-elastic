@@ -1,0 +1,10 @@
+==PROF== Connected to process 2185263 (/home/ankai/cuda/.claude/worktrees/direct-launch-kernel-versions-ac58c1/mlperf-classification/build/vww_preprocess)
+==PROF== Profiling "vww_preprocess_kernel" - 0 (1/1): 0%....50%....100% - 45 passes
+mlperf-classification vww preprocess: count=268435456 inputs=random blocks=656 launch=graph replays=20
+  check        pass (268435456/268435456 bytes equal to loom loop)
+  kernel       656.589 us/iter (graph replay)
+  end-to-end   21914.598 us/iter (H2D + kernel + D2H, graph replay)
+  bandwidth    817.7 GB/s (kernel, 2 B/element)
+  timed total  0.451 s (replays x (kernel + end-to-end), excluding warm-up)
+==PROF== Disconnected from process 2185263
+==PROF== Report: /home/ankai/cuda/.claude/worktrees/direct-launch-kernel-versions-ac58c1/mlperf-classification/profiles/ncu-vww_preprocess-graph-20261015-224015.ncu-rep

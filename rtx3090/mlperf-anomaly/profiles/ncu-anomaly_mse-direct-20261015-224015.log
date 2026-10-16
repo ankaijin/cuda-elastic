@@ -1,0 +1,14 @@
+==PROF== Connected to process 2186995 (/home/ankai/cuda/.claude/worktrees/direct-launch-kernel-versions-ac58c1/mlperf-anomaly/build/anomaly_mse)
+==PROF== Profiling "mse_partial_kernel" - 0 (1/2): 0%....50%....100% - 45 passes
+==PROF== Profiling "mse_finalize_kernel" - 1 (2/2): 0%....50%....100% - 45 passes
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=direct replays=20
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      382.310 us/iter (direct launch)
+  end-to-end   14210.075 us/iter (H2D + kernels + D2H, direct launch)
+  bandwidth    877.7 GB/s (kernels, 5 B/element)
+  timed total  0.292 s (replays x (kernels + end-to-end), excluding warm-up)
+==PROF== Disconnected from process 2186995
+==PROF== Report: /home/ankai/cuda/.claude/worktrees/direct-launch-kernel-versions-ac58c1/mlperf-anomaly/profiles/ncu-anomaly_mse-direct-20261015-224015.ncu-rep
