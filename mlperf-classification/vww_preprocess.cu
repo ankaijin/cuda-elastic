@@ -149,10 +149,13 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
 
   double kernelMicroseconds = 0.0, endToEndMicroseconds = 0.0;
+  double singleMicroseconds = 0.0;
   if (time_launches([&] { return launch(0); }, stream, options.replays,
                     "vww.kernels", kernelMicroseconds) ||
       time_launches([&] { return launch(1); }, stream, options.replays,
-                    "vww.end_to_end", endToEndMicroseconds))
+                    "vww.end_to_end", endToEndMicroseconds) ||
+      time_single([&] { return launch(1); }, stream, "vww.end_to_end.single",
+                  singleMicroseconds))
     return EXIT_FAILURE;
 
   std::printf("mlperf-classification vww preprocess: count=%zu inputs=%s "
@@ -167,6 +170,8 @@ int main(int argc, char** argv) {
               endToEndMicroseconds, graph ? "graph replay" : "direct launch");
   std::printf("  bandwidth    %.1f GB/s (kernel, 2 B/element)\n",
               2.0 * static_cast<double>(count) / (kernelMicroseconds * 1.0e3));
+  print_batch_and_single(options.replays, endToEndMicroseconds,
+                         singleMicroseconds);
   print_timed_total(options.replays, kernelMicroseconds,
                     endToEndMicroseconds);
 

@@ -329,6 +329,37 @@ inline void nvtx_pop() {
 #endif
 }
 
+// Full runs timed one at a time for the single-iteration time.
+constexpr int kSingleReplays = 20;
+
+// Median milliseconds of one run launched by itself: the device is drained
+// before each of kSingleReplays runs, so a run's launch cost is exposed
+// instead of overlapping the previous run's work as in back-to-back replays.
+// launch(r) enqueues run r on stream; each run is an NVTX range named range.
+template <typename Launch>
+float time_single_ms(cudaStream_t stream, Launch launch, const char* range) {
+  cudaEvent_t start = nullptr, stop = nullptr;
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+  std::vector<float> samples;
+  for (int replay = 0; replay < kSingleReplays; ++replay) {
+    CUDA_CHECK(cudaDeviceSynchronize());
+    nvtx_push(range);
+    CUDA_CHECK(cudaEventRecord(start, stream));
+    launch(replay);
+    CUDA_CHECK(cudaEventRecord(stop, stream));
+    nvtx_pop();
+    CUDA_CHECK(cudaEventSynchronize(stop));
+    float elapsed_ms = 0.0f;
+    CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, start, stop));
+    samples.push_back(elapsed_ms);
+  }
+  CUDA_CHECK(cudaEventDestroy(stop));
+  CUDA_CHECK(cudaEventDestroy(start));
+  std::sort(samples.begin(), samples.end());
+  return (samples[(kSingleReplays - 1) / 2] + samples[kSingleReplays / 2]) / 2.0f;
+}
+
 // One benchmark input: a graph, its starting scores (empty for a uniform
 // start) and the pinned buffer its run writes the final scores into.
 struct BenchInput {

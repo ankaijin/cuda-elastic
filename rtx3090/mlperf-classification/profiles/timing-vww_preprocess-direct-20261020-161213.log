@@ -1,0 +1,45 @@
+### run 1: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-classification/build/vww_preprocess --count=268435456 --inputs=random --replays=50 --launch=direct
+mlperf-classification vww preprocess: count=268435456 inputs=random blocks=656 launch=direct replays=50
+  check        pass (268435456/268435456 bytes equal to loom loop)
+  kernel       658.432 us/iter (direct launch)
+  end-to-end   21877.671 us/iter (H2D + kernel + D2H, direct launch)
+  bandwidth    815.4 GB/s (kernel, 2 B/element)
+  batch        1093.884 ms (50 back-to-back end-to-end iterations)
+  single       21871.552 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  1.127 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 2: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-classification/build/vww_preprocess --count=268435456 --inputs=random --replays=50 --launch=direct
+mlperf-classification vww preprocess: count=268435456 inputs=random blocks=656 launch=direct replays=50
+  check        pass (268435456/268435456 bytes equal to loom loop)
+  kernel       658.958 us/iter (direct launch)
+  end-to-end   21881.160 us/iter (H2D + kernel + D2H, direct launch)
+  bandwidth    814.7 GB/s (kernel, 2 B/element)
+  batch        1094.058 ms (50 back-to-back end-to-end iterations)
+  single       21878.112 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  1.127 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 3: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-classification/build/vww_preprocess --count=268435456 --inputs=random --replays=50 --launch=direct
+mlperf-classification vww preprocess: count=268435456 inputs=random blocks=656 launch=direct replays=50
+  check        pass (268435456/268435456 bytes equal to loom loop)
+  kernel       659.619 us/iter (direct launch)
+  end-to-end   21887.927 us/iter (H2D + kernel + D2H, direct launch)
+  bandwidth    813.9 GB/s (kernel, 2 B/element)
+  batch        1094.396 ms (50 back-to-back end-to-end iterations)
+  single       21888.495 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  1.127 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 4: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-classification/build/vww_preprocess --count=268435456 --inputs=random --replays=50 --launch=direct
+mlperf-classification vww preprocess: count=268435456 inputs=random blocks=656 launch=direct replays=50
+  check        pass (268435456/268435456 bytes equal to loom loop)
+  kernel       658.964 us/iter (direct launch)
+  end-to-end   21901.597 us/iter (H2D + kernel + D2H, direct launch)
+  bandwidth    814.7 GB/s (kernel, 2 B/element)
+  batch        1095.080 ms (50 back-to-back end-to-end iterations)
+  single       21886.096 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  1.128 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 5: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-classification/build/vww_preprocess --count=268435456 --inputs=random --replays=50 --launch=direct
+mlperf-classification vww preprocess: count=268435456 inputs=random blocks=656 launch=direct replays=50
+  check        pass (268435456/268435456 bytes equal to loom loop)
+  kernel       658.411 us/iter (direct launch)
+  end-to-end   21882.009 us/iter (H2D + kernel + D2H, direct launch)
+  bandwidth    815.4 GB/s (kernel, 2 B/element)
+  batch        1094.100 ms (50 back-to-back end-to-end iterations)
+  single       21881.408 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  1.127 s (replays x (kernel + end-to-end), excluding warm-up)

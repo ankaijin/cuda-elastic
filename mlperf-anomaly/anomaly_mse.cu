@@ -73,6 +73,9 @@ constexpr int kRandomZeroPoint = -3;
 constexpr double kRelativeTolerance = 1.0e-5;
 constexpr double kAbsoluteTolerance = 1.0e-7;
 
+// Isolated end-to-end iterations whose median is the single-iteration time.
+constexpr int kSingleIterations = 20;
+
 constexpr int kThreads = 256;
 constexpr int kWarps = kThreads / 32;
 constexpr int kBlocksPerSm = 8;
@@ -319,6 +322,40 @@ int time_launches(Launch launch, cudaStream_t stream, int replays,
   return EXIT_SUCCESS;
 }
 
+// Median microseconds of one iteration launched by itself: the stream is
+// drained before each of kSingleIterations iterations, so the iteration's
+// launch cost is exposed instead of overlapping the previous iteration's work
+// as in time_launches' back-to-back loop. Each is an NVTX range
+// named range.
+template <typename Launch>
+int time_single(Launch launch, cudaStream_t stream, const char* range,
+                double& microseconds) {
+  cudaEvent_t start, stop;
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+  std::vector<double> samples;
+  for (int iteration = 0; iteration < kSingleIterations; ++iteration) {
+    CUDA_CHECK(cudaStreamSynchronize(stream));
+    nvtx_push(range);
+    CUDA_CHECK(cudaEventRecord(start, stream));
+    const int status = launch();
+    CUDA_CHECK(cudaEventRecord(stop, stream));
+    nvtx_pop();
+    if (status != EXIT_SUCCESS)
+      return EXIT_FAILURE;
+    CUDA_CHECK(cudaEventSynchronize(stop));
+    float milliseconds = 0.0f;
+    CUDA_CHECK(cudaEventElapsedTime(&milliseconds, start, stop));
+    samples.push_back(1000.0 * milliseconds);
+  }
+  std::sort(samples.begin(), samples.end());
+  microseconds = (samples[(kSingleIterations - 1) / 2] +
+                  samples[kSingleIterations / 2]) / 2.0;
+  CUDA_CHECK(cudaEventDestroy(start));
+  CUDA_CHECK(cudaEventDestroy(stop));
+  return EXIT_SUCCESS;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -427,10 +464,13 @@ int main(int argc, char** argv) {
   }
 
   double kernelMicroseconds = 0.0, endToEndMicroseconds = 0.0;
+  double singleMicroseconds = 0.0;
   if (time_launches([&] { return launch(0); }, stream, options.replays,
                     "anomaly.kernels", kernelMicroseconds) ||
       time_launches([&] { return launch(1); }, stream, options.replays,
-                    "anomaly.end_to_end", endToEndMicroseconds))
+                    "anomaly.end_to_end", endToEndMicroseconds) ||
+      time_single([&] { return launch(1); }, stream,
+                  "anomaly.end_to_end.single", singleMicroseconds))
     return EXIT_FAILURE;
   const double bytes = static_cast<double>(count) * (sizeof(int8_t) +
                                                      sizeof(float));
@@ -456,6 +496,12 @@ int main(int argc, char** argv) {
   std::printf("  bandwidth    %.1f GB/s (kernels, %zu B/element)\n",
               bytes / (kernelMicroseconds * 1.0e3),
               sizeof(int8_t) + sizeof(float));
+  std::printf("  batch        %.3f ms (%d back-to-back end-to-end "
+              "iterations)\n",
+              options.replays * endToEndMicroseconds / 1.0e3, options.replays);
+  std::printf("  single       %.3f us (median of %d end-to-end iterations, "
+              "each launched alone)\n",
+              singleMicroseconds, kSingleIterations);
   std::printf("  timed total  %.3f s (replays x (kernels + end-to-end), "
               "excluding warm-up)\n",
               options.replays * (kernelMicroseconds + endToEndMicroseconds) /

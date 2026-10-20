@@ -1,0 +1,60 @@
+### run 1: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-anomaly/build/anomaly_mse --count=67108864 --inputs=random --replays=50 --launch=direct
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=direct replays=50
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      382.853 us/iter (direct launch)
+  end-to-end   14183.486 us/iter (H2D + kernels + D2H, direct launch)
+  bandwidth    876.4 GB/s (kernels, 5 B/element)
+  batch        709.174 ms (50 back-to-back end-to-end iterations)
+  single       14166.528 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.728 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 2: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-anomaly/build/anomaly_mse --count=67108864 --inputs=random --replays=50 --launch=direct
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=direct replays=50
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      383.386 us/iter (direct launch)
+  end-to-end   14180.448 us/iter (H2D + kernels + D2H, direct launch)
+  bandwidth    875.2 GB/s (kernels, 5 B/element)
+  batch        709.022 ms (50 back-to-back end-to-end iterations)
+  single       14165.360 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.728 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 3: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-anomaly/build/anomaly_mse --count=67108864 --inputs=random --replays=50 --launch=direct
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=direct replays=50
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      382.812 us/iter (direct launch)
+  end-to-end   14166.753 us/iter (H2D + kernels + D2H, direct launch)
+  bandwidth    876.5 GB/s (kernels, 5 B/element)
+  batch        708.338 ms (50 back-to-back end-to-end iterations)
+  single       14165.424 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.727 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 4: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-anomaly/build/anomaly_mse --count=67108864 --inputs=random --replays=50 --launch=direct
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=direct replays=50
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      383.386 us/iter (direct launch)
+  end-to-end   14168.986 us/iter (H2D + kernels + D2H, direct launch)
+  bandwidth    875.2 GB/s (kernels, 5 B/element)
+  batch        708.449 ms (50 back-to-back end-to-end iterations)
+  single       14164.448 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.728 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 5: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-anomaly/build/anomaly_mse --count=67108864 --inputs=random --replays=50 --launch=direct
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=direct replays=50
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      383.425 us/iter (direct launch)
+  end-to-end   14166.876 us/iter (H2D + kernels + D2H, direct launch)
+  bandwidth    875.1 GB/s (kernels, 5 B/element)
+  batch        708.344 ms (50 back-to-back end-to-end iterations)
+  single       14164.208 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.728 s (replays x (kernels + end-to-end), excluding warm-up)

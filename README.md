@@ -1,8 +1,8 @@
 # cuda-elastic
 
-Hand-written CUDA ports of the kernels in several Loom application workloads, each with a harness that runs the same work two ways, captured once into a **CUDA Graph** and replayed, or **launched directly** on every iteration, and checks the GPU result against a CPU reference. Each workload also has a **SOTA** version, the fastest implementation found for the RTX 3090 (see [SOTA versions](#sota-versions)). The repository also holds the Nsight Compute and Nsight Systems profiles of every run, on an RTX 3090 and an RTX 4090, and a spreadsheet built from them.
+Hand-written CUDA ports of the kernels in several Loom application workloads, each with a harness that runs the same work two ways, captured once into a **CUDA Graph** and replayed, or **launched directly** on every iteration, and checks the GPU result against a CPU reference. Each workload also has an **agentic optimized** version (formerly called SOTA; `<name>_sota.cu`), the fastest implementation found for the RTX 3090 (see [Agentic optimized versions](#agentic-optimized-versions)). The repository also holds the Nsight Compute and Nsight Systems profiles of every run, on an RTX 3090 and an RTX 4090, and a spreadsheet built from them.
 
-**Results:** [`results/README.md`](results/README.md) has the summary tables (kernel and whole-application time per workload, graph vs. direct vs. SOTA, and RTX 4090 vs. RTX 3090, predicted and measured), and [`results/cuda_performance.xlsx`](results/cuda_performance.xlsx) has the full ncu metrics. Every number links to the profile it was read from.
+**Results:** [`results/README.md`](results/README.md) has the summary tables (per workload: kernel time, and whole-application time for a full batch of back-to-back iterations and for a single iteration launched alone; direct vs. graph vs. agentic optimized; and RTX 4090 vs. RTX 3090, predicted and measured), and [`results/cuda_performance.xlsx`](results/cuda_performance.xlsx) has the full ncu metrics. Every number links to the profile it was read from.
 
 ## Workloads
 
@@ -16,7 +16,7 @@ Hand-written CUDA ports of the kernels in several Loom application workloads, ea
 
 [`vec_add.cu`](vec_add.cu) is a minimal vector add for checking that the toolchain and GPU work.
 
-Every harness times its iterations with CUDA events, wraps each timed iteration in an NVTX range for nsys, and fails if the output does not match its reference. The loom_msa, PageRank and MLPerf harnesses time the whole application (H2D copies, kernels, D2H copies); llama2c times an rmsnorm + softmax + matmul iteration, with or without copies. The MLPerf ports also build Loom's own reference binary from upstream [mlcommons/tiny](https://github.com/mlcommons/tiny) (fetched at a pinned commit) and compare its output with the smoke oracle in `loom/`.
+Every harness times its iterations with CUDA events, wraps each timed iteration in an NVTX range for nsys, and fails if the output does not match its reference. The loom_msa, PageRank and MLPerf harnesses time the whole application (H2D copies, kernels, D2H copies); llama2c times an rmsnorm + softmax + matmul iteration, with or without copies. Each times one batch of back-to-back iterations and then 20 single iterations, each launched alone on an idle device (NVTX ranges ending in `.single`), so the two show how much launch cost batching amortizes in each launch mode. The MLPerf ports also build Loom's own reference binary from upstream [mlcommons/tiny](https://github.com/mlcommons/tiny) (fetched at a pinned commit) and compare its output with the smoke oracle in `loom/`.
 
 ## Layout
 
@@ -29,6 +29,7 @@ rtx3090/<workload>/profiles/ ncu-*.ncu-rep, nsys-*.nsys-rep and .sqlite exports,
 results/                     summary README and spreadsheet, and the script that builds them
 gpu.sh                       prints the current GPU's folder name (rtx3090) and arch (sm_86)
 profile_ncu_all.sh           runs every ncu profile the spreadsheet uses
+time_all.sh                  runs every whole-application timing (and its nsys trace) the spreadsheet uses
 ```
 
 `gpu.sh` reads the first device in `CUDA_VISIBLE_DEVICES`; set `GPU=...` and `ARCH=...` to override it.
@@ -68,13 +69,13 @@ pagerank/profile_cuda.sh check
 
 The llama2c arguments are `[graph|direct] [launches|auto] [batch] [size] [rows] [repeats] [warmup_ms] [copy|nocopy] [naive|coalesced]`, plus optional `random[=SEED]` (seeded inputs in [-1, 1), checked against a double-precision reference) and `--dump=FILE` (see `llama2c/llama2c_common.h`). PageRank is configured by environment variables: `PAGERANK_MODE` (`validate`, `bench` or `all`), `PAGERANK_LAUNCH` (`graph` or `direct`), `PAGERANK_BLOCK_SIZE`, `PAGERANK_PIN_HOST`, `PAGERANK_UPLOAD_CHUNKS` and `GRAPH_REPLAYS`.
 
-loom_msa also has a repeated, interleaved baseline vs. optimized vs. SOTA benchmark that reports medians and spread:
+loom_msa also has a repeated, interleaved baseline vs. optimized vs. agentic optimized (SOTA) benchmark that reports medians and spread:
 
 ```bash
 make -C loom_msa benchmark
 ```
 
-## SOTA versions
+## Agentic optimized versions
 
 Each workload has a `<name>_sota.cu`: the fastest implementation found for the RTX 3090 after researching published libraries and kernels (each source's header lists what was tried and measured). They don't follow the Loom source, but they do the same work and produce the same output:
 
@@ -112,9 +113,21 @@ sudo env PATH="$PATH" CUDA_VISIBLE_DEVICES=0 ./profile_ncu_all.sh
 
 Files written under `sudo` are handed back to the invoking user.
 
+To rerun every whole-application timing the spreadsheet uses (each workload launched directly, as a CUDA Graph and as the agentic optimized version, 5 interleaved runs of a 50-iteration batch plus single iterations), and then one nsys trace of each of those commands:
+
+```bash
+./time_all.sh
+```
+
+```bash
+TIMESTAMP=<the timing run's stamp> ./time_all.sh nsys
+```
+
+They write `<gpu>/<workload>/profiles/timing-*.log` and `nsys-timing-*`; point `TIMING_STAMP_RTX3090` (or the GPU's entry) in `results/build_spreadsheet.py` at the new stamp.
+
 ## Rebuild the results
 
-The spreadsheet and the tables in `results/README.md` are generated from the committed profiles; nothing is re-run. The script needs `ncu` on `PATH` to read the `.ncu-rep` files:
+The spreadsheet and the tables in `results/README.md` are generated from the committed timing logs and profiles; nothing is re-run. The script needs `ncu` on `PATH` to read the `.ncu-rep` files:
 
 ```bash
 python3 results/build_spreadsheet.py

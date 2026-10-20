@@ -1,0 +1,60 @@
+### run 1: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-anomaly/build/anomaly_mse --count=67108864 --inputs=random --replays=50 --launch=graph
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=graph replays=50
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      381.604 us/iter (graph replay)
+  end-to-end   14191.104 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    879.3 GB/s (kernels, 5 B/element)
+  batch        709.555 ms (50 back-to-back end-to-end iterations)
+  single       14174.304 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.729 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 2: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-anomaly/build/anomaly_mse --count=67108864 --inputs=random --replays=50 --launch=graph
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=graph replays=50
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      381.665 us/iter (graph replay)
+  end-to-end   14164.415 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    879.2 GB/s (kernels, 5 B/element)
+  batch        708.221 ms (50 back-to-back end-to-end iterations)
+  single       14164.544 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.727 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 3: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-anomaly/build/anomaly_mse --count=67108864 --inputs=random --replays=50 --launch=graph
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=graph replays=50
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      381.665 us/iter (graph replay)
+  end-to-end   14163.414 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    879.2 GB/s (kernels, 5 B/element)
+  batch        708.171 ms (50 back-to-back end-to-end iterations)
+  single       14163.280 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.727 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 4: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-anomaly/build/anomaly_mse --count=67108864 --inputs=random --replays=50 --launch=graph
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=graph replays=50
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      381.645 us/iter (graph replay)
+  end-to-end   14188.649 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    879.2 GB/s (kernels, 5 B/element)
+  batch        709.432 ms (50 back-to-back end-to-end iterations)
+  single       14158.432 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.729 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 5: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-anomaly/build/anomaly_mse --count=67108864 --inputs=random --replays=50 --launch=graph
+mlperf-anomaly mse: count=67108864 inputs=random scale=0.0625 zero_point=-3 blocks=656 launch=graph replays=50
+  gpu          0.020833116
+  loom loop    0.015625 (host, sequential float)
+  reference    0.0208331165 (host, double)
+  check        pass (abs err 4.357e-10 vs double)
+  kernels      381.686 us/iter (graph replay)
+  end-to-end   14171.281 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    879.1 GB/s (kernels, 5 B/element)
+  batch        708.564 ms (50 back-to-back end-to-end iterations)
+  single       14161.696 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.728 s (replays x (kernels + end-to-end), excluding warm-up)

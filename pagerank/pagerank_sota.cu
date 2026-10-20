@@ -1185,14 +1185,19 @@ bool run_benchmark(const Streams& streams, const Settings& settings, const cudaD
     CUDA_CHECK(cudaGraphUpload(compute_only[0].executable, streams.compute));
   }
 
+  // Warm-up (and the calibration when GRAPH_REPLAYS is unset): one run of
+  // each input, so first-launch costs stay out of the timed replays.
+  const float replay_ms =
+      time_replays(streams, full, static_cast<int>(full.size()), "pagerank.calibrate");
   int graph_replays = 0;
   if (const char* value = std::getenv("GRAPH_REPLAYS")) graph_replays = std::atoi(value);
-  if (graph_replays <= 0) {
-    const float replay_ms = time_replays(streams, full, 1, "pagerank.calibrate");
+  if (graph_replays <= 0)
     graph_replays = replay_ms > 0.0f ? static_cast<int>(10000.0f / replay_ms) + 1 : 1;
-  }
   graph_replays = std::max<int>(graph_replays, static_cast<int>(inputs.size()));
   const float full_ms = time_replays(streams, full, graph_replays, "pagerank.full");
+  const float single_ms = time_single_ms(
+      streams.compute, [&](int replay) { launch_pagerank(full[replay % full.size()]); },
+      "pagerank.full.single");
   if (inputs.size() > 1) {
     launch_pagerank(full[0]);
     CUDA_CHECK(cudaStreamSynchronize(streams.compute));
@@ -1219,6 +1224,10 @@ bool run_benchmark(const Streams& streams, const Settings& settings, const cudaD
                 chunks, updates, split ? "the last two are the final iteration's two waves" : "one per iteration",
                 2 + 5 * chunks + updates);
   }
+  // Before the per-replay summary, which `profile_cuda.sh sweep` reads as the last line.
+  std::printf("batch: %.3f ms for %d back-to-back replays with transfers; single: %.3f ms "
+              "per replay with transfers (median of %d replays, each launched alone)\n",
+              full_ms * graph_replays, graph_replays, single_ms, kSingleReplays);
   std::printf("launch=%s block_size=%d pin_host=%d upload_chunks=%d: %.3f ms per replay with "
               "transfers, %.3f ms compute only (%.4f ms per iteration)\n",
               launch, settings.block_size, settings.pin_host, settings.upload_chunks, full_ms,

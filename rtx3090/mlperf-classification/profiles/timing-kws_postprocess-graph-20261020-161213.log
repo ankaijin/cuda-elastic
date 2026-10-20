@@ -1,0 +1,50 @@
+### run 1: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=4194304 --inputs=random --replays=50 --launch=graph
+mlperf-classification kws postprocess: count=12 batch=4194304 inputs=random scale=0.0390625 zero_point=-7 launch=graph replays=50
+  row 0        best=1 p[best]=5.23438
+  check        pass (4194304/4194304 rows bitwise equal to loom loop; 97561 rows with a tied maximum)
+  kernel       1110.958 us/iter (graph replay)
+  end-to-end   11366.039 us/iter (H2D + kernel + D2H, graph replay)
+  throughput   3775.4 M rows/s (kernel)
+  batch        568.302 ms (50 back-to-back end-to-end iterations)
+  single       11367.296 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.624 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 2: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=4194304 --inputs=random --replays=50 --launch=graph
+mlperf-classification kws postprocess: count=12 batch=4194304 inputs=random scale=0.0390625 zero_point=-7 launch=graph replays=50
+  row 0        best=1 p[best]=5.23438
+  check        pass (4194304/4194304 rows bitwise equal to loom loop; 97561 rows with a tied maximum)
+  kernel       1119.007 us/iter (graph replay)
+  end-to-end   11369.143 us/iter (H2D + kernel + D2H, graph replay)
+  throughput   3748.2 M rows/s (kernel)
+  batch        568.457 ms (50 back-to-back end-to-end iterations)
+  single       11371.280 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.624 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 3: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=4194304 --inputs=random --replays=50 --launch=graph
+mlperf-classification kws postprocess: count=12 batch=4194304 inputs=random scale=0.0390625 zero_point=-7 launch=graph replays=50
+  row 0        best=1 p[best]=5.23438
+  check        pass (4194304/4194304 rows bitwise equal to loom loop; 97561 rows with a tied maximum)
+  kernel       1118.740 us/iter (graph replay)
+  end-to-end   11385.150 us/iter (H2D + kernel + D2H, graph replay)
+  throughput   3749.1 M rows/s (kernel)
+  batch        569.258 ms (50 back-to-back end-to-end iterations)
+  single       11376.016 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.625 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 4: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=4194304 --inputs=random --replays=50 --launch=graph
+mlperf-classification kws postprocess: count=12 batch=4194304 inputs=random scale=0.0390625 zero_point=-7 launch=graph replays=50
+  row 0        best=1 p[best]=5.23438
+  check        pass (4194304/4194304 rows bitwise equal to loom loop; 97561 rows with a tied maximum)
+  kernel       1118.802 us/iter (graph replay)
+  end-to-end   11370.709 us/iter (H2D + kernel + D2H, graph replay)
+  throughput   3748.9 M rows/s (kernel)
+  batch        568.535 ms (50 back-to-back end-to-end iterations)
+  single       11377.616 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.624 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 5: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=4194304 --inputs=random --replays=50 --launch=graph
+mlperf-classification kws postprocess: count=12 batch=4194304 inputs=random scale=0.0390625 zero_point=-7 launch=graph replays=50
+  row 0        best=1 p[best]=5.23438
+  check        pass (4194304/4194304 rows bitwise equal to loom loop; 97561 rows with a tied maximum)
+  kernel       1118.945 us/iter (graph replay)
+  end-to-end   11375.701 us/iter (H2D + kernel + D2H, graph replay)
+  throughput   3748.4 M rows/s (kernel)
+  batch        568.785 ms (50 back-to-back end-to-end iterations)
+  single       11377.936 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.625 s (replays x (kernel + end-to-end), excluding warm-up)

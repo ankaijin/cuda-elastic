@@ -1,0 +1,85 @@
+### run 1: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/loom_msa/build/msa_optimized_large --inputs=random --launch=direct
+variant: cuda_optimized (1x25000x250000, replays=50, inputs=random, launch=direct)
+attention checksum: 8.42027e+06
+projection energy: 41655.6
+attention sum: 179.567
+attention max: 0.598643
+combined checksum: 8.5465e+06
+direct launch average (us): 8732.16
+batch of 50 back-to-back iterations (ms): 436.608
+single iteration median of 20 (us): 8729.14 [min 8652.86, max 8735.87]
+attention kernel median (us): 8376.32 [min 8375.3, max 8385.54]
+attention through statistics median (us): 8560.64 [min 8558.59, max 8569.86]
+effective attention throughput (TFLOP/s): kernel 14.1769, through statistics 13.8716
+metrics: shape=1x25000x250000 replays=50 launch=direct end_to_end_us=8732.16 batch_ms=436.608 single_us=8729.14 attention_us=8376.32 attention_min_us=8375.3 attention_max_us=8385.54 through_statistics_us=8560.64 through_statistics_min_us=8558.59 through_statistics_max_us=8569.86 attention_flops=1.1875e+11
+reference max |output error|: 1.96265e-07
+reference max statistic error (rel): 1.35477e-07
+PASSED
+### run 2: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/loom_msa/build/msa_optimized_large --inputs=random --launch=direct
+variant: cuda_optimized (1x25000x250000, replays=50, inputs=random, launch=direct)
+attention checksum: 8.42027e+06
+projection energy: 41655.6
+attention sum: 179.567
+attention max: 0.598643
+combined checksum: 8.5465e+06
+direct launch average (us): 8805.68
+batch of 50 back-to-back iterations (ms): 440.284
+single iteration median of 20 (us): 8809.52 [min 8802.3, max 8813.63]
+attention kernel median (us): 8452.1 [min 8451.07, max 8530.94]
+attention through statistics median (us): 8637.44 [min 8635.39, max 8717.54]
+effective attention throughput (TFLOP/s): kernel 14.0498, through statistics 13.7483
+metrics: shape=1x25000x250000 replays=50 launch=direct end_to_end_us=8805.68 batch_ms=440.284 single_us=8809.52 attention_us=8452.1 attention_min_us=8451.07 attention_max_us=8530.94 through_statistics_us=8637.44 through_statistics_min_us=8635.39 through_statistics_max_us=8717.54 attention_flops=1.1875e+11
+reference max |output error|: 1.96265e-07
+reference max statistic error (rel): 1.35477e-07
+PASSED
+### run 3: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/loom_msa/build/msa_optimized_large --inputs=random --launch=direct
+variant: cuda_optimized (1x25000x250000, replays=50, inputs=random, launch=direct)
+attention checksum: 8.42027e+06
+projection energy: 41655.6
+attention sum: 179.567
+attention max: 0.598643
+combined checksum: 8.5465e+06
+direct launch average (us): 8823.24
+batch of 50 back-to-back iterations (ms): 441.162
+single iteration median of 20 (us): 8908.1 [min 8806.69, max 9048.61]
+attention kernel median (us): 8529.92 [min 8453.12, max 8691.71]
+attention through statistics median (us): 8716.4 [min 8638.46, max 8881.15]
+effective attention throughput (TFLOP/s): kernel 13.9216, through statistics 13.6238
+metrics: shape=1x25000x250000 replays=50 launch=direct end_to_end_us=8823.24 batch_ms=441.162 single_us=8908.1 attention_us=8529.92 attention_min_us=8453.12 attention_max_us=8691.71 through_statistics_us=8716.4 through_statistics_min_us=8638.46 through_statistics_max_us=8881.15 attention_flops=1.1875e+11
+reference max |output error|: 1.96265e-07
+reference max statistic error (rel): 1.35477e-07
+PASSED
+### run 4: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/loom_msa/build/msa_optimized_large --inputs=random --launch=direct
+variant: cuda_optimized (1x25000x250000, replays=50, inputs=random, launch=direct)
+attention checksum: 8.42027e+06
+projection energy: 41655.6
+attention sum: 179.567
+attention max: 0.598643
+combined checksum: 8.5465e+06
+direct launch average (us): 8820.64
+batch of 50 back-to-back iterations (ms): 441.032
+single iteration median of 20 (us): 8886.38 [min 8804.8, max 8991.52]
+attention kernel median (us): 8529.92 [min 8528.9, max 8693.89]
+attention through statistics median (us): 8717.31 [min 8715.26, max 8884.22]
+effective attention throughput (TFLOP/s): kernel 13.9216, through statistics 13.6223
+metrics: shape=1x25000x250000 replays=50 launch=direct end_to_end_us=8820.64 batch_ms=441.032 single_us=8886.38 attention_us=8529.92 attention_min_us=8528.9 attention_max_us=8693.89 through_statistics_us=8717.31 through_statistics_min_us=8715.26 through_statistics_max_us=8884.22 attention_flops=1.1875e+11
+reference max |output error|: 1.96265e-07
+reference max statistic error (rel): 1.35477e-07
+PASSED
+### run 5: /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/loom_msa/build/msa_optimized_large --inputs=random --launch=direct
+variant: cuda_optimized (1x25000x250000, replays=50, inputs=random, launch=direct)
+attention checksum: 8.42027e+06
+projection energy: 41655.6
+attention sum: 179.567
+attention max: 0.598643
+combined checksum: 8.5465e+06
+direct launch average (us): 8833.87
+batch of 50 back-to-back iterations (ms): 441.693
+single iteration median of 20 (us): 8890.06 [min 8806.02, max 8909.22]
+attention kernel median (us): 8530.94 [min 8452.1, max 8707.07]
+attention through statistics median (us): 8717.31 [min 8636.42, max 8896.51]
+effective attention throughput (TFLOP/s): kernel 13.9199, through statistics 13.6223
+metrics: shape=1x25000x250000 replays=50 launch=direct end_to_end_us=8833.87 batch_ms=441.693 single_us=8890.06 attention_us=8530.94 attention_min_us=8452.1 attention_max_us=8707.07 through_statistics_us=8717.31 through_statistics_min_us=8636.42 through_statistics_max_us=8896.51 attention_flops=1.1875e+11
+reference max |output error|: 1.96265e-07
+reference max statistic error (rel): 1.35477e-07
+PASSED

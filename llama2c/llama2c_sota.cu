@@ -72,6 +72,7 @@ constexpr int kDefaultWarmupMs = 100;
 constexpr double kAutoTargetMs = 50.0;
 constexpr int kAutoMinLaunches = 20;
 constexpr int kAutoMaxLaunches = 5000;
+constexpr int kSingleIterations = 20;
 constexpr int kMaxThreads = 512;
 constexpr int kGenericThreads = 256;
 
@@ -563,6 +564,26 @@ int main(int argc, char **argv) {
   CUDA_CHECK(cudaEventElapsedTime(&gpu_ms, timing_start, timing_stop));
   const double submit_us = std::chrono::duration<double, std::micro>(submit_end - submit_start).count();
   const double wall_ms = std::chrono::duration<double, std::milli>(wall_end - wall_start).count();
+  // Single iterations: each starts on an idle device, so its launch cost is
+  // exposed instead of overlapping the previous iteration's work as in the
+  // back-to-back loop above. single_us is their median.
+  std::vector<double> single_samples;
+  for (int iteration = 0; iteration < kSingleIterations; ++iteration) {
+    synchronize_all();
+    nvtx_push("llama2c.single");
+    CUDA_CHECK(cudaEventRecord(timing_start, main_stream));
+    run_iteration();
+    CUDA_CHECK(cudaEventRecord(timing_stop, main_stream));
+    nvtx_pop();
+    CUDA_CHECK(cudaEventSynchronize(timing_stop));
+    float single_ms = 0.0f;
+    CUDA_CHECK(cudaEventElapsedTime(&single_ms, timing_start, timing_stop));
+    single_samples.push_back(1000.0 * single_ms);
+  }
+  synchronize_all();
+  std::sort(single_samples.begin(), single_samples.end());
+  const double single_us = (single_samples[(kSingleIterations - 1) / 2] +
+                            single_samples[kSingleIterations / 2]) / 2.0;
 
   // Validate what the last timed iteration produced: in copy mode it already
   // copied its outputs to the host; in nocopy mode copy them now.
@@ -589,10 +610,11 @@ int main(int argc, char **argv) {
 
   const double gpu_ms_per_iter = gpu_ms / options.launches;
   const double achieved_gbps = min_bytes_per_iter / (gpu_ms_per_iter * 1.0e6);
-  std::printf("mode=%s matmul=sota launches=%d batch=%d size=%d rows=%d repeats=%d copies=%d warmup_ms=%d warmup_iterations=%d gpu_ms=%.6f gpu_ms_per_iter=%.6f wall_ms=%.6f wall_ms_per_iter=%.6f submit_us=%.3f submit_us_per_iter=%.3f graph_capture_ms=%.6f graph_instantiate_ms=%.6f graph_upload_ms=%.6f rms_waves=%.3f softmax_waves=%.3f matmul_waves=%.3f min_waves=%.3f min_bytes_per_iter=%.0f achieved_gbps=%.1f valid=%d inputs=%s seed=%llu kernels_per_iter=%d threads=%d vectors=%d\n",
+  std::printf("mode=%s matmul=sota launches=%d batch=%d size=%d rows=%d repeats=%d copies=%d warmup_ms=%d warmup_iterations=%d gpu_ms=%.6f gpu_ms_per_iter=%.6f single_iterations=%d single_us=%.3f wall_ms=%.6f wall_ms_per_iter=%.6f submit_us=%.3f submit_us_per_iter=%.3f graph_capture_ms=%.6f graph_instantiate_ms=%.6f graph_upload_ms=%.6f rms_waves=%.3f softmax_waves=%.3f matmul_waves=%.3f min_waves=%.3f min_bytes_per_iter=%.0f achieved_gbps=%.1f valid=%d inputs=%s seed=%llu kernels_per_iter=%d threads=%d vectors=%d\n",
               options.graph ? "graph" : "direct", options.launches, options.batch, options.size,
               options.rows, options.repeats, options.copy_outputs ? 1 : 0, options.warmup_ms,
-              warmup_iterations, gpu_ms, gpu_ms_per_iter, wall_ms, wall_ms / options.launches,
+              warmup_iterations, gpu_ms, gpu_ms_per_iter, kSingleIterations, single_us,
+              wall_ms, wall_ms / options.launches,
               submit_us, submit_us / options.launches, graph_capture_ms, graph_instantiate_ms,
               graph_upload_ms, fused_waves, fused_waves, fused_waves, fused_waves, min_bytes_per_iter,
               achieved_gbps, valid ? 1 : 0, options.inputs.random ? "random" : "deterministic",

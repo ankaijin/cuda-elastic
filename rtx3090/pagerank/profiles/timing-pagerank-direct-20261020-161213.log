@@ -1,0 +1,20 @@
+### run 1: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=50 /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/pagerank/gapbs_pagerank_cuda_graph
+PageRank scores after 20 iterations (launch=direct replays=50): 0.000001 0.000001 0.000001 0.000001
+batch: 385.722 ms for 50 back-to-back replays with transfers; single: 7.606 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=32 pin_host=1 upload_chunks=8: 7.714 ms per replay with transfers, 4.701 ms compute only (0.2350 ms per iteration)
+### run 2: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=50 /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/pagerank/gapbs_pagerank_cuda_graph
+PageRank scores after 20 iterations (launch=direct replays=50): 0.000001 0.000001 0.000001 0.000001
+batch: 382.578 ms for 50 back-to-back replays with transfers; single: 7.668 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=32 pin_host=1 upload_chunks=8: 7.652 ms per replay with transfers, 4.780 ms compute only (0.2390 ms per iteration)
+### run 3: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=50 /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/pagerank/gapbs_pagerank_cuda_graph
+PageRank scores after 20 iterations (launch=direct replays=50): 0.000001 0.000001 0.000001 0.000001
+batch: 390.964 ms for 50 back-to-back replays with transfers; single: 7.662 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=32 pin_host=1 upload_chunks=8: 7.819 ms per replay with transfers, 4.775 ms compute only (0.2387 ms per iteration)
+### run 4: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=50 /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/pagerank/gapbs_pagerank_cuda_graph
+PageRank scores after 20 iterations (launch=direct replays=50): 0.000001 0.000001 0.000001 0.000001
+batch: 385.541 ms for 50 back-to-back replays with transfers; single: 7.671 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=32 pin_host=1 upload_chunks=8: 7.711 ms per replay with transfers, 4.792 ms compute only (0.2396 ms per iteration)
+### run 5: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=50 /home/ankai/cuda/.claude/worktrees/results-spreadsheet-timing-reorder-7bbde3/rtx3090/pagerank/gapbs_pagerank_cuda_graph
+PageRank scores after 20 iterations (launch=direct replays=50): 0.000001 0.000001 0.000001 0.000001
+batch: 396.044 ms for 50 back-to-back replays with transfers; single: 7.655 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=32 pin_host=1 upload_chunks=8: 7.921 ms per replay with transfers, 4.777 ms compute only (0.2388 ms per iteration)

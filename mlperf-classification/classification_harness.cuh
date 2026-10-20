@@ -7,7 +7,8 @@
 // captured once into a CUDA graph and replayed; with --launch=direct the same
 // stream operations are enqueued directly on every iteration. Either way each
 // is warmed up, then run --replays times between CUDA events, each iteration
-// inside an NVTX range.
+// inside an NVTX range. End to end is then also timed one iteration at a time
+// (time_single), so the batch and single-iteration times can be compared.
 //
 // --dump=FILE makes a binary write its host output buffers to FILE after its
 // correctness check, as raw little-endian arrays (each binary documents its
@@ -46,6 +47,7 @@
   } while (0)
 
 constexpr int kWarmupReplays = 100;
+constexpr int kSingleIterations = 20;
 
 struct Options {
   size_t count = 0;  // set by each binary to its smoke size
@@ -168,6 +170,51 @@ inline int time_launches(Launch launch, cudaStream_t stream, int replays,
   CUDA_CHECK(cudaEventDestroy(start));
   CUDA_CHECK(cudaEventDestroy(stop));
   return EXIT_SUCCESS;
+}
+
+// Median microseconds of one iteration launched by itself: the stream is
+// drained before each of kSingleIterations iterations, so the iteration's
+// launch cost is exposed instead of overlapping the previous iteration's work
+// as in time_launches' back-to-back loop. Each is an NVTX range named range.
+template <typename Launch>
+inline int time_single(Launch launch, cudaStream_t stream, const char* range,
+                       double& microseconds) {
+  cudaEvent_t start, stop;
+  CUDA_CHECK(cudaEventCreate(&start));
+  CUDA_CHECK(cudaEventCreate(&stop));
+  std::vector<double> samples;
+  for (int iteration = 0; iteration < kSingleIterations; ++iteration) {
+    CUDA_CHECK(cudaStreamSynchronize(stream));
+    nvtx_push(range);
+    CUDA_CHECK(cudaEventRecord(start, stream));
+    const int status = launch();
+    CUDA_CHECK(cudaEventRecord(stop, stream));
+    nvtx_pop();
+    if (status != EXIT_SUCCESS)
+      return EXIT_FAILURE;
+    CUDA_CHECK(cudaEventSynchronize(stop));
+    float milliseconds = 0.0f;
+    CUDA_CHECK(cudaEventElapsedTime(&milliseconds, start, stop));
+    samples.push_back(1000.0 * milliseconds);
+  }
+  std::sort(samples.begin(), samples.end());
+  microseconds = (samples[(kSingleIterations - 1) / 2] +
+                  samples[kSingleIterations / 2]) / 2.0;
+  CUDA_CHECK(cudaEventDestroy(start));
+  CUDA_CHECK(cudaEventDestroy(stop));
+  return EXIT_SUCCESS;
+}
+
+// The end-to-end batch (the whole back-to-back timed loop) and single-
+// iteration times.
+inline void print_batch_and_single(int replays, double endToEndMicroseconds,
+                                   double singleMicroseconds) {
+  std::printf("  batch        %.3f ms (%d back-to-back end-to-end "
+              "iterations)\n",
+              replays * endToEndMicroseconds / 1.0e3, replays);
+  std::printf("  single       %.3f us (median of %d end-to-end iterations, "
+              "each launched alone)\n",
+              singleMicroseconds, kSingleIterations);
 }
 
 // Measured time of both timed loops, excluding warm-up.

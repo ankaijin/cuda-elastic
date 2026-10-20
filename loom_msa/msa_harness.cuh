@@ -8,7 +8,10 @@
 // --launch=graph (the default) captures the enqueue function once into a CUDA
 // graph and replays it; --launch=direct calls it on every iteration, with the
 // same fork/join of the two streams that capture uses. Each timed end-to-end
-// iteration is an NVTX range named msa.end_to_end.
+// iteration is an NVTX range named msa.end_to_end. After the back-to-back
+// batch of GRAPH_REPLAYS iterations, kSingleIterations more are timed one at
+// a time (msa.end_to_end.single), each launched on an idle device, so the
+// batch and single-iteration times can be compared.
 //
 // The oracle is a direct port of main.c's loops, generalized to
 // TOKEN_COUNT x CONTEXT_COUNT and accumulated in double precision.
@@ -620,6 +623,26 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
   float elapsed_ms = 0.0f;
   CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, timing_start, timing_stop));
 
+  // Single iterations: the device is drained before each, so its launch cost
+  // is exposed instead of overlapping the previous iteration's work.
+  constexpr int kSingleIterations = 20;
+  std::vector<double> single_samples;
+  for (int replay = 0; replay < kSingleIterations; ++replay) {
+    CUDA_CHECK(cudaDeviceSynchronize());
+    nvtx_push("msa.end_to_end.single");
+    CUDA_CHECK(cudaEventRecord(timing_start, audio_stream));
+    const int status = launch(false, replay % rotation);
+    CUDA_CHECK(cudaEventRecord(timing_stop, audio_stream));
+    nvtx_pop();
+    if (status != EXIT_SUCCESS)
+      return EXIT_FAILURE;
+    CUDA_CHECK(cudaEventSynchronize(timing_stop));
+    float single_ms = 0.0f;
+    CUDA_CHECK(cudaEventElapsedTime(&single_ms, timing_start, timing_stop));
+    single_samples.push_back(1000.0 * single_ms);
+  }
+  const Summary single = summarize(single_samples);
+
   // Stages: instrumented, one warm-up launch, then GRAPH_REPLAYS launches
   // each synchronized so every replay's stage events can be read. They
   // cover every set at least once, so each set's host output comes from its
@@ -674,6 +697,11 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
             << "combined checksum: " << combined << '\n'
             << (use_graph ? "graph replay" : "direct launch")
             << " average (us): " << end_to_end_us << '\n'
+            << "batch of " << GRAPH_REPLAYS << " back-to-back iterations (ms): "
+            << elapsed_ms << '\n'
+            << "single iteration median of " << kSingleIterations
+            << " (us): " << single.median << " [min " << single.minimum
+            << ", max " << single.maximum << "]\n"
             << "attention kernel median (us): " << attention.median
             << " [min " << attention.minimum << ", max " << attention.maximum
             << "]\n"
@@ -689,6 +717,8 @@ inline int run_benchmark(int argc, char** argv, const char* variant_name,
             << CONTEXT_COUNT << " replays=" << GRAPH_REPLAYS
             << " launch=" << (use_graph ? "graph" : "direct")
             << " end_to_end_us=" << end_to_end_us
+            << " batch_ms=" << elapsed_ms
+            << " single_us=" << single.median
             << " attention_us=" << attention.median
             << " attention_min_us=" << attention.minimum
             << " attention_max_us=" << attention.maximum

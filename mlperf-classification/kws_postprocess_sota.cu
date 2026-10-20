@@ -362,11 +362,14 @@ int main(int argc, char** argv) {
   // outputs poisoned above; at least `rotate` of them run, so every set is
   // written, and every set is checked afterwards.
   double kernelMicroseconds = 0.0, endToEndMicroseconds = 0.0;
+  double singleMicroseconds = 0.0;
   if (time_launches([&] { return launch(0); }, stream, options.replays,
                     "kws.kernels", kernelMicroseconds) ||
       time_launches([&] { return launch(1); }, stream, options.replays,
                     "kws.end_to_end", endToEndMicroseconds,
-                    static_cast<int>(rotate)))
+                    static_cast<int>(rotate)) ||
+      time_single([&] { return launch(1); }, stream, "kws.end_to_end.single",
+                  singleMicroseconds))
     return EXIT_FAILURE;
   CUDA_CHECK(cudaStreamSynchronize(stream));
   CUDA_CHECK(cudaGetLastError());
@@ -435,6 +438,8 @@ int main(int argc, char** argv) {
               chunks,
               tiled ? "kws_postprocess_sota_kernel"
                     : "kws_postprocess_sota_generic_kernel");
+  print_batch_and_single(options.replays, endToEndMicroseconds,
+                         singleMicroseconds);
   print_timed_total(options.replays, kernelMicroseconds,
                     endToEndMicroseconds);
 

@@ -233,10 +233,13 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
 
   double kernelMicroseconds = 0.0, endToEndMicroseconds = 0.0;
+  double singleMicroseconds = 0.0;
   if (time_launches([&] { return launch(0); }, stream, options.replays,
                     "kws.kernels", kernelMicroseconds) ||
       time_launches([&] { return launch(1); }, stream, options.replays,
-                    "kws.end_to_end", endToEndMicroseconds))
+                    "kws.end_to_end", endToEndMicroseconds) ||
+      time_single([&] { return launch(1); }, stream, "kws.end_to_end.single",
+                  singleMicroseconds))
     return EXIT_FAILURE;
 
   std::printf("mlperf-classification kws postprocess: count=%d batch=%zu "
@@ -258,6 +261,8 @@ int main(int argc, char** argv) {
               endToEndMicroseconds, graph ? "graph replay" : "direct launch");
   std::printf("  throughput   %.1f M rows/s (kernel)\n",
               static_cast<double>(batch) / kernelMicroseconds);
+  print_batch_and_single(options.replays, endToEndMicroseconds,
+                         singleMicroseconds);
   print_timed_total(options.replays, kernelMicroseconds,
                     endToEndMicroseconds);
 
