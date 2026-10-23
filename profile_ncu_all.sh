@@ -12,7 +12,7 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 GPU_NAME="$("$ROOT/gpu.sh" name)"
 OUT="$ROOT/$GPU_NAME"
-STAMP="$(date +%Y%m%d-%H%M%S)"
+STAMP="${TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 command -v ncu >/dev/null || { echo "error: ncu not in PATH" >&2; exit 127; }
 for bin in llama2c/llama2c_cuda_graph loom_msa/build/msa_optimized_large \
            pagerank/gapbs_pagerank_cuda_graph mlperf-anomaly/build/anomaly_mse \

@@ -3,6 +3,10 @@
 
 # Nsight profiling reports
 .claude/worktrees/
+.worktrees/
+.superpowers/
+__pycache__/
+*.pyc
 
 # Nsight profiling output. Plain nsys traces (.nsys-rep, .sqlite) are a few MB
 # and are committed so results/cuda_performance.xlsx can link them. GPU-metrics

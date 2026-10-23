@@ -1,5 +1,10 @@
 # cuda-elastic
 
+For concurrent development on mono, octacos, and kilia, see
+[`docs/concurrent-development.md`](docs/concurrent-development.md). Each task uses
+its own branch/worktree. Each GPU contributes raw results and an explicit input
+manifest; mono publishes the combined workbook after those contributions merge.
+
 Hand-written CUDA ports of the kernels in several Loom application workloads, each with a harness that runs the same work two ways, captured once into a **CUDA Graph** and replayed, or **launched directly** on every iteration, and checks the GPU result against a CPU reference. Each workload also has an **agentic optimized** version (formerly called SOTA; `<name>_sota.cu`), the fastest implementation found for the RTX 3090 (see [Agentic optimized versions](#agentic-optimized-versions)). The repository also holds the Nsight Compute and Nsight Systems profiles of every run, on an RTX 3090 and an RTX 4090, and a spreadsheet built from them.
 
 **Results:** [`results/README.md`](results/README.md) has the summary tables (per workload: kernel time, and whole-application time for a full batch of back-to-back iterations and for a single iteration launched alone; direct vs. graph vs. agentic optimized; and RTX 4090 vs. RTX 3090, predicted and measured), and [`results/cuda_performance.xlsx`](results/cuda_performance.xlsx) has the full ncu metrics. Every number links to the profile it was read from.
@@ -123,7 +128,7 @@ To rerun every whole-application timing the spreadsheet uses (each workload laun
 TIMESTAMP=<the timing run's stamp> ./time_all.sh nsys
 ```
 
-Each workload runs at its largest shape and at a small, launch-bound one (a few microseconds of GPU work per launch), where the direct / graph difference shows; `SHAPES=large` or `SHAPES=small` runs only one. They write `<gpu>/<workload>/profiles/timing-*.log` and `nsys-timing-*`; point `TIMING_STAMP_RTX3090` (large) or `SMALL_TIMING_STAMP_RTX3090` (small), or the GPU's entry, in `results/build_spreadsheet.py` at the new stamp.
+Each workload runs at its largest shape and at a small, launch-bound one (a few microseconds of GPU work per launch), where the direct / graph difference shows; `SHAPES=large` or `SHAPES=small` runs only one. They write `<gpu>/<workload>/profiles/timing-*.log` and `nsys-timing-*`; select the exact files in `results/inputs/<gpu>.json`. Use `results/record_run.py` to preserve experiment provenance. New files are not selected automatically.
 
 ## Rebuild the results
 

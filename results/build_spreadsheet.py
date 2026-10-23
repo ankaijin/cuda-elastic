@@ -4,9 +4,11 @@ committed in this repository. Nothing is re-run: every number is read from an
 existing ncu report, nsys sqlite export, benchmark log or sweep CSV, and every
 number links to the file it came from on GitHub.
 
-One summary sheet per GPU (RTX 3090, RTX 4090), each read from that GPU's
-output folder (rtx3090/, rtx4090/; see gpu.sh), plus each GPU's ncu metrics.
-Only the latest run of each workload's current implementation is included, at
+One summary sheet per GPU (RTX 3090, RTX 4090, RTX 5090), each read from that
+GPU's output folder (see gpu.sh), plus each GPU's ncu metrics.
+Inputs are pinned explicitly in results/inputs/<gpu>.json. A null input is
+pending; a selected file that is missing is an error. Only the selected run
+of each workload's implementation is included, at
 the largest problem size tested: the dominant kernel (when one dominates) and
 the whole application. Each workload also has a whole-application row at a
 small shape (time_all.sh's small configs), where an iteration is a few
@@ -84,12 +86,11 @@ GITHUB = "https://github.com/ankaijin/cuda-elastic/blob"
 # ------------------------------------------------------------------- GPUs ---
 
 class GPU:
-    """One GPU's results: the folder its outputs live in and, per input, the
-    file to read: a glob, or a tuple of globs, whose match with the latest
-    timestamp (YYYYMMDD-HHMMSS) in its name wins. Inputs not listed, or with no
-    match, read as None."""
+    """One GPU's results and exact, GPU-relative input paths; null is pending."""
 
     def __init__(self, folder, label, toolkit, specs, files, notes):
+        if folder not in ("rtx3090", "rtx4090", "rtx5090"):
+            raise ValueError(f"Unsupported GPU folder: {folder}")
         self.folder, self.label, self.toolkit = folder, label, toolkit
         self.specs, self.files, self.notes = specs, files, notes
 
@@ -98,91 +99,28 @@ class GPU:
         return self.label.split(" (")[0]
 
     def file(self, key):
-        patterns = self.files.get(key, ())
-        if isinstance(patterns, str):
-            patterns = (patterns,)
-        matches = [m for p in patterns for m in (REPO / self.folder).glob(p)]
-        if not matches:
+        selected = self.files.get(key)
+        if selected is None:
             return None
+        if (not isinstance(selected, str) or not selected
+                or any(c in selected for c in "*?[")
+                or Path(selected).is_absolute() or ".." in Path(selected).parts):
+            raise ValueError(f"{self.folder}: {key} must be an exact GPU-relative path")
+        root = (REPO / self.folder).resolve()
+        path = REPO / self.folder / selected
+        if not path.resolve().is_relative_to(root):
+            raise ValueError(f"{self.folder}: {key} escapes the GPU directory")
+        if not path.is_file():
+            raise FileNotFoundError(f"{self.folder}: selected {key} is missing: {path}")
+        return str(path.relative_to(REPO))
 
-        def stamp(path):
-            found = re.findall(r"\d{8}-\d{6}", path.name)
-            return (found[-1] if found else "", path.name)
-        return str(max(matches, key=stamp).relative_to(REPO))
 
-
-# Profile file name prefixes of the workloads with a --launch / PAGERANK_LAUNCH
-# switch: (input key, tool, prefix). The profile scripts name their output
-# <prefix><graph|direct>-<timestamp>.
-LAUNCH_PROFILES = [
-    ("loom", "ncu", "loom_msa/profiles/ncu-all-kernels-msa_optimized_large-"),
-    ("loom", "nsys", "loom_msa/profiles/nsys-msa_optimized_large-"),
-    ("pagerank", "ncu", "pagerank/profiles/ncu-pagerank-"),
-    ("pagerank", "nsys", "pagerank/profiles/nsys-"),
-    ("anomaly", "ncu", "mlperf-anomaly/profiles/ncu-anomaly_mse-"),
-    ("anomaly", "nsys", "mlperf-anomaly/profiles/nsys-anomaly_mse-"),
-    ("kws", "ncu", "mlperf-classification/profiles/ncu-kws_postprocess-"),
-    ("kws", "nsys", "mlperf-classification/profiles/nsys-kws_postprocess-"),
-    ("vww", "ncu", "mlperf-classification/profiles/ncu-vww_preprocess-"),
-    ("vww", "nsys", "mlperf-classification/profiles/nsys-vww_preprocess-"),
-]
-EXTENSIONS = {"ncu": "ncu-rep", "nsys": "sqlite"}
 MODES = ("graph", "direct")
-
-# The SOTA binaries' launch mode (the faster one; see each <name>_sota.cu)
-# and profile files: (input key, tool, file pattern with {stamp}).
+# Existing optimized implementations' launch modes.
 SOTA_LAUNCH = {"llama": "graph", "loom": "direct", "pagerank": "direct",
                "anomaly": "graph", "kws": "direct", "vww": "direct"}
-SOTA_PROFILES = [
-    ("llama", "ncu", "llama2c/profiles/ncu-sota-large-b1024-graph-{stamp}.ncu-rep"),
-    ("llama", "nsys", "llama2c/profiles/nsys-sota-b1024-graph-{stamp}.sqlite"),
-    ("llama", "runs", "llama2c/profiles/sota-runs-b1024-{stamp}.txt"),
-    ("loom", "ncu", "loom_msa/profiles/ncu-all-kernels-msa_sota_large_1chunk-direct-{stamp}.ncu-rep"),
-    ("loom", "nsys", "loom_msa/profiles/nsys-msa_sota_large-direct-{stamp}.sqlite"),
-    ("pagerank", "ncu", "pagerank/profiles/ncu-pagerank-sota-direct-{stamp}.ncu-rep"),
-    ("pagerank", "nsys", "pagerank/profiles/nsys-sota-direct-{stamp}.sqlite"),
-    ("anomaly", "ncu", "mlperf-anomaly/profiles/ncu-anomaly_mse_sota-graph-{stamp}.ncu-rep"),
-    ("anomaly", "nsys", "mlperf-anomaly/profiles/nsys-anomaly_mse_sota-graph-{stamp}.sqlite"),
-    ("kws", "ncu", "mlperf-classification/profiles/ncu-kws_postprocess_sota-direct-{stamp}.ncu-rep"),
-    ("kws", "nsys", "mlperf-classification/profiles/nsys-kws_postprocess_sota-direct-{stamp}.sqlite"),
-    ("vww", "ncu", "mlperf-classification/profiles/ncu-vww_preprocess_sota-direct-{stamp}.ncu-rep"),
-    ("vww", "nsys", "mlperf-classification/profiles/nsys-vww_preprocess_sota-direct-{stamp}.sqlite"),
-]
 
 
-def sota_profiles(stamp):
-    """Input keys <key>_sota_<tool> of SOTA_PROFILES; stamp None = the latest."""
-    return {f"{key}_sota_{tool}": pattern.format(stamp=stamp or "*")
-            for key, tool, pattern in SOTA_PROFILES}
-
-
-def launch_profiles(stamp):
-    """Input keys <key>_<tool>_<mode> of LAUNCH_PROFILES. stamp: one timestamp
-    for every file, or None for the latest of each; profiles taken before the
-    harnesses had a direct mode carry no mode in their names
-    (<prefix>2026...) and count as graph runs."""
-    files = {}
-    for key, tool, prefix in LAUNCH_PROFILES:
-        ext = EXTENSIONS[tool]
-        for mode in MODES:
-            if stamp:
-                files[f"{key}_{tool}_{mode}"] = f"{prefix}{mode}-{stamp}.{ext}"
-            else:
-                files[f"{key}_{tool}_{mode}"] = (f"{prefix}{mode}-*.{ext}",) + (
-                    (f"{prefix}2*.{ext}",) if mode == "graph" else ())
-    return files
-
-
-# time_all.sh's logs and the nsys traces of the same commands (time_all.sh
-# nsys): <workload dir>/profiles/[nsys-]timing-<name>-<launch>-<stamp>.
-TIMING_NAMES = {  # input key: (workload dir, baseline name, agentic optimized name)
-    "llama": ("llama2c", "llama2c", "llama2c_sota"),
-    "loom": ("loom_msa", "msa_optimized_large", "msa_sota_large"),
-    "pagerank": ("pagerank", "pagerank", "pagerank_sota"),
-    "anomaly": ("mlperf-anomaly", "anomaly_mse", "anomaly_mse_sota"),
-    "kws": ("mlperf-classification", "kws_postprocess", "kws_postprocess_sota"),
-    "vww": ("mlperf-classification", "vww_preprocess", "vww_preprocess_sota"),
-}
 # time_all.sh's small shapes (SHAPES=small), under input keys <key>_small.
 SMALL = "_small"
 SMALL_TIMING_NAMES = {
@@ -196,65 +134,28 @@ SMALL_TIMING_NAMES = {
 SINGLE_ITERATIONS = 20  # each harness's kSingleIterations / kSingleReplays
 
 
-def timing_files(stamp, nsys=True, names=TIMING_NAMES):
-    """Input keys <key>_timing_<mode> and <key>_sota_timing (and, with nsys,
-    the matching <key>_nsys_<mode> and <key>_sota_nsys traces, replacing the
-    launch-mode profiles' traces) of each key in names; stamp None = the
-    latest."""
-    files = {}
-    for key, (folder, name, sota) in names.items():
-        runs = [(f"{key}_{{}}_{mode}", name, mode) for mode in MODES]
-        runs.append((f"{key}_sota_{{}}", sota, SOTA_LAUNCH[key.removesuffix(SMALL)]))
-        for pattern, binary, mode in runs:
-            base = f"{folder}/profiles/{{}}timing-{binary}-{mode}-{stamp or '*'}"
-            files[pattern.format("timing")] = base.format("") + ".log"
-            if nsys:
-                files[pattern.format("nsys")] = base.format("nsys-") + ".sqlite"
-    return files
+
+def load_gpus():
+    """Load each GPU's independently maintained, explicit input manifest."""
+    gpus = []
+    for folder in ("rtx3090", "rtx4090", "rtx5090"):
+        data = json.loads((REPO / "results" / "inputs" / f"{folder}.json").read_text())
+        if data["folder"] != folder:
+            raise ValueError(f"{folder}.json must select the {folder} output directory")
+        gpus.append(GPU(**data))
+    return gpus
 
 
-SOTA_STAMP_RTX3090 = "20261016-145900"
-TIMING_STAMP_RTX3090 = "20261020-161213"
-SMALL_TIMING_STAMP_RTX3090 = "20261023-115114"
+def validate_inputs(gpus):
+    """Validate every selection before any report is generated, including fallbacks."""
+    for gpu in gpus:
+        for key in gpu.files:
+            gpu.file(key)
 
-# Published specs. Both GPUs have a 384-bit GDDR6X bus and a PCIe 4.0 x16 link.
-RTX3090 = GPU("rtx3090", "RTX 3090 (sm_86, 24 GB)", "CUDA 13.3",
-              {"sms": 82, "boost_ghz": 1.695, "dram_gbps": 19.5}, {
-    "llama_sweep": "llama2c/profiles/sweep-fill-20261002-152612-speedup.csv",
-    "llama_nsys_graph": "llama2c/profiles/nsys-b1024-graph-20261014-215130.sqlite",
-    "llama_nsys_direct": "llama2c/profiles/nsys-b1024-direct-20261014-215130.sqlite",
-    "llama_ncu_graph": "llama2c/profiles/ncu-large-coalesced-b1024-graph-20261014-215130.ncu-rep",
-    "llama_ncu_direct": "llama2c/profiles/ncu-large-coalesced-b1024-direct-20261014-215130.ncu-rep",
-    "loom_benchmark": "loom_msa/build/benchmark.json",
-    "loom_benchmark_txt": "loom_msa/build/benchmark.txt",
-    **launch_profiles("20261015-224015"),
-    **sota_profiles(SOTA_STAMP_RTX3090),
-    **timing_files(TIMING_STAMP_RTX3090),
-    # No nsys traces of the small shapes: 1000+ iterations make 15-30 MB traces.
-    **timing_files(SMALL_TIMING_STAMP_RTX3090, nsys=False, names=SMALL_TIMING_NAMES),
-}, {})
 
-RTX4090 = GPU("rtx4090", "RTX 4090 (sm_89, 24 GB)", "CUDA 12.5",
-              {"sms": 128, "boost_ghz": 2.52, "dram_gbps": 21.0}, {
-    "llama_sweep": "llama2c/profiles/sweep-fill-*-speedup.csv",
-    "llama_nsys_graph": "llama2c/profiles/nsys-node-graph-*.sqlite",
-    "llama_nsys_direct": "llama2c/profiles/nsys-node-direct-*.sqlite",
-    "llama_ncu_graph": "llama2c/profiles/ncu-large-coalesced-b1024-graph-*.ncu-rep",
-    "llama_ncu_direct": "llama2c/profiles/ncu-large-coalesced-b1024-direct-*.ncu-rep",
-    "loom_benchmark": "loom_msa/build/benchmark.json",
-    "loom_benchmark_txt": "loom_msa/build/benchmark.txt",
-    **launch_profiles(None),
-    **sota_profiles(None),
-    **timing_files(None, nsys=False),
-    **timing_files(None, nsys=False, names=SMALL_TIMING_NAMES),
-}, {
-    "pagerank_timing": "A separate uninstrumented run of the binary "
-                       "(profiles/bench-20261015-091815.txt): 5.714 ms with transfers, "
-                       "2.651 ms compute only.",
-})
-
-GPUS = [RTX3090, RTX4090]
-BASELINE = RTX3090  # the other GPUs' sheets compare against it
+GPUS = load_gpus()
+RTX3090, RTX4090, RTX5090 = GPUS
+BASELINE = RTX3090
 
 
 # ---------------------------------------------------------------- loaders ---
@@ -659,6 +560,8 @@ def llama2c_rows(gpu):
     sweep = gpu.file("llama_sweep")
 
     def from_sweep(m):
+        if not sweep:
+            return Cell(empty=TIMING_PENDING)
         row = sweep_row(sweep, batch=1024, size=16384, rows=8192, repeats=1)
         # The ncu report covers 3 iterations.
         return Cell(float(row[f"{m}_gpu_ms"]) * 1e3, source=sweep, nsys=nsys[m],
@@ -685,11 +588,13 @@ def llama2c_rows(gpu):
     if app["graph"].batch_us is not None:
         app_note = timing_note(app["graph"], "One iteration: rmsnorm + softmax + matmul on "
                                "device-resident data, no per-iteration copies.")
-    else:
+    elif sweep and all(nsys.values()):
         reruns = " / ".join(f"{1e3 * nsys_log_ms_per_iter(nsys[m]):.1f}" for m in MODES)
         app_note = ("Mean of 3 interleaved trials from the GPU-filling sweep; no per-iteration "
                     f"copies. The nsys traces rerun this configuration ({reruns} us per "
                     "iteration, graph / direct).")
+    else:
+        app_note = "No whole-application timing selected yet."
     return [
         (w, "matmul_coalesced_kernel", size, KERNEL_TIME, matmul["direct"], matmul["graph"],
          sota_matmul,
@@ -739,10 +644,12 @@ def loom_rows(gpu):
     if app["graph"].batch_us is not None:
         app_note = timing_note(app["graph"], "msa_optimized_large on random inputs, including "
                                "the H2D input and D2H output copies.")
-    else:
+    elif summary:
         modes = "both launch modes" if app["direct"].us is not None else "CUDA graph only"
         app_note = (f"benchmark.py: median of 5 runs, random inputs, {modes}. Includes H2D input "
                     "and D2H output copies.")
+    else:
+        app_note = "No whole-application timing selected yet."
     return [
         (w, "fuse_attention_kernel", size, KERNEL_TIME, attention["direct"], attention["graph"],
          sota_attention,
@@ -806,9 +713,11 @@ def pagerank_rows(gpu):
             "chunks overlapped with the first of 20 iterations, then the scores downloaded.")
     if app["graph"].batch_us is not None:
         app_note = timing_note(app["graph"], what)
-    else:
+    elif measured:
         app_note = (iteration_note(measured) + " The CSR graph is uploaded from pinned memory in 8 "
-                    "chunks overlapped with the first iteration. " + gpu.notes["pagerank_timing"])
+                    "chunks overlapped with the first iteration. " + gpu.notes.get("pagerank_timing", ""))
+    else:
+        app_note = "No whole-application timing selected yet."
     return [
         (w, "pagerank_update (one iteration)", size, KERNEL_TIME, update["direct"], update["graph"],
          sota_update,
@@ -876,7 +785,7 @@ def mlperf_rows(gpu):
         if app["graph"].batch_us is not None:
             app_note = timing_note(app["graph"], "Random inputs, including the H2D and D2H copies.")
         else:
-            app_note = iteration_note(measured)
+            app_note = iteration_note(measured) if measured else "No whole-application timing selected yet."
         rows += [(w, kernel, size, KERNEL_TIME, k["direct"], k["graph"], sota_k,
                   only + share(k["graph"], app["graph"]) + sota_note(key, kernel_text)),
                  (w, f"{WHOLE_APP} (H2D + kernels + D2H)", size,
@@ -928,6 +837,15 @@ METHOD = [
 ]
 
 
+def prediction_method(gpu):
+    if not gpu.specs:
+        return ["Predictions are not enabled for this GPU. The existing RTX 4090 model "
+                "has not been validated for RTX 5090's cache, memory bus, or PCIe link. "
+                "Measured comparisons against RTX 3090 will populate when selected "
+                "RTX 5090 results exist. Pending cells are not measurements."]
+    return METHOD
+
+
 def pct(row, metric):
     return number(row[metric][0])
 
@@ -969,7 +887,7 @@ def launch_speedup(row, target):
 
 def predicted_speedup(cell, target):
     """(speedup, reason) of a BASELINE cell on `target`, or None."""
-    if cell.predict is None or cell.predict[1] is None:
+    if not target.specs or cell.predict is None or cell.predict[1] is None:
         return None
     kind, path, *rest = cell.predict
     launches = kernel_launches(path, *rest) if kind == "kernel" else ncu_rows(path)
@@ -1059,10 +977,10 @@ def build_summary(ws, gpu, rows, baseline=None):
     speedup or None); given, the first speedup columns compare against
     BASELINE instead of Direct / Graph."""
     ws.title = gpu.sheet
-    ws["A1"] = f"CUDA performance results (latest runs): {gpu.sheet}"
+    ws["A1"] = f"CUDA performance results (selected runs): {gpu.sheet}"
     ws["A1"].font = Font(bold=True, size=14)
     ws["A2"] = (f"GPU: NVIDIA GeForce {gpu.label}, binaries built with {gpu.toolkit} "
-                f"(outputs in {gpu.folder}/). Lower is better. Latest run of each workload's "
+                f"(outputs in {gpu.folder}/). Lower is better. Explicitly selected run of each workload's "
                 "current implementation at the largest problem size tested: the dominant kernel "
                 "(if one dominates) and the whole application, plus the whole application at a "
                 "small shape where launch cost dominates, launched directly, as a CUDA "
@@ -1173,7 +1091,7 @@ def build_summary(ws, gpu, rows, baseline=None):
         r += 1
         ws.cell(r, 1, "How the predicted speedup is calculated "
                       "(hover a Predicted value for that row's reason)").font = BOLD
-        for paragraph in METHOD:
+        for paragraph in prediction_method(gpu):
             r += 1
             ws.cell(r, 1, paragraph).alignment = WRAP
             ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=notes_col)
@@ -1258,11 +1176,12 @@ def write_markdown(results, predictions):
     lines = [
         "# CUDA performance results",
         "",
-        "Latest run of each workload's current implementation at the largest problem size tested "
+        "Explicitly selected run of each workload's implementation at the largest problem size tested "
         "(dominant kernel, if one dominates, and the whole application) on each GPU, plus the "
         "whole application at a small shape where launch cost dominates, generated by "
         "`build_spreadsheet.py` from measurements and profiles committed in this repo. Each GPU's "
-        "binaries and profiles live in its own folder (`rtx3090/`, `rtx4090/`); the sources are "
+        "binaries and profiles live in its own folder (`rtx3090/`, `rtx4090/`, `rtx5090/`); "
+        "the inputs are pinned in `results/inputs/<gpu>.json` and the sources are "
         "shared. The spreadsheet [`cuda_performance.xlsx`](cuda_performance.xlsx) has one sheet "
         "per GPU plus the ncu metrics of every profiled launch. Lower times are better.",
         "",
@@ -1343,8 +1262,9 @@ def write_markdown(results, predictions):
             lines.append("| " + " | ".join(row) + " |")
         if compare:
             lines += ["", "### How the predicted speedup is calculated", ""]
-            lines += [x for paragraph in METHOD for x in (paragraph, "")]
-            lines += ["Each row's prediction:", ""]
+            lines += [x for paragraph in prediction_method(gpu) for x in (paragraph, "")]
+            if gpu.specs:
+                lines += ["Each row's prediction:", ""]
             lines += [f"- {w} / {k}: **{pr[0]:.2f}x**. {pr[1]}"
                       for (w, k, *_), pr in zip(rows, predictions[gpu]) if pr]
     lines += ["", "Regenerate (needs `ncu` on PATH and `pip install openpyxl`):", "",
@@ -1353,6 +1273,7 @@ def write_markdown(results, predictions):
 
 
 def main():
+    validate_inputs(GPUS)
     results = [(gpu, gpu_rows(gpu)) for gpu in GPUS]
     base_rows = dict(results)[BASELINE]
     predictions = {}
