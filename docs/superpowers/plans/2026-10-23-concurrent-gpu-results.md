@@ -54,4 +54,4 @@
 - [x] Document task branches/worktrees, exact inputs, source revision comparisons, per-GPU locking, mono report publication, and each machine's next experiment.
 - [x] Mark the workbook binary and ignore local worktree/cache directories.
 - [x] Run checks and a fresh code review; fix material findings.
-- [ ] Commit and push a reviewable setup branch, create and attach a draft PR, and make task worktrees available on all three machines. Keep main unchanged pending review.
+- [x] Commit and push a reviewable setup branch, create and attach a draft PR, and make task worktrees available on all three machines. Keep main unchanged pending review.
