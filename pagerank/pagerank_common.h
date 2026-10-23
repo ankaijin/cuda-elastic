@@ -35,7 +35,12 @@
     }                                                                          \
   } while (0)
 
-constexpr int kVertices = 1 << 20;
+// The benchmark graph has 2^PAGERANK_LOG_VERTICES vertices (default 2^20);
+// the Makefile's *_small builds use 2^14, where launch cost dominates.
+#ifndef PAGERANK_LOG_VERTICES
+#define PAGERANK_LOG_VERTICES 20
+#endif
+constexpr int kVertices = 1 << PAGERANK_LOG_VERTICES;
 constexpr int kEdgesPerVertex = 16;
 constexpr int kEdges = kVertices * kEdgesPerVertex;
 constexpr int kIterations = 20;
@@ -118,8 +123,8 @@ inline HostGraph make_irregular_graph(int vertices, uint64_t seed) {
   return graph;
 }
 
-// Random graph with the benchmark's shape (2^20 vertices, exactly 2^24
-// edges) for rotating between distinct inputs: destinations come in pairs
+// Random graph with the benchmark's shape (kVertices vertices, exactly
+// kEdges edges) for rotating between distinct inputs: destinations come in pairs
 // whose in-degrees are 16 + k and 16 - k for a random k in [-8, 8], and every
 // source is uniformly random, so out-degrees vary too.  Unlike the fixture,
 // its uniform start is not stationary, so the result depends on every array.

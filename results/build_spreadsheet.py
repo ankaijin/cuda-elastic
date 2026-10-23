@@ -8,7 +8,11 @@ One summary sheet per GPU (RTX 3090, RTX 4090), each read from that GPU's
 output folder (rtx3090/, rtx4090/; see gpu.sh), plus each GPU's ncu metrics.
 Only the latest run of each workload's current implementation is included, at
 the largest problem size tested: the dominant kernel (when one dominates) and
-the whole application.
+the whole application. Each workload also has a whole-application row at a
+small shape (time_all.sh's small configs), where an iteration is a few
+microseconds of GPU work per launch, so launch cost dominates and the
+difference between direct launches and a CUDA Graph shows; at the largest
+shapes an iteration takes milliseconds and the two match within ~1%.
 Columns of each summary sheet, left to right:
   Direct launch      the workload's stream operations enqueued directly on
                      every iteration, without a graph (each harness's direct
@@ -27,7 +31,8 @@ Columns of each summary sheet, left to right:
                      its inputs stay device-resident in all versions.
 Each version has three times:
   Full batch         one batch of back-to-back iterations between CUDA
-                     events (time_all.sh: 50 iterations), in milliseconds
+                     events (time_all.sh: 50 iterations at the largest shapes, 1000
+                     at the small ones, 5000 for loom_msa 4x4), in milliseconds
   Per iteration      full batch / iterations, in microseconds
   Single iteration   median of 20 iterations each launched alone on an idle
                      device, in microseconds. The device is drained before
@@ -178,17 +183,28 @@ TIMING_NAMES = {  # input key: (workload dir, baseline name, agentic optimized n
     "kws": ("mlperf-classification", "kws_postprocess", "kws_postprocess_sota"),
     "vww": ("mlperf-classification", "vww_preprocess", "vww_preprocess_sota"),
 }
+# time_all.sh's small shapes (SHAPES=small), under input keys <key>_small.
+SMALL = "_small"
+SMALL_TIMING_NAMES = {
+    "llama_small": ("llama2c", "llama2c_small", "llama2c_sota_small"),
+    "loom_small": ("loom_msa", "msa_optimized_4x4", "msa_sota_4x4"),
+    "pagerank_small": ("pagerank", "pagerank_small", "pagerank_sota_small"),
+    "anomaly_small": ("mlperf-anomaly", "anomaly_mse_small", "anomaly_mse_sota_small"),
+    "kws_small": ("mlperf-classification", "kws_postprocess_small", "kws_postprocess_sota_small"),
+    "vww_small": ("mlperf-classification", "vww_preprocess_small", "vww_preprocess_sota_small"),
+}
 SINGLE_ITERATIONS = 20  # each harness's kSingleIterations / kSingleReplays
 
 
-def timing_files(stamp, nsys=True):
+def timing_files(stamp, nsys=True, names=TIMING_NAMES):
     """Input keys <key>_timing_<mode> and <key>_sota_timing (and, with nsys,
     the matching <key>_nsys_<mode> and <key>_sota_nsys traces, replacing the
-    launch-mode profiles' traces); stamp None = the latest."""
+    launch-mode profiles' traces) of each key in names; stamp None = the
+    latest."""
     files = {}
-    for key, (folder, name, sota) in TIMING_NAMES.items():
+    for key, (folder, name, sota) in names.items():
         runs = [(f"{key}_{{}}_{mode}", name, mode) for mode in MODES]
-        runs.append((f"{key}_sota_{{}}", sota, SOTA_LAUNCH[key]))
+        runs.append((f"{key}_sota_{{}}", sota, SOTA_LAUNCH[key.removesuffix(SMALL)]))
         for pattern, binary, mode in runs:
             base = f"{folder}/profiles/{{}}timing-{binary}-{mode}-{stamp or '*'}"
             files[pattern.format("timing")] = base.format("") + ".log"
@@ -199,6 +215,7 @@ def timing_files(stamp, nsys=True):
 
 SOTA_STAMP_RTX3090 = "20261016-145900"
 TIMING_STAMP_RTX3090 = "20261020-161213"
+SMALL_TIMING_STAMP_RTX3090 = "20261023-115114"
 
 # Published specs. Both GPUs have a 384-bit GDDR6X bus and a PCIe 4.0 x16 link.
 RTX3090 = GPU("rtx3090", "RTX 3090 (sm_86, 24 GB)", "CUDA 13.3",
@@ -213,6 +230,8 @@ RTX3090 = GPU("rtx3090", "RTX 3090 (sm_86, 24 GB)", "CUDA 13.3",
     **launch_profiles("20261015-224015"),
     **sota_profiles(SOTA_STAMP_RTX3090),
     **timing_files(TIMING_STAMP_RTX3090),
+    # No nsys traces of the small shapes: 1000+ iterations make 15-30 MB traces.
+    **timing_files(SMALL_TIMING_STAMP_RTX3090, nsys=False, names=SMALL_TIMING_NAMES),
 }, {})
 
 RTX4090 = GPU("rtx4090", "RTX 4090 (sm_89, 24 GB)", "CUDA 12.5",
@@ -227,6 +246,7 @@ RTX4090 = GPU("rtx4090", "RTX 4090 (sm_89, 24 GB)", "CUDA 12.5",
     **launch_profiles(None),
     **sota_profiles(None),
     **timing_files(None, nsys=False),
+    **timing_files(None, nsys=False, names=SMALL_TIMING_NAMES),
 }, {
     "pagerank_timing": "A separate uninstrumented run of the binary "
                        "(profiles/bench-20261015-091815.txt): 5.714 ms with transfers, "
@@ -590,9 +610,10 @@ def sota_note(key, text):
 
 # ------------------------------------------------------------------- rows ---
 # Each row: (workload, kernel/stage, problem size, metric, direct, graph,
-# agentic optimized, notes), the cells in column order. One problem size per
-# workload (the largest tested): the dominant kernel, when one kernel
-# dominates, and the whole application.
+# agentic optimized, notes), the cells in column order. Per workload, at the
+# largest problem size tested: the dominant kernel, when one kernel
+# dominates, and the whole application; then the whole application at a small
+# shape (small_row).
 
 KERNEL_TIME = "Kernel time (ncu, one launch)"
 WHOLE_APP = "Whole application"
@@ -607,6 +628,27 @@ def share(kernel, app, launches=1):
     if kernel.us is None or app.us is None:
         return ""
     return f"{100 * launches * kernel.us / app.us:.0f}% of the whole-application time per iteration."
+
+
+def small_row(gpu, key, workload, size, what):
+    """Whole-application row at time_all.sh's small shape for `key`, where
+    launch cost dominates; pending on a GPU without those logs."""
+    small = key + SMALL
+
+    def pending(m):
+        return Cell(nsys=gpu.file(f"{small}_nsys_{m}"), empty=TIMING_PENDING)
+    app = app_cells(gpu, small, lambda m: None, pending)
+    sota = sota_app_cell(gpu, small, app["graph"],
+                         lambda: Cell(nsys=gpu.file(f"{small}_sota_nsys"), empty=TIMING_PENDING))
+    why = ("Small shape, so launch cost dominates: compare the Graph speedup and Single / batch "
+           "columns with the large-shape row above. A Single / batch below 1x means back-to-back "
+           "iterations run slower than one alone, i.e. the batch is limited by how fast the host "
+           "enqueues iterations rather than by the GPU.")
+    note = timing_note(app["graph"], what) if app["graph"].batch_us is not None else what
+    return (workload, f"{WHOLE_APP}, small shape (launch-bound)", size, TIMED,
+            app["direct"], app["graph"], sota,
+            f"{why} {note}" + sota_note(key, f"{SMALL_TIMING_NAMES[small][2]}, the same "
+                                        "implementation at this shape."))
 
 
 def llama2c_rows(gpu):
@@ -662,6 +704,9 @@ def llama2c_rows(gpu):
          app_metric(app, "Iteration time (cudaEvent)"), app["direct"], app["graph"], sota_app,
          app_note + sota_note("llama", "llama2c_sota, the same device-resident nocopy "
                               "configuration, one fused kernel per iteration.")),
+        small_row(gpu, "llama", w, "batch=64, dim=256, rows=512, 32 repeats",
+                  "One iteration: 32 repeats of rmsnorm + softmax + matmul (96 kernels of about "
+                  "a microsecond each) on device-resident data, no per-iteration copies."),
     ]
 
 
@@ -714,6 +759,9 @@ def loom_rows(gpu):
          app["direct"], app["graph"], sota_app,
          app_note + sota_note("loom", "msa_sota_large, rotating over 3 random input sets; "
                               "output written straight to pinned host memory.")),
+        small_row(gpu, "loom", w, "4 queries x 4 context (main.c)",
+                  "msa_optimized_4x4 (main.c's shape) on random inputs, including the H2D input "
+                  "and D2H output copies; every copy and kernel moves a few hundred bytes."),
     ]
 
 
@@ -774,25 +822,30 @@ def pagerank_rows(gpu):
          app_metric(app, "Iteration time (nsys)"), app["direct"], app["graph"], sota_app,
          app_note + sota_note("pagerank", "rotating over 3 inputs (the benchmark graph and two "
                               "random graphs of the same size); includes the on-GPU edge sort.")),
+        small_row(gpu, "pagerank", w, "2^14 vertices, 16 edges/vertex, 20 iterations",
+                  "The same PageRank run on a 2^14-vertex graph (make -C pagerank small): upload, "
+                  "20 iterations of a few microseconds each, download."),
     ]
 
 
 def mlperf_rows(gpu):
     rows = []
-    for w, kernel, size, key, replaced, sota_kernel, kernel_text, app_text in (
-            ("mlperf-tiny anomaly", "mse_partial_kernel", "64M elements", "anomaly",
+    for w, kernel, size, small_size, key, replaced, sota_kernel, kernel_text, app_text in (
+            ("mlperf-tiny anomaly", "mse_partial_kernel", "64M elements", "16 elements (smoke)",
+             "anomaly",
              ("mse_partial_kernel", "mse_finalize_kernel"), "mse_sota_kernel",
              "mse_sota_kernel, one single-pass reduction (the last block finishes the sum), "
              "compared with mse_partial_kernel + mse_finalize_kernel.",
              "the float input is copied in shrinking chunks while a second stream reduces each "
              "chunk as it lands; the result is written straight to pinned host memory."),
-            ("mlperf-tiny KWS", "kws_postprocess_kernel", "12 classes x 4M rows", "kws",
+            ("mlperf-tiny KWS", "kws_postprocess_kernel", "12 classes x 4M rows",
+             "12 classes x 1 row (smoke)", "kws",
              ("kws_postprocess_kernel",), "kws_postprocess_sota_kernel",
              "kws_postprocess_sota_kernel on device buffers (kernels-only), one row per thread "
              "with rows staged through shared memory for coalesced 16 B loads and stores.",
              "one zero-copy kernel reads the int8 rows from and writes the probabilities and "
              "argmax to mapped pinned host memory, so both PCIe directions stream at once."),
-            ("mlperf-tiny VWW", "vww_preprocess_kernel", "256M bytes", "vww",
+            ("mlperf-tiny VWW", "vww_preprocess_kernel", "256M bytes", "16 bytes (smoke)", "vww",
              ("vww_preprocess_kernel",), "vww_preprocess_sota_kernel",
              "vww_preprocess_sota_kernel on device buffers (kernels-only), four 16 B vectors "
              "per thread.",
@@ -828,7 +881,10 @@ def mlperf_rows(gpu):
                   only + share(k["graph"], app["graph"]) + sota_note(key, kernel_text)),
                  (w, f"{WHOLE_APP} (H2D + kernels + D2H)", size,
                   app_metric(app, "Iteration time (nsys)"), app["direct"], app["graph"], sota_app,
-                  app_note + sota_note(key, "rotating over 3 inputs; " + app_text))]
+                  app_note + sota_note(key, "rotating over 3 inputs; " + app_text)),
+                 small_row(gpu, key, w, small_size,
+                           "The smoke size on random inputs, including the H2D and D2H copies "
+                           "of a few bytes each.")]
     return rows
 
 
@@ -1008,7 +1064,8 @@ def build_summary(ws, gpu, rows, baseline=None):
     ws["A2"] = (f"GPU: NVIDIA GeForce {gpu.label}, binaries built with {gpu.toolkit} "
                 f"(outputs in {gpu.folder}/). Lower is better. Latest run of each workload's "
                 "current implementation at the largest problem size tested: the dominant kernel "
-                "(if one dominates) and the whole application, launched directly, as a CUDA "
+                "(if one dominates) and the whole application, plus the whole application at a "
+                "small shape where launch cost dominates, launched directly, as a CUDA "
                 "Graph, and as the agentic optimized version (<name>_sota.cu, formerly SOTA: the "
                 "fastest implementation found, same work per iteration, launched whichever way "
                 "is fastest). Full batch = one batch of back-to-back iterations; per iteration = "
@@ -1202,7 +1259,8 @@ def write_markdown(results, predictions):
         "# CUDA performance results",
         "",
         "Latest run of each workload's current implementation at the largest problem size tested "
-        "(dominant kernel, if one dominates, and the whole application) on each GPU, generated by "
+        "(dominant kernel, if one dominates, and the whole application) on each GPU, plus the "
+        "whole application at a small shape where launch cost dominates, generated by "
         "`build_spreadsheet.py` from measurements and profiles committed in this repo. Each GPU's "
         "binaries and profiles live in its own folder (`rtx3090/`, `rtx4090/`); the sources are "
         "shared. The spreadsheet [`cuda_performance.xlsx`](cuda_performance.xlsx) has one sheet "
@@ -1222,7 +1280,8 @@ def write_markdown(results, predictions):
         "Each version has three times:",
         "",
         "- **Full batch** (ms): one batch of back-to-back iterations between CUDA events "
-        "(`time_all.sh`: 50 iterations).",
+        "(`time_all.sh`: 50 iterations at the largest shapes, 1000 at the small ones, 5000 for "
+        "loom_msa 4x4).",
         "- **Per iteration** (us): full batch / iterations.",
         f"- **Single iteration** (us): median of {SINGLE_ITERATIONS} iterations, each launched "
         "alone on an idle device. The device is drained before each, so the iteration's launch "
@@ -1236,6 +1295,11 @@ def write_markdown(results, predictions):
         "isolation), so they fill only the single-iteration columns; their agentic speedup "
         "compares the ncu time of all the kernels doing that row's work in one iteration (see "
         "the spreadsheet notes). — = not applicable.",
+        "",
+        "At the largest shapes an iteration takes milliseconds, so launch cost is invisible: "
+        "single iteration ≈ per iteration in the batch, and Graph ≈ Direct. Each workload's "
+        "**small shape** row (`time_all.sh`'s small configs: a few microseconds of GPU work per "
+        "launch) shows what a CUDA Graph saves when launches dominate.",
     ]
     base_rows = dict(results)[BASELINE]
     for gpu, rows in results:

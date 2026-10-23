@@ -8,6 +8,8 @@
 #   make bench-sota    validate, then time it (default: direct launches, 3 rotated inputs)
 #   make baseline      build the baseline binary
 #   make check         run the baseline's validation
+#   make small         both, on a 2^14-vertex graph (*_small; time_all.sh's
+#                      launch-overhead-sensitive shape)
 #   make compare       compare_sota.sh: baseline (graph, direct) vs SOTA dumps
 #
 # LAUNCH=graph|direct overrides each binary's default launch mode (the
@@ -26,10 +28,12 @@ SRC_DIR := $(ROOT)/pagerank
 
 SOTA := $(BUILD)/pagerank_sota
 BASELINE := $(BUILD)/gapbs_pagerank_cuda_graph
+SMALL := -DPAGERANK_LOG_VERTICES=14
 
 all: sota baseline
 sota: $(SOTA)
 baseline: $(BASELINE)
+small: $(SOTA)_small $(BASELINE)_small
 
 $(BUILD):
 	mkdir -p $@
@@ -39,6 +43,12 @@ $(SOTA): $(SRC_DIR)/pagerank_sota.cu $(SRC_DIR)/pagerank_common.h | $(BUILD)
 
 $(BASELINE): $(SRC_DIR)/gapbs_pagerank_cuda_graph.cu $(SRC_DIR)/pagerank_common.h | $(BUILD)
 	$(NVCC) $(NVCCFLAGS) -o $@ $<
+
+$(SOTA)_small: $(SRC_DIR)/pagerank_sota.cu $(SRC_DIR)/pagerank_common.h | $(BUILD)
+	$(NVCC) $(NVCCFLAGS) $(SMALL) -o $@ $<
+
+$(BASELINE)_small: $(SRC_DIR)/gapbs_pagerank_cuda_graph.cu $(SRC_DIR)/pagerank_common.h | $(BUILD)
+	$(NVCC) $(NVCCFLAGS) $(SMALL) -o $@ $<
 
 # Without LAUNCH, both launch modes are validated.
 check-sota: $(SOTA)
@@ -56,6 +66,6 @@ compare: $(SOTA) $(BASELINE)
 	BUILD=$(BUILD) LOCK=$(LOCK) $(SRC_DIR)/compare_sota.sh
 
 clean:
-	rm -f $(SOTA) $(BASELINE)
+	rm -f $(SOTA) $(BASELINE) $(SOTA)_small $(BASELINE)_small
 
-.PHONY: all sota baseline check-sota bench-sota check compare clean
+.PHONY: all sota baseline small check-sota bench-sota check compare clean

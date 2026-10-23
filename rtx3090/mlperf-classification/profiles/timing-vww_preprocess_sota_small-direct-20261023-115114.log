@@ -1,0 +1,90 @@
+### run 1: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess_sota --count=16 --inputs=random --replays=1000 --launch=direct
+mlperf-classification vww preprocess sota: count=16 inputs=random blocks=1 launch=direct replays=1000 rotate=3 mode=pipeline
+  check        pass (48/48 bytes equal to loom loop over 3 input sets)
+  kernel       1.590 us/iter (direct launch)
+  end-to-end   11.965 us/iter (H2D + kernel + D2H, 1-chunk pipeline, direct launch)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  launches     kernels-only 1 x vww_preprocess_sota_kernel; end-to-end 1 x vww_preprocess_sota_kernel
+  batch        11.965 ms (1000 back-to-back end-to-end iterations)
+  single       21.376 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.014 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 2: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess_sota --count=16 --inputs=random --replays=1000 --launch=direct
+mlperf-classification vww preprocess sota: count=16 inputs=random blocks=1 launch=direct replays=1000 rotate=3 mode=pipeline
+  check        pass (48/48 bytes equal to loom loop over 3 input sets)
+  kernel       1.513 us/iter (direct launch)
+  end-to-end   12.470 us/iter (H2D + kernel + D2H, 1-chunk pipeline, direct launch)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  launches     kernels-only 1 x vww_preprocess_sota_kernel; end-to-end 1 x vww_preprocess_sota_kernel
+  batch        12.470 ms (1000 back-to-back end-to-end iterations)
+  single       21.376 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.014 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 3: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess_sota --count=16 --inputs=random --replays=1000 --launch=direct
+mlperf-classification vww preprocess sota: count=16 inputs=random blocks=1 launch=direct replays=1000 rotate=3 mode=pipeline
+  check        pass (48/48 bytes equal to loom loop over 3 input sets)
+  kernel       1.555 us/iter (direct launch)
+  end-to-end   12.097 us/iter (H2D + kernel + D2H, 1-chunk pipeline, direct launch)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  launches     kernels-only 1 x vww_preprocess_sota_kernel; end-to-end 1 x vww_preprocess_sota_kernel
+  batch        12.097 ms (1000 back-to-back end-to-end iterations)
+  single       21.376 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.014 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 4: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess_sota --count=16 --inputs=random --replays=1000 --launch=direct
+mlperf-classification vww preprocess sota: count=16 inputs=random blocks=1 launch=direct replays=1000 rotate=3 mode=pipeline
+  check        pass (48/48 bytes equal to loom loop over 3 input sets)
+  kernel       1.592 us/iter (direct launch)
+  end-to-end   12.142 us/iter (H2D + kernel + D2H, 1-chunk pipeline, direct launch)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  launches     kernels-only 1 x vww_preprocess_sota_kernel; end-to-end 1 x vww_preprocess_sota_kernel
+  batch        12.142 ms (1000 back-to-back end-to-end iterations)
+  single       21.344 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.014 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 5: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess_sota --count=16 --inputs=random --replays=1000 --launch=direct
+mlperf-classification vww preprocess sota: count=16 inputs=random blocks=1 launch=direct replays=1000 rotate=3 mode=pipeline
+  check        pass (48/48 bytes equal to loom loop over 3 input sets)
+  kernel       1.523 us/iter (direct launch)
+  end-to-end   12.117 us/iter (H2D + kernel + D2H, 1-chunk pipeline, direct launch)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  launches     kernels-only 1 x vww_preprocess_sota_kernel; end-to-end 1 x vww_preprocess_sota_kernel
+  batch        12.117 ms (1000 back-to-back end-to-end iterations)
+  single       21.376 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.014 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 6: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess_sota --count=16 --inputs=random --replays=1000 --launch=direct
+mlperf-classification vww preprocess sota: count=16 inputs=random blocks=1 launch=direct replays=1000 rotate=3 mode=pipeline
+  check        pass (48/48 bytes equal to loom loop over 3 input sets)
+  kernel       1.577 us/iter (direct launch)
+  end-to-end   11.914 us/iter (H2D + kernel + D2H, 1-chunk pipeline, direct launch)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  launches     kernels-only 1 x vww_preprocess_sota_kernel; end-to-end 1 x vww_preprocess_sota_kernel
+  batch        11.914 ms (1000 back-to-back end-to-end iterations)
+  single       21.408 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.013 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 7: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess_sota --count=16 --inputs=random --replays=1000 --launch=direct
+mlperf-classification vww preprocess sota: count=16 inputs=random blocks=1 launch=direct replays=1000 rotate=3 mode=pipeline
+  check        pass (48/48 bytes equal to loom loop over 3 input sets)
+  kernel       1.627 us/iter (direct launch)
+  end-to-end   11.879 us/iter (H2D + kernel + D2H, 1-chunk pipeline, direct launch)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  launches     kernels-only 1 x vww_preprocess_sota_kernel; end-to-end 1 x vww_preprocess_sota_kernel
+  batch        11.879 ms (1000 back-to-back end-to-end iterations)
+  single       21.376 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.014 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 8: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess_sota --count=16 --inputs=random --replays=1000 --launch=direct
+mlperf-classification vww preprocess sota: count=16 inputs=random blocks=1 launch=direct replays=1000 rotate=3 mode=pipeline
+  check        pass (48/48 bytes equal to loom loop over 3 input sets)
+  kernel       1.546 us/iter (direct launch)
+  end-to-end   12.192 us/iter (H2D + kernel + D2H, 1-chunk pipeline, direct launch)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  launches     kernels-only 1 x vww_preprocess_sota_kernel; end-to-end 1 x vww_preprocess_sota_kernel
+  batch        12.192 ms (1000 back-to-back end-to-end iterations)
+  single       21.344 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.014 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 9: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess_sota --count=16 --inputs=random --replays=1000 --launch=direct
+mlperf-classification vww preprocess sota: count=16 inputs=random blocks=1 launch=direct replays=1000 rotate=3 mode=pipeline
+  check        pass (48/48 bytes equal to loom loop over 3 input sets)
+  kernel       1.647 us/iter (direct launch)
+  end-to-end   12.049 us/iter (H2D + kernel + D2H, 1-chunk pipeline, direct launch)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  launches     kernels-only 1 x vww_preprocess_sota_kernel; end-to-end 1 x vww_preprocess_sota_kernel
+  batch        12.049 ms (1000 back-to-back end-to-end iterations)
+  single       21.344 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.014 s (replays x (kernel + end-to-end), excluding warm-up)

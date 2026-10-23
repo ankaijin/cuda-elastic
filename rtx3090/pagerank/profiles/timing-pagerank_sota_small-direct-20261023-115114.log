@@ -1,0 +1,81 @@
+### run 1: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=1000 /home/ankai/cuda/rtx3090/pagerank/build/pagerank_sota_small
+PageRank scores after 20 iterations (launch=direct replays=1000 rotate=3): 0.000061 0.000061 0.000061 0.000061
+PASS  rotated input 0 fixture/uniform    V=16384    E=262144    iters=20 max_abs=0.00e+00 max_rel=0.00e+00 spread=0
+PASS  rotated input 1 random:2055077889/uniform V=16384    E=262144    iters=20 max_abs=1.78e-11 max_rel=2.18e-07 spread=1.39
+PASS  rotated input 2 random:2055077890/uniform V=16384    E=262144    iters=20 max_abs=1.59e-11 max_rel=1.97e-07 spread=1.32
+layout: binned, 10 parts of 1639 rows, 80 blocks per update (25328 shared-memory rows per block)
+kernel launches per full run: plan_kernel, init_kernel, then for each of 11 upload chunks csr_update_kernel, count_kernel, prefix_kernel, scatter_kernel, fine_kernel, then 20 binned_update_kernel (the last two are the final iteration's two waves) = 77
+batch: 602.798 ms for 1000 back-to-back replays with transfers; single: 0.605 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=256 pin_host=1 upload_chunks=8: 0.603 ms per replay with transfers, 0.381 ms compute only (0.0191 ms per iteration)
+### run 2: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=1000 /home/ankai/cuda/rtx3090/pagerank/build/pagerank_sota_small
+PageRank scores after 20 iterations (launch=direct replays=1000 rotate=3): 0.000061 0.000061 0.000061 0.000061
+PASS  rotated input 0 fixture/uniform    V=16384    E=262144    iters=20 max_abs=0.00e+00 max_rel=0.00e+00 spread=0
+PASS  rotated input 1 random:2055077889/uniform V=16384    E=262144    iters=20 max_abs=1.68e-11 max_rel=2.11e-07 spread=1.39
+PASS  rotated input 2 random:2055077890/uniform V=16384    E=262144    iters=20 max_abs=1.53e-11 max_rel=1.97e-07 spread=1.32
+layout: binned, 10 parts of 1639 rows, 80 blocks per update (25328 shared-memory rows per block)
+kernel launches per full run: plan_kernel, init_kernel, then for each of 11 upload chunks csr_update_kernel, count_kernel, prefix_kernel, scatter_kernel, fine_kernel, then 20 binned_update_kernel (the last two are the final iteration's two waves) = 77
+batch: 599.584 ms for 1000 back-to-back replays with transfers; single: 0.604 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=256 pin_host=1 upload_chunks=8: 0.600 ms per replay with transfers, 0.380 ms compute only (0.0190 ms per iteration)
+### run 3: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=1000 /home/ankai/cuda/rtx3090/pagerank/build/pagerank_sota_small
+PageRank scores after 20 iterations (launch=direct replays=1000 rotate=3): 0.000061 0.000061 0.000061 0.000061
+PASS  rotated input 0 fixture/uniform    V=16384    E=262144    iters=20 max_abs=0.00e+00 max_rel=0.00e+00 spread=0
+PASS  rotated input 1 random:2055077889/uniform V=16384    E=262144    iters=20 max_abs=1.58e-11 max_rel=1.94e-07 spread=1.39
+PASS  rotated input 2 random:2055077890/uniform V=16384    E=262144    iters=20 max_abs=1.45e-11 max_rel=1.88e-07 spread=1.32
+layout: binned, 10 parts of 1639 rows, 80 blocks per update (25328 shared-memory rows per block)
+kernel launches per full run: plan_kernel, init_kernel, then for each of 11 upload chunks csr_update_kernel, count_kernel, prefix_kernel, scatter_kernel, fine_kernel, then 20 binned_update_kernel (the last two are the final iteration's two waves) = 77
+batch: 598.555 ms for 1000 back-to-back replays with transfers; single: 0.604 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=256 pin_host=1 upload_chunks=8: 0.599 ms per replay with transfers, 0.380 ms compute only (0.0190 ms per iteration)
+### run 4: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=1000 /home/ankai/cuda/rtx3090/pagerank/build/pagerank_sota_small
+PageRank scores after 20 iterations (launch=direct replays=1000 rotate=3): 0.000061 0.000061 0.000061 0.000061
+PASS  rotated input 0 fixture/uniform    V=16384    E=262144    iters=20 max_abs=0.00e+00 max_rel=0.00e+00 spread=0
+PASS  rotated input 1 random:2055077889/uniform V=16384    E=262144    iters=20 max_abs=1.86e-11 max_rel=2.36e-07 spread=1.39
+PASS  rotated input 2 random:2055077890/uniform V=16384    E=262144    iters=20 max_abs=1.59e-11 max_rel=1.94e-07 spread=1.32
+layout: binned, 10 parts of 1639 rows, 80 blocks per update (25328 shared-memory rows per block)
+kernel launches per full run: plan_kernel, init_kernel, then for each of 11 upload chunks csr_update_kernel, count_kernel, prefix_kernel, scatter_kernel, fine_kernel, then 20 binned_update_kernel (the last two are the final iteration's two waves) = 77
+batch: 599.108 ms for 1000 back-to-back replays with transfers; single: 0.604 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=256 pin_host=1 upload_chunks=8: 0.599 ms per replay with transfers, 0.381 ms compute only (0.0190 ms per iteration)
+### run 5: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=1000 /home/ankai/cuda/rtx3090/pagerank/build/pagerank_sota_small
+PageRank scores after 20 iterations (launch=direct replays=1000 rotate=3): 0.000061 0.000061 0.000061 0.000061
+PASS  rotated input 0 fixture/uniform    V=16384    E=262144    iters=20 max_abs=0.00e+00 max_rel=0.00e+00 spread=0
+PASS  rotated input 1 random:2055077889/uniform V=16384    E=262144    iters=20 max_abs=1.54e-11 max_rel=1.88e-07 spread=1.39
+PASS  rotated input 2 random:2055077890/uniform V=16384    E=262144    iters=20 max_abs=1.85e-11 max_rel=1.92e-07 spread=1.32
+layout: binned, 10 parts of 1639 rows, 80 blocks per update (25328 shared-memory rows per block)
+kernel launches per full run: plan_kernel, init_kernel, then for each of 11 upload chunks csr_update_kernel, count_kernel, prefix_kernel, scatter_kernel, fine_kernel, then 20 binned_update_kernel (the last two are the final iteration's two waves) = 77
+batch: 602.133 ms for 1000 back-to-back replays with transfers; single: 0.605 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=256 pin_host=1 upload_chunks=8: 0.602 ms per replay with transfers, 0.382 ms compute only (0.0191 ms per iteration)
+### run 6: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=1000 /home/ankai/cuda/rtx3090/pagerank/build/pagerank_sota_small
+PageRank scores after 20 iterations (launch=direct replays=1000 rotate=3): 0.000061 0.000061 0.000061 0.000061
+PASS  rotated input 0 fixture/uniform    V=16384    E=262144    iters=20 max_abs=0.00e+00 max_rel=0.00e+00 spread=0
+PASS  rotated input 1 random:2055077889/uniform V=16384    E=262144    iters=20 max_abs=1.76e-11 max_rel=2.20e-07 spread=1.39
+PASS  rotated input 2 random:2055077890/uniform V=16384    E=262144    iters=20 max_abs=1.52e-11 max_rel=2.01e-07 spread=1.32
+layout: binned, 10 parts of 1639 rows, 80 blocks per update (25328 shared-memory rows per block)
+kernel launches per full run: plan_kernel, init_kernel, then for each of 11 upload chunks csr_update_kernel, count_kernel, prefix_kernel, scatter_kernel, fine_kernel, then 20 binned_update_kernel (the last two are the final iteration's two waves) = 77
+batch: 602.149 ms for 1000 back-to-back replays with transfers; single: 0.605 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=256 pin_host=1 upload_chunks=8: 0.602 ms per replay with transfers, 0.381 ms compute only (0.0191 ms per iteration)
+### run 7: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=1000 /home/ankai/cuda/rtx3090/pagerank/build/pagerank_sota_small
+PageRank scores after 20 iterations (launch=direct replays=1000 rotate=3): 0.000061 0.000061 0.000061 0.000061
+PASS  rotated input 0 fixture/uniform    V=16384    E=262144    iters=20 max_abs=0.00e+00 max_rel=0.00e+00 spread=0
+PASS  rotated input 1 random:2055077889/uniform V=16384    E=262144    iters=20 max_abs=1.79e-11 max_rel=2.03e-07 spread=1.39
+PASS  rotated input 2 random:2055077890/uniform V=16384    E=262144    iters=20 max_abs=2.02e-11 max_rel=2.19e-07 spread=1.32
+layout: binned, 10 parts of 1639 rows, 80 blocks per update (25328 shared-memory rows per block)
+kernel launches per full run: plan_kernel, init_kernel, then for each of 11 upload chunks csr_update_kernel, count_kernel, prefix_kernel, scatter_kernel, fine_kernel, then 20 binned_update_kernel (the last two are the final iteration's two waves) = 77
+batch: 602.579 ms for 1000 back-to-back replays with transfers; single: 0.606 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=256 pin_host=1 upload_chunks=8: 0.603 ms per replay with transfers, 0.382 ms compute only (0.0191 ms per iteration)
+### run 8: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=1000 /home/ankai/cuda/rtx3090/pagerank/build/pagerank_sota_small
+PageRank scores after 20 iterations (launch=direct replays=1000 rotate=3): 0.000061 0.000061 0.000061 0.000061
+PASS  rotated input 0 fixture/uniform    V=16384    E=262144    iters=20 max_abs=0.00e+00 max_rel=0.00e+00 spread=0
+PASS  rotated input 1 random:2055077889/uniform V=16384    E=262144    iters=20 max_abs=1.58e-11 max_rel=1.99e-07 spread=1.39
+PASS  rotated input 2 random:2055077890/uniform V=16384    E=262144    iters=20 max_abs=1.56e-11 max_rel=1.96e-07 spread=1.32
+layout: binned, 10 parts of 1639 rows, 80 blocks per update (25328 shared-memory rows per block)
+kernel launches per full run: plan_kernel, init_kernel, then for each of 11 upload chunks csr_update_kernel, count_kernel, prefix_kernel, scatter_kernel, fine_kernel, then 20 binned_update_kernel (the last two are the final iteration's two waves) = 77
+batch: 602.367 ms for 1000 back-to-back replays with transfers; single: 0.605 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=256 pin_host=1 upload_chunks=8: 0.602 ms per replay with transfers, 0.381 ms compute only (0.0191 ms per iteration)
+### run 9: PAGERANK_MODE=bench PAGERANK_LAUNCH=direct GRAPH_REPLAYS=1000 /home/ankai/cuda/rtx3090/pagerank/build/pagerank_sota_small
+PageRank scores after 20 iterations (launch=direct replays=1000 rotate=3): 0.000061 0.000061 0.000061 0.000061
+PASS  rotated input 0 fixture/uniform    V=16384    E=262144    iters=20 max_abs=0.00e+00 max_rel=0.00e+00 spread=0
+PASS  rotated input 1 random:2055077889/uniform V=16384    E=262144    iters=20 max_abs=1.62e-11 max_rel=1.98e-07 spread=1.39
+PASS  rotated input 2 random:2055077890/uniform V=16384    E=262144    iters=20 max_abs=1.57e-11 max_rel=2.16e-07 spread=1.32
+layout: binned, 10 parts of 1639 rows, 80 blocks per update (25328 shared-memory rows per block)
+kernel launches per full run: plan_kernel, init_kernel, then for each of 11 upload chunks csr_update_kernel, count_kernel, prefix_kernel, scatter_kernel, fine_kernel, then 20 binned_update_kernel (the last two are the final iteration's two waves) = 77
+batch: 605.450 ms for 1000 back-to-back replays with transfers; single: 0.606 ms per replay with transfers (median of 20 replays, each launched alone)
+launch=direct block_size=256 pin_host=1 upload_chunks=8: 0.605 ms per replay with transfers, 0.383 ms compute only (0.0191 ms per iteration)

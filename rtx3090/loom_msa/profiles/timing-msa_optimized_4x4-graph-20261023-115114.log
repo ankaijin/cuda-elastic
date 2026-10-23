@@ -1,0 +1,153 @@
+### run 1: /home/ankai/cuda/rtx3090/loom_msa/build/msa_optimized_4x4 --inputs=random --launch=graph
+variant: cuda_optimized (1x4x4, replays=5000, inputs=random, launch=graph)
+attention checksum: -38.0981
+projection energy: 8.54637
+attention sum: -4.5274
+attention max: 0.909211
+combined checksum: -34.1495
+graph replay average (us): 17.3025
+batch of 5000 back-to-back iterations (ms): 86.5126
+single iteration median of 20 (us): 21.536 [min 13.728, max 21.76]
+attention kernel median (us): 5.12 [min 4.096, max 26.624]
+attention through statistics median (us): 9.12 [min 8.192, max 30.72]
+effective attention throughput (TFLOP/s): kernel 6.25e-05, through statistics 3.50877e-05
+metrics: shape=1x4x4 replays=5000 launch=graph end_to_end_us=17.3025 batch_ms=86.5126 single_us=21.536 attention_us=5.12 attention_min_us=4.096 attention_max_us=26.624 through_statistics_us=9.12 through_statistics_min_us=8.192 through_statistics_max_us=30.72 attention_flops=320
+reference max |output error|: 7.46346e-08
+reference max statistic error (rel): 1.06296e-07
+PASSED
+### run 2: /home/ankai/cuda/rtx3090/loom_msa/build/msa_optimized_4x4 --inputs=random --launch=graph
+variant: cuda_optimized (1x4x4, replays=5000, inputs=random, launch=graph)
+attention checksum: -38.0981
+projection energy: 8.54637
+attention sum: -4.5274
+attention max: 0.909211
+combined checksum: -34.1495
+graph replay average (us): 17.2376
+batch of 5000 back-to-back iterations (ms): 86.1881
+single iteration median of 20 (us): 14.336 [min 13.696, max 21.792]
+attention kernel median (us): 5.12 [min 4.096, max 16.416]
+attention through statistics median (us): 8.192 [min 8.192, max 32.768]
+effective attention throughput (TFLOP/s): kernel 6.25e-05, through statistics 3.90625e-05
+metrics: shape=1x4x4 replays=5000 launch=graph end_to_end_us=17.2376 batch_ms=86.1881 single_us=14.336 attention_us=5.12 attention_min_us=4.096 attention_max_us=16.416 through_statistics_us=8.192 through_statistics_min_us=8.192 through_statistics_max_us=32.768 attention_flops=320
+reference max |output error|: 7.46346e-08
+reference max statistic error (rel): 1.06296e-07
+PASSED
+### run 3: /home/ankai/cuda/rtx3090/loom_msa/build/msa_optimized_4x4 --inputs=random --launch=graph
+variant: cuda_optimized (1x4x4, replays=5000, inputs=random, launch=graph)
+attention checksum: -38.0981
+projection energy: 8.54637
+attention sum: -4.5274
+attention max: 0.909211
+combined checksum: -34.1495
+graph replay average (us): 17.7004
+batch of 5000 back-to-back iterations (ms): 88.5022
+single iteration median of 20 (us): 14.176 [min 13.664, max 21.728]
+attention kernel median (us): 5.12 [min 4.096, max 28.768]
+attention through statistics median (us): 8.192 [min 8.192, max 32.768]
+effective attention throughput (TFLOP/s): kernel 6.25e-05, through statistics 3.90625e-05
+metrics: shape=1x4x4 replays=5000 launch=graph end_to_end_us=17.7004 batch_ms=88.5022 single_us=14.176 attention_us=5.12 attention_min_us=4.096 attention_max_us=28.768 through_statistics_us=8.192 through_statistics_min_us=8.192 through_statistics_max_us=32.768 attention_flops=320
+reference max |output error|: 7.46346e-08
+reference max statistic error (rel): 1.06296e-07
+PASSED
+### run 4: /home/ankai/cuda/rtx3090/loom_msa/build/msa_optimized_4x4 --inputs=random --launch=graph
+variant: cuda_optimized (1x4x4, replays=5000, inputs=random, launch=graph)
+attention checksum: -38.0981
+projection energy: 8.54637
+attention sum: -4.5274
+attention max: 0.909211
+combined checksum: -34.1495
+graph replay average (us): 17.298
+batch of 5000 back-to-back iterations (ms): 86.4901
+single iteration median of 20 (us): 14.128 [min 13.536, max 21.76]
+attention kernel median (us): 5.12 [min 4.096, max 8.192]
+attention through statistics median (us): 8.416 [min 8.16, max 11.264]
+effective attention throughput (TFLOP/s): kernel 6.25e-05, through statistics 3.80228e-05
+metrics: shape=1x4x4 replays=5000 launch=graph end_to_end_us=17.298 batch_ms=86.4901 single_us=14.128 attention_us=5.12 attention_min_us=4.096 attention_max_us=8.192 through_statistics_us=8.416 through_statistics_min_us=8.16 through_statistics_max_us=11.264 attention_flops=320
+reference max |output error|: 7.46346e-08
+reference max statistic error (rel): 1.06296e-07
+PASSED
+### run 5: /home/ankai/cuda/rtx3090/loom_msa/build/msa_optimized_4x4 --inputs=random --launch=graph
+variant: cuda_optimized (1x4x4, replays=5000, inputs=random, launch=graph)
+attention checksum: -38.0981
+projection energy: 8.54637
+attention sum: -4.5274
+attention max: 0.909211
+combined checksum: -34.1495
+graph replay average (us): 17.527
+batch of 5000 back-to-back iterations (ms): 87.635
+single iteration median of 20 (us): 14.176 [min 13.6, max 21.568]
+attention kernel median (us): 5.12 [min 4.096, max 29.696]
+attention through statistics median (us): 8.192 [min 8.192, max 33.792]
+effective attention throughput (TFLOP/s): kernel 6.25e-05, through statistics 3.90625e-05
+metrics: shape=1x4x4 replays=5000 launch=graph end_to_end_us=17.527 batch_ms=87.635 single_us=14.176 attention_us=5.12 attention_min_us=4.096 attention_max_us=29.696 through_statistics_us=8.192 through_statistics_min_us=8.192 through_statistics_max_us=33.792 attention_flops=320
+reference max |output error|: 7.46346e-08
+reference max statistic error (rel): 1.06296e-07
+PASSED
+### run 6: /home/ankai/cuda/rtx3090/loom_msa/build/msa_optimized_4x4 --inputs=random --launch=graph
+variant: cuda_optimized (1x4x4, replays=5000, inputs=random, launch=graph)
+attention checksum: -38.0981
+projection energy: 8.54637
+attention sum: -4.5274
+attention max: 0.909211
+combined checksum: -34.1495
+graph replay average (us): 17.4906
+batch of 5000 back-to-back iterations (ms): 87.4528
+single iteration median of 20 (us): 18.144 [min 13.696, max 21.76]
+attention kernel median (us): 5.12 [min 4.096, max 29.696]
+attention through statistics median (us): 8.192 [min 8.192, max 33.792]
+effective attention throughput (TFLOP/s): kernel 6.25e-05, through statistics 3.90625e-05
+metrics: shape=1x4x4 replays=5000 launch=graph end_to_end_us=17.4906 batch_ms=87.4528 single_us=18.144 attention_us=5.12 attention_min_us=4.096 attention_max_us=29.696 through_statistics_us=8.192 through_statistics_min_us=8.192 through_statistics_max_us=33.792 attention_flops=320
+reference max |output error|: 7.46346e-08
+reference max statistic error (rel): 1.06296e-07
+PASSED
+### run 7: /home/ankai/cuda/rtx3090/loom_msa/build/msa_optimized_4x4 --inputs=random --launch=graph
+variant: cuda_optimized (1x4x4, replays=5000, inputs=random, launch=graph)
+attention checksum: -38.0981
+projection energy: 8.54637
+attention sum: -4.5274
+attention max: 0.909211
+combined checksum: -34.1495
+graph replay average (us): 17.536
+batch of 5000 back-to-back iterations (ms): 87.6798
+single iteration median of 20 (us): 17.792 [min 13.504, max 28.576]
+attention kernel median (us): 5.12 [min 4.096, max 29.696]
+attention through statistics median (us): 8.192 [min 8.192, max 33.792]
+effective attention throughput (TFLOP/s): kernel 6.25e-05, through statistics 3.90625e-05
+metrics: shape=1x4x4 replays=5000 launch=graph end_to_end_us=17.536 batch_ms=87.6798 single_us=17.792 attention_us=5.12 attention_min_us=4.096 attention_max_us=29.696 through_statistics_us=8.192 through_statistics_min_us=8.192 through_statistics_max_us=33.792 attention_flops=320
+reference max |output error|: 7.46346e-08
+reference max statistic error (rel): 1.06296e-07
+PASSED
+### run 8: /home/ankai/cuda/rtx3090/loom_msa/build/msa_optimized_4x4 --inputs=random --launch=graph
+variant: cuda_optimized (1x4x4, replays=5000, inputs=random, launch=graph)
+attention checksum: -38.0981
+projection energy: 8.54637
+attention sum: -4.5274
+attention max: 0.909211
+combined checksum: -34.1495
+graph replay average (us): 17.3587
+batch of 5000 back-to-back iterations (ms): 86.7933
+single iteration median of 20 (us): 14.512 [min 13.696, max 21.76]
+attention kernel median (us): 5.12 [min 4.096, max 26.624]
+attention through statistics median (us): 9.216 [min 8.192, max 33.696]
+effective attention throughput (TFLOP/s): kernel 6.25e-05, through statistics 3.47222e-05
+metrics: shape=1x4x4 replays=5000 launch=graph end_to_end_us=17.3587 batch_ms=86.7933 single_us=14.512 attention_us=5.12 attention_min_us=4.096 attention_max_us=26.624 through_statistics_us=9.216 through_statistics_min_us=8.192 through_statistics_max_us=33.696 attention_flops=320
+reference max |output error|: 7.46346e-08
+reference max statistic error (rel): 1.06296e-07
+PASSED
+### run 9: /home/ankai/cuda/rtx3090/loom_msa/build/msa_optimized_4x4 --inputs=random --launch=graph
+variant: cuda_optimized (1x4x4, replays=5000, inputs=random, launch=graph)
+attention checksum: -38.0981
+projection energy: 8.54637
+attention sum: -4.5274
+attention max: 0.909211
+combined checksum: -34.1495
+graph replay average (us): 17.5245
+batch of 5000 back-to-back iterations (ms): 87.6224
+single iteration median of 20 (us): 14.224 [min 13.728, max 21.728]
+attention kernel median (us): 5.12 [min 4.096, max 26.624]
+attention through statistics median (us): 9.184 [min 8.192, max 30.72]
+effective attention throughput (TFLOP/s): kernel 6.25e-05, through statistics 3.48432e-05
+metrics: shape=1x4x4 replays=5000 launch=graph end_to_end_us=17.5245 batch_ms=87.6224 single_us=14.224 attention_us=5.12 attention_min_us=4.096 attention_max_us=26.624 through_statistics_us=9.184 through_statistics_min_us=8.192 through_statistics_max_us=30.72 attention_flops=320
+reference max |output error|: 7.46346e-08
+reference max statistic error (rel): 1.06296e-07
+PASSED

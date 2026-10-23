@@ -113,7 +113,7 @@ sudo env PATH="$PATH" CUDA_VISIBLE_DEVICES=0 ./profile_ncu_all.sh
 
 Files written under `sudo` are handed back to the invoking user.
 
-To rerun every whole-application timing the spreadsheet uses (each workload launched directly, as a CUDA Graph and as the agentic optimized version, 5 interleaved runs of a 50-iteration batch plus single iterations), and then one nsys trace of each of those commands:
+To rerun every whole-application timing the spreadsheet uses (each workload launched directly, as a CUDA Graph and as the agentic optimized version, 5 interleaved runs of a 50-iteration batch, 1000 at the small shapes, plus single iterations), and then one nsys trace of each of those commands (build the small PageRank binaries first with `make -C pagerank small`):
 
 ```bash
 ./time_all.sh
@@ -123,7 +123,7 @@ To rerun every whole-application timing the spreadsheet uses (each workload laun
 TIMESTAMP=<the timing run's stamp> ./time_all.sh nsys
 ```
 
-They write `<gpu>/<workload>/profiles/timing-*.log` and `nsys-timing-*`; point `TIMING_STAMP_RTX3090` (or the GPU's entry) in `results/build_spreadsheet.py` at the new stamp.
+Each workload runs at its largest shape and at a small, launch-bound one (a few microseconds of GPU work per launch), where the direct / graph difference shows; `SHAPES=large` or `SHAPES=small` runs only one. They write `<gpu>/<workload>/profiles/timing-*.log` and `nsys-timing-*`; point `TIMING_STAMP_RTX3090` (large) or `SMALL_TIMING_STAMP_RTX3090` (small), or the GPU's entry, in `results/build_spreadsheet.py` at the new stamp.
 
 ## Rebuild the results
 

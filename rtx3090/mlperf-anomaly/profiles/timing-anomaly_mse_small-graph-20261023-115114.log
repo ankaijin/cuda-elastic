@@ -1,0 +1,108 @@
+### run 1: /home/ankai/cuda/rtx3090/mlperf-anomaly/build/anomaly_mse --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-anomaly mse: count=16 inputs=random scale=0.0625 zero_point=-3 blocks=1 launch=graph replays=1000
+  gpu          0.024020683
+  loom loop    0.0240206812 (host, sequential float)
+  reference    0.0240206809 (host, double)
+  check        pass (abs err 2.098e-09 vs double)
+  kernels      2.971 us/iter (graph replay)
+  end-to-end   17.369 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernels, 5 B/element)
+  batch        17.369 ms (1000 back-to-back end-to-end iterations)
+  single       20.288 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.020 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 2: /home/ankai/cuda/rtx3090/mlperf-anomaly/build/anomaly_mse --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-anomaly mse: count=16 inputs=random scale=0.0625 zero_point=-3 blocks=1 launch=graph replays=1000
+  gpu          0.024020683
+  loom loop    0.0240206812 (host, sequential float)
+  reference    0.0240206809 (host, double)
+  check        pass (abs err 2.098e-09 vs double)
+  kernels      2.971 us/iter (graph replay)
+  end-to-end   17.261 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernels, 5 B/element)
+  batch        17.261 ms (1000 back-to-back end-to-end iterations)
+  single       19.824 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.020 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 3: /home/ankai/cuda/rtx3090/mlperf-anomaly/build/anomaly_mse --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-anomaly mse: count=16 inputs=random scale=0.0625 zero_point=-3 blocks=1 launch=graph replays=1000
+  gpu          0.024020683
+  loom loop    0.0240206812 (host, sequential float)
+  reference    0.0240206809 (host, double)
+  check        pass (abs err 2.098e-09 vs double)
+  kernels      2.970 us/iter (graph replay)
+  end-to-end   17.393 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernels, 5 B/element)
+  batch        17.393 ms (1000 back-to-back end-to-end iterations)
+  single       20.768 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.020 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 4: /home/ankai/cuda/rtx3090/mlperf-anomaly/build/anomaly_mse --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-anomaly mse: count=16 inputs=random scale=0.0625 zero_point=-3 blocks=1 launch=graph replays=1000
+  gpu          0.024020683
+  loom loop    0.0240206812 (host, sequential float)
+  reference    0.0240206809 (host, double)
+  check        pass (abs err 2.098e-09 vs double)
+  kernels      2.984 us/iter (graph replay)
+  end-to-end   17.552 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernels, 5 B/element)
+  batch        17.552 ms (1000 back-to-back end-to-end iterations)
+  single       19.808 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.021 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 5: /home/ankai/cuda/rtx3090/mlperf-anomaly/build/anomaly_mse --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-anomaly mse: count=16 inputs=random scale=0.0625 zero_point=-3 blocks=1 launch=graph replays=1000
+  gpu          0.024020683
+  loom loop    0.0240206812 (host, sequential float)
+  reference    0.0240206809 (host, double)
+  check        pass (abs err 2.098e-09 vs double)
+  kernels      2.992 us/iter (graph replay)
+  end-to-end   17.478 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernels, 5 B/element)
+  batch        17.478 ms (1000 back-to-back end-to-end iterations)
+  single       19.808 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.020 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 6: /home/ankai/cuda/rtx3090/mlperf-anomaly/build/anomaly_mse --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-anomaly mse: count=16 inputs=random scale=0.0625 zero_point=-3 blocks=1 launch=graph replays=1000
+  gpu          0.024020683
+  loom loop    0.0240206812 (host, sequential float)
+  reference    0.0240206809 (host, double)
+  check        pass (abs err 2.098e-09 vs double)
+  kernels      2.992 us/iter (graph replay)
+  end-to-end   17.631 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernels, 5 B/element)
+  batch        17.631 ms (1000 back-to-back end-to-end iterations)
+  single       20.272 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.021 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 7: /home/ankai/cuda/rtx3090/mlperf-anomaly/build/anomaly_mse --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-anomaly mse: count=16 inputs=random scale=0.0625 zero_point=-3 blocks=1 launch=graph replays=1000
+  gpu          0.024020683
+  loom loop    0.0240206812 (host, sequential float)
+  reference    0.0240206809 (host, double)
+  check        pass (abs err 2.098e-09 vs double)
+  kernels      2.996 us/iter (graph replay)
+  end-to-end   15.970 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernels, 5 B/element)
+  batch        15.970 ms (1000 back-to-back end-to-end iterations)
+  single       20.640 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.019 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 8: /home/ankai/cuda/rtx3090/mlperf-anomaly/build/anomaly_mse --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-anomaly mse: count=16 inputs=random scale=0.0625 zero_point=-3 blocks=1 launch=graph replays=1000
+  gpu          0.024020683
+  loom loop    0.0240206812 (host, sequential float)
+  reference    0.0240206809 (host, double)
+  check        pass (abs err 2.098e-09 vs double)
+  kernels      2.995 us/iter (graph replay)
+  end-to-end   17.507 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernels, 5 B/element)
+  batch        17.507 ms (1000 back-to-back end-to-end iterations)
+  single       20.208 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.021 s (replays x (kernels + end-to-end), excluding warm-up)
+### run 9: /home/ankai/cuda/rtx3090/mlperf-anomaly/build/anomaly_mse --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-anomaly mse: count=16 inputs=random scale=0.0625 zero_point=-3 blocks=1 launch=graph replays=1000
+  gpu          0.024020683
+  loom loop    0.0240206812 (host, sequential float)
+  reference    0.0240206809 (host, double)
+  check        pass (abs err 2.098e-09 vs double)
+  kernels      3.018 us/iter (graph replay)
+  end-to-end   17.021 us/iter (H2D + kernels + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernels, 5 B/element)
+  batch        17.021 ms (1000 back-to-back end-to-end iterations)
+  single       20.560 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.020 s (replays x (kernels + end-to-end), excluding warm-up)

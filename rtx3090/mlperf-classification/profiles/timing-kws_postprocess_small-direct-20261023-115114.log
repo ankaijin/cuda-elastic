@@ -1,0 +1,90 @@
+### run 1: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000
+  row 0        best=1 p[best]=5.23438
+  check        pass (1/1 rows bitwise equal to loom loop; 1 rows with a tied maximum)
+  kernel       1.755 us/iter (direct launch)
+  end-to-end   12.217 us/iter (H2D + kernel + D2H, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  batch        12.217 ms (1000 back-to-back end-to-end iterations)
+  single       20.832 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.014 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 2: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000
+  row 0        best=1 p[best]=5.23438
+  check        pass (1/1 rows bitwise equal to loom loop; 1 rows with a tied maximum)
+  kernel       1.816 us/iter (direct launch)
+  end-to-end   7.990 us/iter (H2D + kernel + D2H, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  batch        7.990 ms (1000 back-to-back end-to-end iterations)
+  single       20.832 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.010 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 3: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000
+  row 0        best=1 p[best]=5.23438
+  check        pass (1/1 rows bitwise equal to loom loop; 1 rows with a tied maximum)
+  kernel       1.718 us/iter (direct launch)
+  end-to-end   10.761 us/iter (H2D + kernel + D2H, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  batch        10.761 ms (1000 back-to-back end-to-end iterations)
+  single       20.832 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.012 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 4: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000
+  row 0        best=1 p[best]=5.23438
+  check        pass (1/1 rows bitwise equal to loom loop; 1 rows with a tied maximum)
+  kernel       1.830 us/iter (direct launch)
+  end-to-end   10.957 us/iter (H2D + kernel + D2H, direct launch)
+  throughput   0.5 M rows/s (kernel)
+  batch        10.957 ms (1000 back-to-back end-to-end iterations)
+  single       20.800 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.013 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 5: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000
+  row 0        best=1 p[best]=5.23438
+  check        pass (1/1 rows bitwise equal to loom loop; 1 rows with a tied maximum)
+  kernel       1.802 us/iter (direct launch)
+  end-to-end   9.956 us/iter (H2D + kernel + D2H, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  batch        9.956 ms (1000 back-to-back end-to-end iterations)
+  single       21.760 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.012 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 6: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000
+  row 0        best=1 p[best]=5.23438
+  check        pass (1/1 rows bitwise equal to loom loop; 1 rows with a tied maximum)
+  kernel       1.811 us/iter (direct launch)
+  end-to-end   8.767 us/iter (H2D + kernel + D2H, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  batch        8.767 ms (1000 back-to-back end-to-end iterations)
+  single       20.832 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.011 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 7: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000
+  row 0        best=1 p[best]=5.23438
+  check        pass (1/1 rows bitwise equal to loom loop; 1 rows with a tied maximum)
+  kernel       1.732 us/iter (direct launch)
+  end-to-end   11.545 us/iter (H2D + kernel + D2H, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  batch        11.545 ms (1000 back-to-back end-to-end iterations)
+  single       21.776 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.013 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 8: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000
+  row 0        best=1 p[best]=5.23438
+  check        pass (1/1 rows bitwise equal to loom loop; 1 rows with a tied maximum)
+  kernel       1.775 us/iter (direct launch)
+  end-to-end   10.668 us/iter (H2D + kernel + D2H, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  batch        10.668 ms (1000 back-to-back end-to-end iterations)
+  single       21.568 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.012 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 9: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000
+  row 0        best=1 p[best]=5.23438
+  check        pass (1/1 rows bitwise equal to loom loop; 1 rows with a tied maximum)
+  kernel       1.758 us/iter (direct launch)
+  end-to-end   10.207 us/iter (H2D + kernel + D2H, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  batch        10.207 ms (1000 back-to-back end-to-end iterations)
+  single       20.960 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.012 s (replays x (kernel + end-to-end), excluding warm-up)

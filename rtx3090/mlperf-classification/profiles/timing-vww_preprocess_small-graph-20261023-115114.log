@@ -1,0 +1,81 @@
+### run 1: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-classification vww preprocess: count=16 inputs=random blocks=1 launch=graph replays=1000
+  check        pass (16/16 bytes equal to loom loop)
+  kernel       1.377 us/iter (graph replay)
+  end-to-end   10.197 us/iter (H2D + kernel + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  batch        10.197 ms (1000 back-to-back end-to-end iterations)
+  single       19.808 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.012 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 2: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-classification vww preprocess: count=16 inputs=random blocks=1 launch=graph replays=1000
+  check        pass (16/16 bytes equal to loom loop)
+  kernel       1.423 us/iter (graph replay)
+  end-to-end   7.929 us/iter (H2D + kernel + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  batch        7.929 ms (1000 back-to-back end-to-end iterations)
+  single       19.808 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.009 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 3: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-classification vww preprocess: count=16 inputs=random blocks=1 launch=graph replays=1000
+  check        pass (16/16 bytes equal to loom loop)
+  kernel       1.394 us/iter (graph replay)
+  end-to-end   7.154 us/iter (H2D + kernel + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  batch        7.154 ms (1000 back-to-back end-to-end iterations)
+  single       19.776 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.009 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 4: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-classification vww preprocess: count=16 inputs=random blocks=1 launch=graph replays=1000
+  check        pass (16/16 bytes equal to loom loop)
+  kernel       1.354 us/iter (graph replay)
+  end-to-end   10.342 us/iter (H2D + kernel + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  batch        10.342 ms (1000 back-to-back end-to-end iterations)
+  single       19.632 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.012 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 5: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-classification vww preprocess: count=16 inputs=random blocks=1 launch=graph replays=1000
+  check        pass (16/16 bytes equal to loom loop)
+  kernel       1.406 us/iter (graph replay)
+  end-to-end   7.246 us/iter (H2D + kernel + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  batch        7.246 ms (1000 back-to-back end-to-end iterations)
+  single       19.792 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.009 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 6: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-classification vww preprocess: count=16 inputs=random blocks=1 launch=graph replays=1000
+  check        pass (16/16 bytes equal to loom loop)
+  kernel       1.415 us/iter (graph replay)
+  end-to-end   10.482 us/iter (H2D + kernel + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  batch        10.482 ms (1000 back-to-back end-to-end iterations)
+  single       19.776 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.012 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 7: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-classification vww preprocess: count=16 inputs=random blocks=1 launch=graph replays=1000
+  check        pass (16/16 bytes equal to loom loop)
+  kernel       1.429 us/iter (graph replay)
+  end-to-end   9.778 us/iter (H2D + kernel + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  batch        9.778 ms (1000 back-to-back end-to-end iterations)
+  single       19.744 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.011 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 8: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-classification vww preprocess: count=16 inputs=random blocks=1 launch=graph replays=1000
+  check        pass (16/16 bytes equal to loom loop)
+  kernel       1.353 us/iter (graph replay)
+  end-to-end   7.178 us/iter (H2D + kernel + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  batch        7.178 ms (1000 back-to-back end-to-end iterations)
+  single       19.776 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.009 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 9: /home/ankai/cuda/rtx3090/mlperf-classification/build/vww_preprocess --count=16 --inputs=random --replays=1000 --launch=graph
+mlperf-classification vww preprocess: count=16 inputs=random blocks=1 launch=graph replays=1000
+  check        pass (16/16 bytes equal to loom loop)
+  kernel       1.392 us/iter (graph replay)
+  end-to-end   8.075 us/iter (H2D + kernel + D2H, graph replay)
+  bandwidth    0.0 GB/s (kernel, 2 B/element)
+  batch        8.075 ms (1000 back-to-back end-to-end iterations)
+  single       19.712 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.009 s (replays x (kernel + end-to-end), excluding warm-up)

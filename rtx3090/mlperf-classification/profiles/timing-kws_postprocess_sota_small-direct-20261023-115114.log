@@ -1,0 +1,99 @@
+### run 1: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess_sota --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess sota: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000 rotate=3 mode=zerocopy
+  row 0        best=1 p[best]=5.23438
+  check        pass (3/3 rows bitwise equal to loom loop over 3 input sets; 1 rows with a tied maximum)
+  kernel       1.614 us/iter (direct launch)
+  end-to-end   2.816 us/iter (H2D + kernel + D2H as one zero-copy kernel on pinned host memory, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  launches     kernels-only 1 x kws_postprocess_sota_kernel; end-to-end 1 x kws_postprocess_sota_kernel
+  batch        2.816 ms (1000 back-to-back end-to-end iterations)
+  single       4.096 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.004 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 2: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess_sota --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess sota: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000 rotate=3 mode=zerocopy
+  row 0        best=1 p[best]=5.23438
+  check        pass (3/3 rows bitwise equal to loom loop over 3 input sets; 1 rows with a tied maximum)
+  kernel       1.603 us/iter (direct launch)
+  end-to-end   2.776 us/iter (H2D + kernel + D2H as one zero-copy kernel on pinned host memory, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  launches     kernels-only 1 x kws_postprocess_sota_kernel; end-to-end 1 x kws_postprocess_sota_kernel
+  batch        2.776 ms (1000 back-to-back end-to-end iterations)
+  single       4.096 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.004 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 3: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess_sota --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess sota: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000 rotate=3 mode=zerocopy
+  row 0        best=1 p[best]=5.23438
+  check        pass (3/3 rows bitwise equal to loom loop over 3 input sets; 1 rows with a tied maximum)
+  kernel       1.619 us/iter (direct launch)
+  end-to-end   2.814 us/iter (H2D + kernel + D2H as one zero-copy kernel on pinned host memory, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  launches     kernels-only 1 x kws_postprocess_sota_kernel; end-to-end 1 x kws_postprocess_sota_kernel
+  batch        2.814 ms (1000 back-to-back end-to-end iterations)
+  single       4.096 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.004 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 4: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess_sota --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess sota: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000 rotate=3 mode=zerocopy
+  row 0        best=1 p[best]=5.23438
+  check        pass (3/3 rows bitwise equal to loom loop over 3 input sets; 1 rows with a tied maximum)
+  kernel       1.668 us/iter (direct launch)
+  end-to-end   2.886 us/iter (H2D + kernel + D2H as one zero-copy kernel on pinned host memory, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  launches     kernels-only 1 x kws_postprocess_sota_kernel; end-to-end 1 x kws_postprocess_sota_kernel
+  batch        2.886 ms (1000 back-to-back end-to-end iterations)
+  single       4.096 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.005 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 5: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess_sota --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess sota: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000 rotate=3 mode=zerocopy
+  row 0        best=1 p[best]=5.23438
+  check        pass (3/3 rows bitwise equal to loom loop over 3 input sets; 1 rows with a tied maximum)
+  kernel       1.632 us/iter (direct launch)
+  end-to-end   2.853 us/iter (H2D + kernel + D2H as one zero-copy kernel on pinned host memory, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  launches     kernels-only 1 x kws_postprocess_sota_kernel; end-to-end 1 x kws_postprocess_sota_kernel
+  batch        2.853 ms (1000 back-to-back end-to-end iterations)
+  single       4.096 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.004 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 6: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess_sota --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess sota: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000 rotate=3 mode=zerocopy
+  row 0        best=1 p[best]=5.23438
+  check        pass (3/3 rows bitwise equal to loom loop over 3 input sets; 1 rows with a tied maximum)
+  kernel       1.686 us/iter (direct launch)
+  end-to-end   2.838 us/iter (H2D + kernel + D2H as one zero-copy kernel on pinned host memory, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  launches     kernels-only 1 x kws_postprocess_sota_kernel; end-to-end 1 x kws_postprocess_sota_kernel
+  batch        2.838 ms (1000 back-to-back end-to-end iterations)
+  single       4.096 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.005 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 7: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess_sota --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess sota: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000 rotate=3 mode=zerocopy
+  row 0        best=1 p[best]=5.23438
+  check        pass (3/3 rows bitwise equal to loom loop over 3 input sets; 1 rows with a tied maximum)
+  kernel       1.618 us/iter (direct launch)
+  end-to-end   2.801 us/iter (H2D + kernel + D2H as one zero-copy kernel on pinned host memory, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  launches     kernels-only 1 x kws_postprocess_sota_kernel; end-to-end 1 x kws_postprocess_sota_kernel
+  batch        2.801 ms (1000 back-to-back end-to-end iterations)
+  single       4.096 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.004 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 8: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess_sota --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess sota: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000 rotate=3 mode=zerocopy
+  row 0        best=1 p[best]=5.23438
+  check        pass (3/3 rows bitwise equal to loom loop over 3 input sets; 1 rows with a tied maximum)
+  kernel       1.641 us/iter (direct launch)
+  end-to-end   2.860 us/iter (H2D + kernel + D2H as one zero-copy kernel on pinned host memory, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  launches     kernels-only 1 x kws_postprocess_sota_kernel; end-to-end 1 x kws_postprocess_sota_kernel
+  batch        2.860 ms (1000 back-to-back end-to-end iterations)
+  single       4.096 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.005 s (replays x (kernel + end-to-end), excluding warm-up)
+### run 9: /home/ankai/cuda/rtx3090/mlperf-classification/build/kws_postprocess_sota --count=12 --batch=1 --inputs=random --replays=1000 --launch=direct
+mlperf-classification kws postprocess sota: count=12 batch=1 inputs=random scale=0.0390625 zero_point=-7 launch=direct replays=1000 rotate=3 mode=zerocopy
+  row 0        best=1 p[best]=5.23438
+  check        pass (3/3 rows bitwise equal to loom loop over 3 input sets; 1 rows with a tied maximum)
+  kernel       1.714 us/iter (direct launch)
+  end-to-end   2.944 us/iter (H2D + kernel + D2H as one zero-copy kernel on pinned host memory, direct launch)
+  throughput   0.6 M rows/s (kernel)
+  launches     kernels-only 1 x kws_postprocess_sota_kernel; end-to-end 1 x kws_postprocess_sota_kernel
+  batch        2.944 ms (1000 back-to-back end-to-end iterations)
+  single       4.096 us (median of 20 end-to-end iterations, each launched alone)
+  timed total  0.005 s (replays x (kernel + end-to-end), excluding warm-up)
