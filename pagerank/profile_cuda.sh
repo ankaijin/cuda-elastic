@@ -85,7 +85,7 @@ profile_ncu() {
     ncu --set basic --metrics "$NCU_METRICS" \
     --launch-skip 0 --launch-count "$NCU_LAUNCH_COUNT" --replay-mode kernel \
     --graph-profiling node --target-processes application-only \
-    --export "$OUT_DIR/ncu-pagerank-$STAMP" --force-overwrite "$BIN"
+    --export "$OUT_DIR/ncu-pagerank-$STAMP.ncu-rep" --force-overwrite "$BIN"
 }
 
 case "${1:-all}" in

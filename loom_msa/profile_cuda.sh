@@ -62,7 +62,7 @@ case "${1:-all}" in
       --replay-mode kernel \
       --graph-profiling node \
       --target-processes application-only \
-      --export "$OUT_DIR/ncu-all-kernels-$(basename "$NCU_BIN")-$LAUNCH-$TIMESTAMP" \
+      --export "$OUT_DIR/ncu-all-kernels-$(basename "$NCU_BIN")-$LAUNCH-$TIMESTAMP.ncu-rep" \
       --force-overwrite \
       "$NCU_BIN" "${BIN_ARGS[@]}"
     ;;

@@ -59,7 +59,7 @@ profile_ncu() {
   require_tool ncu; ensure_bin; mkdir -p "$OUT_DIR"
   ncu --set basic --launch-skip 0 --launch-count "$NCU_LAUNCH_COUNT" --replay-mode kernel \
     --graph-profiling node --target-processes application-only \
-    --export "$OUT_DIR/ncu-${NCU_NAME}-${mode}-$STAMP" --force-overwrite "$BIN" "$mode" "$@"
+    --export "$OUT_DIR/ncu-${NCU_NAME}-${mode}-$STAMP.ncu-rep" --force-overwrite "$BIN" "$mode" "$@"
 }
 # Shared sweep driver: $1 = CSV name prefix, $2 = default configs,
 # $3 = default launch count (a number or "auto"), $4 = default matmul variant.
@@ -142,7 +142,8 @@ with open(os.path.join(out,'results.txt'),'w') as summary:
  for name, args in probes:
   output_opt = '--output' if args[0]=='nsys' else '--export'
   overwrite = ['--force-overwrite=true'] if args[0]=='nsys' else ['--force-overwrite']
-  cmd=args+overwrite+[output_opt,os.path.join(out,name),bin_path]
+  report = name if args[0]=='nsys' else name+'.ncu-rep'
+  cmd=args+overwrite+[output_opt,os.path.join(out,report),bin_path]
   with open(os.path.join(out,name+'.log'),'w') as log:
    p=subprocess.run(cmd,stdout=log,stderr=subprocess.STDOUT)
   summary.write('%s: exit=%d\n' % (name,p.returncode)); print('%s: exit=%d' % (name,p.returncode))

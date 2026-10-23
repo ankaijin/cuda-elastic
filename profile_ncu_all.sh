@@ -36,7 +36,7 @@ mkdir -p "$OUT/llama2c/profiles"
 for mode in graph direct; do
   ncu --set basic --launch-skip 0 --launch-count 9 --replay-mode kernel \
     --graph-profiling node --target-processes application-only \
-    --export "$OUT/llama2c/profiles/ncu-large-coalesced-b1024-$mode-$STAMP" --force-overwrite \
+    --export "$OUT/llama2c/profiles/ncu-large-coalesced-b1024-$mode-$STAMP.ncu-rep" --force-overwrite \
     "$OUT/llama2c/llama2c_cuda_graph" "$mode" 5 1024 16384 8192 1 1 copy coalesced
 done
 
@@ -63,7 +63,7 @@ done
 echo "### SOTA"
 ncu --set basic --launch-skip 0 --launch-count 3 --replay-mode kernel \
   --graph-profiling node --target-processes application-only \
-  --export "$OUT/llama2c/profiles/ncu-sota-large-b1024-graph-$STAMP" --force-overwrite \
+  --export "$OUT/llama2c/profiles/ncu-sota-large-b1024-graph-$STAMP.ncu-rep" --force-overwrite \
   "$OUT/llama2c/build/llama2c_sota" graph 5 1024 16384 8192 1 1 nocopy coalesced
 (cd "$ROOT/loom_msa" && VARIANT=sota LAUNCH=direct TIMESTAMP=$STAMP ./profile_cuda.sh ncu)
 VARIANT=sota TIMESTAMP=$STAMP "$ROOT/pagerank/profile_cuda.sh" ncu

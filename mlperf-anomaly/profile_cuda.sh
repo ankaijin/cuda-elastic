@@ -54,7 +54,7 @@ case "${1:-all}" in
       --replay-mode kernel \
       --graph-profiling node \
       --target-processes application-only \
-      --export "$OUT_DIR/ncu-$STAMP" \
+      --export "$OUT_DIR/ncu-$STAMP.ncu-rep" \
       --force-overwrite \
       $BIN $ARGS
     ;;
