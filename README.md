@@ -7,7 +7,7 @@ manifest; mono publishes the combined workbook after those contributions merge.
 
 Hand-written CUDA ports of the kernels in several Loom application workloads, each with a harness that runs the same work two ways, captured once into a **CUDA Graph** and replayed, or **launched directly** on every iteration, and checks the GPU result against a CPU reference. Each workload also has an **agentic optimized** version (formerly called SOTA; `<name>_sota.cu`), the fastest implementation found for the RTX 3090 (see [Agentic optimized versions](#agentic-optimized-versions)). The repository also holds the Nsight Compute and Nsight Systems profiles of every run, on an RTX 3090 and an RTX 4090, and a spreadsheet built from them.
 
-**Results:** [`results/README.md`](results/README.md) has the summary tables (per workload: kernel time, and whole-application time for a full batch of back-to-back iterations and for a single iteration launched alone; direct vs. graph vs. agentic optimized; and RTX 4090 vs. RTX 3090, predicted and measured), and [`results/cuda_performance.xlsx`](results/cuda_performance.xlsx) has the full ncu metrics. Every number links to the profile it was read from.
+**Results:** [`results/README.md`](results/README.md) and [`results/cuda_performance.xlsx`](results/cuda_performance.xlsx) compare application time per iteration for Direct, CUDA Graph, and agentic optimized implementations. The workbook also has latency, kernel, source, GPU prediction, and full NCU detail sheets. Timing cells link to their source measurements; short notes have full explanations in comments.
 
 ## Workloads
 

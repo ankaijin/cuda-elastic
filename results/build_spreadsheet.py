@@ -1,69 +1,33 @@
 #!/usr/bin/env python3
-"""Builds results/cuda_performance.xlsx from the latest profiling results
-committed in this repository. Nothing is re-run: every number is read from an
-existing ncu report, nsys sqlite export, benchmark log or sweep CSV, and every
-number links to the file it came from on GitHub.
+"""Build results/cuda_performance.xlsx and results/README.md from existing profiles.
 
-One summary sheet per GPU (RTX 3090, RTX 4090, RTX 5090), each read from that
-GPU's output folder (see gpu.sh), plus each GPU's ncu metrics.
-Inputs are pinned explicitly in results/inputs/<gpu>.json. A null input is
-pending; a selected file that is missing is an error. Only the selected run
-of each workload's implementation is included, at
-the largest problem size tested: the dominant kernel (when one dominates) and
-the whole application. Each workload also has a whole-application row at a
-small shape (time_all.sh's small configs), where an iteration is a few
-microseconds of GPU work per launch, so launch cost dominates and the
-difference between direct launches and a CUDA Graph shows; at the largest
-shapes an iteration takes milliseconds and the two match within ~1%.
-Columns of each summary sheet, left to right:
-  Direct launch      the workload's stream operations enqueued directly on
-                     every iteration, without a graph (each harness's direct
-                     mode: llama2c `direct`, loom_msa and mlperf
-                     `--launch=direct`, pagerank PAGERANK_LAUNCH=direct)
-  CUDA Graph         the same work captured once into a CUDA Graph and
-                     replayed
-  Agentic optimized  (formerly SOTA) the fastest implementation found
-                     (<name>_sota.cu), free to change kernels and data
-                     movement, launched whichever way is fastest
-                     (SOTA_LAUNCH). It does the same work per iteration
-                     (every timed iteration copies the full input from the
-                     host and the full output back) and rotates over 3
-                     different inputs, checking every output, so caching
-                     across iterations cannot pass. llama2c is the exception:
-                     its inputs stay device-resident in all versions.
-Each version has three times:
-  Full batch         one batch of back-to-back iterations between CUDA
-                     events (time_all.sh: 50 iterations at the largest shapes, 1000
-                     at the small ones, 5000 for loom_msa 4x4), in milliseconds
-  Per iteration      full batch / iterations, in microseconds
-  Single iteration   median of 20 iterations each launched alone on an idle
-                     device, in microseconds. The device is drained before
-                     each, so the launch cost is exposed instead of hiding
-                     behind the previous iteration's work as in the batch.
-Comparing the two shows how much launch overhead batching amortizes in each
-launch mode (the Single / per-iteration columns). Whole-application rows read
-them from time_all.sh's logs (median over its interleaved runs); kernel rows
-have one ncu time, a single launch replayed in isolation, so they fill only
-the Single iteration column.
-Speedups: Graph = Direct / Graph; Agentic optimized = Graph / Agentic
-optimized, where kernel rows compare the ncu time of all kernels doing that
-row's work in one iteration.
+The RTX 3090, RTX 4090, and RTX 5090 summary sheets compare application microseconds per
+iteration in a back-to-back batch: Direct, Graph, and Agentic optimized, plus
+the two implementation speedups. Target GPUs also show measured GPU speedup.
+Each timing links to its original measurement. Missing results stay pending.
 
-Kernel rows use the ncu kernel duration (gpu__time_duration.sum, mean over
-the profiled launches of that kernel). On a GPU without time_all.sh logs
-(the RTX 4090 so far), whole-application rows fall back to a per-iteration
-time only: the benchmark's own timing (cudaEvent per iteration / graph
-replay) or, where only an nsys trace exists, the median GPU span of one
-iteration in that trace: the work inside each NVTX range around a timed
-iteration or, in traces from before the harnesses had NVTX ranges, each graph
-replay. A cell whose measurement does not exist yet reads "pending".
+Supporting sheets retain full-batch and isolated timings, batch/run counts,
+single/batched ratios, isolated-latency speedups, kernel comparisons, source
+files, GPU predictions, and every profiled NCU launch. Visible notes are short;
+comments retain full explanations and prediction assumptions.
 
-Requires: ncu (Nsight Compute CLI) on PATH and openpyxl.
-Usage:    python3 results/build_spreadsheet.py
+Inputs are pinned explicitly in results/inputs/<gpu>.json. Null means pending;
+selected missing files are errors. All data comes from each GPU's existing
+output folder; no benchmark is rerun. RTX 5090 predictions remain disabled.
+Whole-application timings use time_all.sh logs when available; otherwise they
+use benchmark CUDA events or the median iteration span in a Nsight Systems
+trace. Kernel rows use NCU durations, with optimized speedups compared against
+the baseline kernels replaced. Graph = Direct / Graph; optimized = Graph /
+Optimized. Single/batched ratios include scheduling and measurement effects
+and do not isolate launch overhead.
+
+Requires ncu (Nsight Compute CLI) on PATH and openpyxl.
+Usage: python3 results/build_spreadsheet.py
 """
 
 import bisect
 import csv
+from functools import lru_cache
 import io
 import json
 import re
@@ -164,6 +128,7 @@ def git(*args):
     return subprocess.run(["git", "-C", str(REPO), *args], capture_output=True, text=True)
 
 
+@lru_cache(maxsize=None)
 def link(path):
     """GitHub URL for path, pinned to the latest commit on origin/main that
     has the file, under the name it had there (files moved since, e.g. into
@@ -541,10 +506,8 @@ def small_row(gpu, key, workload, size, what):
     app = app_cells(gpu, small, lambda m: None, pending)
     sota = sota_app_cell(gpu, small, app["graph"],
                          lambda: Cell(nsys=gpu.file(f"{small}_sota_nsys"), empty=TIMING_PENDING))
-    why = ("Small shape, so launch cost dominates: compare the Graph speedup and Single / batch "
-           "columns with the large-shape row above. A Single / batch below 1x means back-to-back "
-           "iterations run slower than one alone, i.e. the batch is limited by how fast the host "
-           "enqueues iterations rather than by the GPU.")
+    why = ("Small shape: compare isolated latency with batched time in the latency sheet. "
+           "Their ratio reflects scheduling and measurement effects, not pure launch overhead.")
     note = timing_note(app["graph"], what) if app["graph"].batch_us is not None else what
     return (workload, f"{WHOLE_APP}, small shape (launch-bound)", size, TIMED,
             app["direct"], app["graph"], sota,
@@ -946,164 +909,257 @@ def time_values(c):
     return c.batch_us / 1e3, c.us, c.single_us
 
 
-def speedup_columns(baseline):
-    """(group title, [(column title, value(cells, row number) -> number,
-    formula or text)]) of the speedup columns. baseline: the GPU is compared
-    with BASELINE (Predicted / Measured) instead of Direct / Graph."""
-    agentic = ("Agentic optimized speedup\n(Graph / Agentic)", [
-        ("Full batch", lambda cells, r: cells[2].agentic_speedups()[0]),
-        ("Single iteration", lambda cells, r: cells[2].agentic_speedups()[1]),
-    ])
-    if baseline:
-        return [(f"Speedup vs {BASELINE.sheet}\n(CUDA Graph)", [
-            ("Predicted", None),  # filled from baseline
-            (f"Measured\n({BASELINE.sheet} / {{gpu}})", None),
-        ]), agentic]
-    return [
-        ("Graph speedup\n(Direct / Graph)", [
-            ("Full batch", lambda cells, r: graph_speedups(cells[0], cells[1])[0]),
-            ("Single iteration", lambda cells, r: graph_speedups(cells[0], cells[1])[1]),
-        ]),
-        agentic,
-        ("Single iteration / per iteration in batch\n(launch cost a batch amortizes)", [
-            (short, lambda cells, r, i=i: cells[i].overhead()) for i, short in enumerate(SHORT)
-        ]),
-    ]
+def short_note(row):
+    """Short visible note; the full explanation stays in a cell comment."""
+    if not row[-1]:
+        return ""
+    workload, stage, _, _, direct, graph, optimized, _ = row
+    key = next(k for prefix, k in (
+        ("llama2c", "llama"), ("loom_msa", "loom"), ("pagerank", "pagerank"),
+        ("mlperf-tiny anomaly", "anomaly"), ("mlperf-tiny KWS", "kws"),
+        ("mlperf-tiny VWW", "vww")) if workload.startswith(prefix))
+    if graph.kernel:
+        base = {
+            "llama": "Concurrent baseline kernels; optimized speedup uses their summed NCU time.",
+            "loom": "Split attention; optimized speedup uses all four baseline kernels; NCU uses one chunk.",
+            "pagerank": "Full-graph updates; optimized time averages iterations 1–19.",
+            "anomaly": "Optimized reduction replaces both baseline kernels.",
+            "kws": "Kernel-only timing on device buffers; optimized rows use coalesced accesses.",
+            "vww": "Kernel-only timing on device buffers; optimized kernel processes vectors.",
+        }[key]
+        if optimized.us is None:
+            base = {
+                "llama": "Concurrent baseline kernels; matrix-vector product.",
+                "loom": "Online softmax with an eight-way context split.",
+                "pagerank": "Full-graph updates; first update overlaps upload.",
+                "anomaly": "Partial MSE reduction; final reduction is separate.",
+                "kws": "Single kernel; device buffers.",
+                "vww": "Single kernel; device buffers.",
+            }[key]
+        return base
+    small = "small shape" in stage
+    base = ({
+        "llama": "Device-resident inputs; 32 repeats per iteration.",
+        "loom": "Includes input and output transfers; 4 × 4 attention.",
+        "pagerank": "Includes upload, 20 PageRank updates, and download.",
+        "anomaly": "Includes input and output transfers; 16 elements.",
+        "kws": "Includes input and output transfers; one 12-class row.",
+        "vww": "Includes input and output transfers; 16 bytes.",
+    } if small else {
+        "llama": "Device-resident inputs; optimized version fuses all three operations.",
+        "loom": "Includes transfers; optimized output goes to pinned host memory.",
+        "pagerank": "Includes upload, 20 updates, and download; optimized run includes edge sorting.",
+        "anomaly": "Includes transfers; optimized reduction overlaps chunked upload.",
+        "kws": "Includes transfers; optimized kernel uses mapped host memory.",
+        "vww": "Includes transfers; optimized version overlaps upload, compute, and download.",
+    })[key]
+    if optimized.us is None and not small:
+        base = {
+            "llama": "Device-resident inputs; mean of three sweep trials.",
+            "loom": "Includes input and output transfers; benchmark median.",
+            "pagerank": "Includes transfers; median iteration span from Nsight Systems.",
+            "anomaly": "Includes transfers; median iteration span from Nsight Systems.",
+            "kws": "Includes transfers; median iteration span from Nsight Systems.",
+            "vww": "Includes transfers; median iteration span from Nsight Systems.",
+        }[key]
+    counts = {c.batch_n for c in (direct, graph, optimized) if c.batch_n is not None}
+    runs = {c.runs for c in (direct, graph, optimized) if c.runs is not None}
+    if len(counts) == 1:
+        base += f" {counts.pop():,} iterations/batch."
+    if len(runs) == 1:
+        base += f" Median of {runs.pop()} runs."
+    if all(c.us is None for c in (direct, graph, optimized)):
+        base = "Measurements pending. " + base
+    return base
 
 
-def build_summary(ws, gpu, rows, baseline=None):
-    """Writes one GPU's summary sheet and returns each row's sheet row number.
-    baseline: per row, (its row number on the BASELINE sheet, predicted
-    speedup or None); given, the first speedup columns compare against
-    BASELINE instead of Direct / Graph."""
-    ws.title = gpu.sheet
-    ws["A1"] = f"CUDA performance results (selected runs): {gpu.sheet}"
-    ws["A1"].font = Font(bold=True, size=14)
-    ws["A2"] = (f"GPU: NVIDIA GeForce {gpu.label}, binaries built with {gpu.toolkit} "
-                f"(outputs in {gpu.folder}/). Lower is better. Explicitly selected run of each workload's "
-                "current implementation at the largest problem size tested: the dominant kernel "
-                "(if one dominates) and the whole application, plus the whole application at a "
-                "small shape where launch cost dominates, launched directly, as a CUDA "
-                "Graph, and as the agentic optimized version (<name>_sota.cu, formerly SOTA: the "
-                "fastest implementation found, same work per iteration, launched whichever way "
-                "is fastest). Full batch = one batch of back-to-back iterations; per iteration = "
-                "full batch / iterations; single iteration = median of iterations each launched "
-                "alone on an idle device, so launch cost is exposed rather than overlapped with "
-                "the previous iteration. Each value links to its source; the ncu-rep / nsys "
-                "sqlite columns link the profile files on GitHub. ncu replays each kernel in "
-                "isolation, so kernel rows have one single-launch time.")
-    ws["A2"].alignment = Alignment(wrap_text=True)
-    ws.row_dimensions[2].height = 75
+def table_sheet(wb, title, headers, widths, description):
+    ws = wb.create_sheet(title)
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(headers))
+    ws.cell(1, 1, title).font = Font(bold=True, size=14)
+    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=len(headers))
+    ws.cell(2, 1, description).alignment = WRAP
+    ws.row_dimensions[2].height = 42
+    for i, (header, width) in enumerate(zip(headers, widths), 1):
+        c = ws.cell(4, i, header)
+        c.font, c.fill, c.border = HEADER_FONT, HEADER_FILL, BOX
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        ws.column_dimensions[get_column_letter(i)].width = width
+    ws.row_dimensions[4].height = 42
+    ws.freeze_panes = "C5"
+    ws.sheet_view.showGridLines = False
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.paperSize = ws.PAPERSIZE_A3
+    ws.page_setup.fitToWidth, ws.page_setup.fitToHeight = 1, 0
+    ws.print_title_rows = "1:4"
+    return ws
 
-    fixed = ["Workload", "Kernel / stage", "Problem size", "GPU", "Metric"]
-    hr, sr = 4, 5
-    for i, h in enumerate(fixed, 1):
-        ws.cell(hr, i, h)
-        ws.merge_cells(start_row=hr, start_column=i, end_row=sr, end_column=i)
-    col = len(fixed) + 1
-    group_cols = []
-    for g in GROUPS:
-        ws.cell(hr, col, g)
-        ws.merge_cells(start_row=hr, start_column=col, end_row=hr, end_column=col + 4)
-        for j, sub in enumerate(TIMES + ["ncu-rep", "nsys sqlite"]):
-            ws.cell(sr, col + j, sub)
-        group_cols.append(col)
-        col += 5
-    speedups = speedup_columns(baseline)
-    speedup_cols = []
-    for title, columns in speedups:
-        ws.cell(hr, col, title)
-        ws.merge_cells(start_row=hr, start_column=col, end_row=hr, end_column=col + len(columns) - 1)
-        for j, (sub, _) in enumerate(columns):
-            ws.cell(sr, col + j, sub.format(gpu=gpu.sheet))
-        speedup_cols.append(col)
-        col += len(columns)
-    notes_col = col
-    ws.cell(hr, notes_col, "Notes")
-    ws.merge_cells(start_row=hr, start_column=notes_col, end_row=sr, end_column=notes_col)
-    ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=notes_col)
-    for r in (hr, sr):
-        for c in range(1, notes_col + 1):
-            cell = ws.cell(r, c)
-            cell.font, cell.fill, cell.border = HEADER_FONT, HEADER_FILL, BOX
-            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-    ws.row_dimensions[hr].height = 45
-    ws.row_dimensions[sr].height = 45
 
-    r = sr + 1
-    previous = None
-    positions = []
-    graph_col = group_cols[1]
-    for i, (workload, kernel, size, metric, *cells, notes) in enumerate(rows):
-        if previous is not None and workload != previous:
-            r += 1  # blank spacer between workloads
-        previous = workload
-        positions.append(r)
-        for j, v in enumerate((workload, kernel, size, gpu.label, metric), 1):
-            ws.cell(r, j, v).alignment = WRAP
+def finish_table(ws):
+    ws.auto_filter.ref = f"A4:{get_column_letter(ws.max_column)}{ws.max_row}"
+    for row in ws.iter_rows(min_row=5):
+        for c in row:
+            c.alignment = WRAP
+            c.border = BOX
+        ws.row_dimensions[row[0].row].height = 58
+
+
+def write_value(ws, row, col, value, source=None, speedup=False):
+    c = ws.cell(row, col)
+    if isinstance(value, (int, float)):
+        c.value = round(value, 3)
+        c.number_format = '0.00"x"' if speedup else '#,##0.00'
+        if source:
+            c.hyperlink = link(source)
+            c.font = BLUE
+    elif value is not None:
+        c.value = "pending" if value in PENDING else value
+        c.font = GREY
+        if value in PENDING:
+            c.comment = Comment(value, "build_spreadsheet.py")
+    return c
+
+
+def write_note(ws, row, col, data):
+    c = ws.cell(row, col, short_note(data))
+    c.comment = Comment(data[-1], "build_spreadsheet.py", width=480, height=280)
+    return c
+
+
+def primary_speedups(cells):
+    direct, graph, optimized = cells
+    if graph.kernel:
+        return graph_speedups(direct, graph)[1], optimized.agentic_speedups()[1]
+    return ratio(direct.us, graph.us), ratio(graph.us, optimized.us)
+
+
+def compact_stage(stage):
+    return "Application (small)" if "small shape" in stage else stage.replace(WHOLE_APP, "Application")
+
+
+def build_summary(wb, gpu, rows, base_rows=None, kernel=False):
+    """Compact application summary, or separate kernel comparison table."""
+    compare = base_rows is not None
+    title = f"Kernels {gpu.sheet}" if kernel else gpu.sheet
+    headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)", "Graph (us)",
+               "Optimized (us)", "Graph speedup\nDirect / Graph", "Optimized speedup\nGraph / Optimized"]
+    if compare:
+        headers += [f"GPU speedup\n{BASELINE.sheet.removeprefix('RTX ')} / "
+                    f"{gpu.sheet.removeprefix('RTX ')}\n(Graph)"]
+    headers += ["Notes"]
+    widths = [24, 30, 30, 20, 15, 15, 15, 15, 17] + ([18] if compare else []) + [48]
+    desc = (f"{gpu.label}; {gpu.toolkit}. " +
+            ("NCU kernel durations; optimized speedup uses the baseline kernels replaced. " if kernel else
+             "Application time per iteration in a back-to-back batch; lower is better. ") +
+            "Times link to measurements. Notes have full explanations in comments.")
+    ws = table_sheet(wb, title, headers, widths, desc)
+    for col, target in enumerate((f"Latency {gpu.sheet}", f"Kernels {gpu.sheet}", "Sources", "GPU analysis"), 1):
+        c = ws.cell(3, col, target)
+        c.hyperlink = f"#'{target}'!A1"
+        c.font = BLUE
+    for i, data in enumerate(rows):
+        workload, stage, size, metric, *cells, _ = data
+        if cells[1].kernel != kernel:
+            continue
+        r = ws.max_row + 1
+        metric = "NCU kernel" if kernel else ("CUDA events (batched)" if metric == TIMED else metric)
+        for col, value in enumerate((workload, compact_stage(stage), size, metric), 1):
+            ws.cell(r, col, value)
         ws.cell(r, 1).font = BOLD
-        for cell_spec, gc, fill in zip(cells, group_cols, GROUP_FILLS):
-            for j, value in enumerate(time_values(cell_spec)):
-                t = ws.cell(r, gc + j)
-                if isinstance(value, float):
-                    t.value = round(value, 3)
-                    t.number_format = "#,##0.00"
-                    t.hyperlink = link(cell_spec.value_file())
-                    t.font = Font(color="0563C1")
-                elif value is not None:
-                    t.value, t.font = value, GREY
-            if cell_spec.ncu:
-                put_link(ws, r, gc + 3, cell_spec.ncu, Path(cell_spec.ncu).name)
-            if cell_spec.nsys:
-                put_link(ws, r, gc + 4, cell_spec.nsys, Path(cell_spec.nsys).name)
-            for c in range(gc, gc + 5):
-                ws.cell(r, c).fill = PatternFill("solid", fgColor=fill)
-                ws.cell(r, c).alignment = WRAP
-        written = []
-        for (title, columns), sc in zip(speedups, speedup_cols):
-            for j, (_, value) in enumerate(columns):
-                if value is None:  # vs BASELINE: Predicted, then Measured
-                    base_r, prediction = baseline[i]
-                    if j == 0:
-                        v = ws.cell(r, sc, round(prediction[0], 3) if prediction else None)
-                        if prediction:
-                            v.comment = Comment(prediction[1], "build_spreadsheet.py",
-                                                width=320, height=140)
-                    else:
-                        # The primary time: per iteration, or the kernel's one launch.
-                        t = get_column_letter(graph_col + (2 if cells[1].kernel else 1))
-                        base = f"'{BASELINE.sheet}'!{t}{base_r}"
-                        v = ws.cell(r, sc + j, f'=IF(AND(ISNUMBER({base}),ISNUMBER({t}{r})),'
-                                               f'{base}/{t}{r},"pending")')
-                else:
-                    x = value(cells, r)
-                    v = ws.cell(r, sc + j, round(x, 3) if x else None)
-                written.append(v)
-        for v in written:
-            v.number_format = '0.00"x"'
-            v.alignment = Alignment(horizontal="center", vertical="top")
-        ws.cell(r, notes_col, notes).alignment = WRAP
-        for c in range(1, notes_col + 1):
-            ws.cell(r, c).border = BOX
-        r += 1
+        for col, cell, fill in zip(range(5, 8), cells, GROUP_FILLS):
+            write_value(ws, r, col, cell.us if cell.us is not None else cell.empty, cell.value_file())
+            ws.cell(r, col).fill = PatternFill("solid", fgColor=fill)
+        for col, speedup in enumerate(primary_speedups(cells), 8):
+            write_value(ws, r, col, speedup, speedup=True)
+        if kernel and cells[2].vs is not None:
+            ws.cell(r, 9).comment = Comment(
+                "Baseline: summed NCU time of the kernels replaced by the optimized version. "
+                + data[-1], "build_spreadsheet.py", width=480, height=280)
+        if compare:
+            base = base_rows[i][5]
+            write_value(ws, r, 10, ratio(base.us, cells[1].us) or "pending", speedup=True)
+        write_note(ws, r, len(headers), data)
+    finish_table(ws)
+    return ws
 
-    if baseline:
-        r += 1
-        ws.cell(r, 1, "How the predicted speedup is calculated "
-                      "(hover a Predicted value for that row's reason)").font = BOLD
-        for paragraph in prediction_method(gpu):
-            r += 1
-            ws.cell(r, 1, paragraph).alignment = WRAP
-            ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=notes_col)
-            ws.row_dimensions[r].height = 48
 
-    widths = [22, 30, 24, 14, 18] + [12, 13, 13, 22, 22] * 3
-    widths += [11] * (notes_col - 1 - len(widths)) + [70]
-    for i, w in enumerate(widths, 1):
-        ws.column_dimensions[get_column_letter(i)].width = w
-    ws.freeze_panes = ws.cell(sr + 1, 3)
-    return positions
+def build_latency(wb, gpu, rows):
+    headers = ["Workload", "Stage", "Problem size", "Version", "Batch iterations", "Runs",
+               "Full batch (ms)", "Batched (us/iteration)", "Single (us)", "Single / batched",
+               "Graph speedup (single)", "Optimized speedup (single)", "Notes"]
+    ws = table_sheet(wb, f"Latency {gpu.sheet}", headers,
+                     [24, 24, 30, 16, 14, 9, 16, 17, 15, 15, 17, 18, 48],
+                     f"{gpu.label}. Single = median of {SINGLE_ITERATIONS} isolated iterations. "
+                     "Single/batched reflects scheduling and timing conditions, not pure launch overhead. "
+                     "Runs and batch counts apply to each version; missing measurements stay pending.")
+    for data in rows:
+        workload, stage, size, _, *cells, _ = data
+        if cells[1].kernel:
+            continue
+        for version, cell in zip(SHORT, cells):
+            r = ws.max_row + 1
+            for col, v in enumerate((workload, compact_stage(stage), size, version, cell.batch_n, cell.runs), 1):
+                ws.cell(r, col, v)
+            full, per, single = time_values(cell)
+            for col, value in enumerate((full, per, single, cell.overhead()), 7):
+                write_value(ws, r, col, value, cell.value_file() if col < 10 else None, speedup=col == 10)
+            if version == "Graph":
+                write_value(ws, r, 11, graph_speedups(cells[0], cells[1])[1], speedup=True)
+            if version == "Agentic":
+                write_value(ws, r, 12, cell.agentic_speedups()[1], speedup=True)
+            write_note(ws, r, 13, data)
+    finish_table(ws)
 
+
+def build_sources(wb, results):
+    ws = table_sheet(wb, "Sources",
+                     ["GPU", "Workload", "Stage", "Problem size", "Version", "Measurement", "NCU report", "Nsight Systems", "Notes"],
+                     [15, 24, 30, 30, 15, 44, 44, 44, 48],
+                     "Source files for every comparison. Filenames and summary timings link to the original evidence.")
+    for gpu, rows in results:
+        for data in rows:
+            workload, stage, size, _, *cells, _ = data
+            for version, cell in zip(SHORT, cells):
+                r = ws.max_row + 1
+                for col, v in enumerate((gpu.sheet, workload, compact_stage(stage), size, version), 1):
+                    ws.cell(r, col, v)
+                for col, path in enumerate((cell.value_file(), cell.ncu, cell.nsys), 6):
+                    if path:
+                        put_link(ws, r, col, path, Path(path).name)
+                write_note(ws, r, 9, data)
+    finish_table(ws)
+
+
+def build_gpu_analysis(wb, results, predictions):
+    ws = table_sheet(wb, "GPU analysis",
+                     ["GPU", "Workload", "Stage", "Problem size", "Predicted speedup", "Measured speedup", "Notes"],
+                     [15, 24, 30, 30, 18, 18, 48],
+                     f"Speedup = {BASELINE.sheet} / target GPU for Graph timings. "
+                     "Predictions use hardware scaling; hover Notes for the calculation. Missing measurements stay pending.")
+    base_rows = dict(results)[BASELINE]
+    for gpu, rows in results:
+        if gpu is BASELINE:
+            continue
+        for i, data in enumerate(rows):
+            workload, stage, size, _, _, graph, _, _ = data
+            prediction = predictions[gpu][i]
+            r = ws.max_row + 1
+            for col, v in enumerate((gpu.sheet, workload, compact_stage(stage), size), 1):
+                ws.cell(r, col, v)
+            write_value(ws, r, 5, prediction[0] if prediction else None, speedup=True)
+            write_value(ws, r, 6, ratio(base_rows[i][5].us, graph.us) or "pending", speedup=True)
+            note = ("Predictions not enabled for this GPU." if not gpu.specs else
+                    "Hardware scaling estimate; see comment for assumptions." if prediction else
+                    "No prediction available.")
+            c = ws.cell(r, 7, note)
+            if not gpu.specs:
+                c.comment = Comment("\n\n".join(prediction_method(gpu)),
+                                    "build_spreadsheet.py", width=540, height=200)
+            elif prediction:
+                c.comment = Comment(prediction[1] + "\n\n" + "\n\n".join(prediction_method(gpu)),
+                                    "build_spreadsheet.py", width=540, height=400)
+    finish_table(ws)
 
 NCU_DETAIL_METRICS = [
     ("gpu__time_duration.sum", "Duration"),
@@ -1157,120 +1213,60 @@ def build_ncu_details(wb, gpu, rows):
 
 
 def write_markdown(results, predictions):
-    """GitHub-readable copy of the summary sheets; values link to their source files.
-    predictions: per non-BASELINE GPU, each row's predicted speedup or None."""
-    def fmt(c, value):
-        if isinstance(value, float):
-            return f"[{value:,.2f}]({link(c.value_file())})"
-        if value is None:
-            return ""
-        return value if value in PENDING or value == NOT_APPLICABLE else "—"
+    """Compact application summaries; the workbook holds supporting detail."""
+    def timing(cell):
+        if cell.us is None:
+            return "pending"
+        return f"[{cell.us:,.2f}]({link(cell.value_file())})"
 
-    def files(c):
-        return " ".join(f"[{kind}]({link(path)})" for kind, path in
-                        (("ncu", c.ncu), ("nsys", c.nsys)) if path)
-
-    def times(x):
-        return f"{x:.2f}x" if x else ""
+    def speedup(value):
+        return f"{value:.2f}x" if value is not None else "pending"
 
     lines = [
-        "# CUDA performance results",
-        "",
-        "Explicitly selected run of each workload's implementation at the largest problem size tested "
-        "(dominant kernel, if one dominates, and the whole application) on each GPU, plus the "
-        "whole application at a small shape where launch cost dominates, generated by "
-        "`build_spreadsheet.py` from measurements and profiles committed in this repo. Each GPU's "
-        "binaries and profiles live in its own folder (`rtx3090/`, `rtx4090/`, `rtx5090/`); "
-        "the inputs are pinned in `results/inputs/<gpu>.json` and the sources are "
-        "shared. The spreadsheet [`cuda_performance.xlsx`](cuda_performance.xlsx) has one sheet "
-        "per GPU plus the ncu metrics of every profiled launch. Lower times are better.",
-        "",
-        "Each workload runs three ways, left to right: **Direct** (the kernels and copies "
-        "enqueued directly on every iteration, without a CUDA Graph), **CUDA Graph** (the same "
-        "work captured once and replayed) and **Agentic optimized** (formerly SOTA; "
-        "`<name>_sota.cu`): the fastest implementation found after researching published "
-        "libraries and kernels, free to change kernels and data movement and launched whichever "
-        "way is fastest. It does the same work per iteration: every timed iteration copies the "
-        "full input from the host and the full output back, and it rotates over 3 different "
-        "inputs and checks every output, so caching across iterations would fail (llama2c's "
-        "inputs stay on the GPU in all versions). Outputs match the Direct and Graph versions "
-        "(each workload's `compare_sota.sh`).",
-        "",
-        "Each version has three times:",
-        "",
-        "- **Full batch** (ms): one batch of back-to-back iterations between CUDA events "
-        "(`time_all.sh`: 50 iterations at the largest shapes, 1000 at the small ones, 5000 for "
-        "loom_msa 4x4).",
-        "- **Per iteration** (us): full batch / iterations.",
-        f"- **Single iteration** (us): median of {SINGLE_ITERATIONS} iterations, each launched "
-        "alone on an idle device. The device is drained before each, so the iteration's launch "
-        "cost is exposed instead of overlapping the previous iteration's work as it does in the "
-        "batch.",
-        "",
-        "**Single / batch** = single iteration / per iteration in the batch: how much launch "
-        "cost batching amortizes in each launch mode. **Graph speedup** = Direct / Graph and "
-        "**Agentic speedup** = Graph / Agentic optimized, for the full batch and for a single "
-        "iteration. Kernel rows have one ncu time per version (a single launch replayed in "
-        "isolation), so they fill only the single-iteration columns; their agentic speedup "
-        "compares the ncu time of all the kernels doing that row's work in one iteration (see "
-        "the spreadsheet notes). — = not applicable.",
-        "",
-        "At the largest shapes an iteration takes milliseconds, so launch cost is invisible: "
-        "single iteration ≈ per iteration in the batch, and Graph ≈ Direct. Each workload's "
-        "**small shape** row (`time_all.sh`'s small configs: a few microseconds of GPU work per "
-        "launch) shows what a CUDA Graph saves when launches dominate.",
+        "# CUDA performance results", "",
+        "Application time per iteration in a back-to-back batch, in microseconds; lower is better. "
+        "Each timing links to its measurement. Inputs are selected explicitly in "
+        "`results/inputs/<gpu>.json`; new files do not change selections automatically. "
+        "Generated from existing results; no benchmarks are rerun.", "",
+        "**Direct** enqueues the baseline operations each iteration. **Graph** replays the same "
+        "operations in a CUDA Graph. **Optimized** is the agentic optimized implementation "
+        "(`*_sota.cu`), which may change kernels, data movement, and launch mode. "
+        "Graph speedup = Direct / Graph; optimized speedup = Graph / Optimized.", "",
+        "The [spreadsheet](cuda_performance.xlsx) has compact application summaries plus "
+        "supporting sheets for isolated latency, kernel comparisons, source files, GPU predictions, "
+        "and full NCU metrics. Notes are brief; cell comments retain the full explanations. "
+        "Single/batched timing ratios reflect scheduling and measurement conditions, not pure launch overhead.", "",
+        "All application timings include input and output transfers except llama2c, which uses "
+        "device-resident data. Batch counts and run counts appear in the notes or latency sheets. "
+        "Pending means the measurement is unavailable.",
     ]
     base_rows = dict(results)[BASELINE]
     for gpu, rows in results:
         compare = gpu is not BASELINE
-        heads = ["Workload", "Kernel / stage", "Problem size", "Metric"]
-        for short in SHORT:
-            heads += [f"{short}: full batch (ms)", f"{short}: per iteration (us)",
-                      f"{short}: single iteration (us)", f"{short} profiles"]
+        headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)", "Graph (us)",
+                   "Optimized (us)", "Graph speedup", "Optimized speedup"]
         if compare:
-            heads += [f"Predicted vs {BASELINE.sheet}", f"Measured vs {BASELINE.sheet}"]
-        else:
-            heads += ["Graph speedup: full batch", "Graph speedup: single iteration"]
-        heads += ["Agentic speedup: full batch", "Agentic speedup: single iteration"]
-        if not compare:
-            heads += [f"Single / batch: {short}" for short in SHORT]
-        align = ["---"] * 4 + ["--:", "--:", "--:", "---"] * 3 + ["--:"] * (len(heads) - 16)
-        lines += [
-            "",
-            f"## {gpu.sheet}",
-            "",
-            f"GPU: NVIDIA GeForce {gpu.label}. Binaries built with {gpu.toolkit}.",
-            "",
-            "| " + " | ".join(heads) + " |",
-            "|" + "|".join(align) + "|",
-        ]
-        for i, (workload, kernel, size, metric, *cells, _) in enumerate(rows):
-            row = [workload, kernel, size, metric]
-            for c in cells:
-                row += [fmt(c, v) for v in time_values(c)] + [files(c)]
-            direct, graph, sota = cells
+            headers += [f"Measured {BASELINE.sheet} / {gpu.sheet} (Graph)"]
+        headers += ["Notes"]
+        align = ["---"] * 4 + ["--:"] * (len(headers) - 5) + ["---"]
+        lines += ["", f"## {gpu.sheet}", "",
+                  f"GPU: NVIDIA GeForce {gpu.label}. Binaries built with {gpu.toolkit}.", "",
+                  "| " + " | ".join(headers) + " |", "|" + "|".join(align) + "|"]
+        for i, data in enumerate(rows):
+            workload, stage, size, metric, *cells, _ = data
+            if cells[1].kernel:
+                continue
+            metric = "CUDA events (batched)" if metric == TIMED else metric
+            values = [workload, compact_stage(stage), size, metric] + [timing(c) for c in cells]
+            values += [speedup(v) for v in primary_speedups(cells)]
             if compare:
-                base, prediction = base_rows[i][5], predictions[gpu][i]
-                row += [f"{prediction[0]:.2f}x" if prediction else "",
-                        times(ratio(base.us, graph.us)) or "pending"]
-            else:
-                row += [times(x) for x in graph_speedups(direct, graph)]
-            pending = "pending" if sota.us is None else ""
-            row += [times(x) or pending for x in sota.agentic_speedups()]
-            if not compare:
-                row += [times(c.overhead()) for c in cells]
-            lines.append("| " + " | ".join(row) + " |")
-        if compare:
-            lines += ["", "### How the predicted speedup is calculated", ""]
-            lines += [x for paragraph in prediction_method(gpu) for x in (paragraph, "")]
-            if gpu.specs:
-                lines += ["Each row's prediction:", ""]
-            lines += [f"- {w} / {k}: **{pr[0]:.2f}x**. {pr[1]}"
-                      for (w, k, *_), pr in zip(rows, predictions[gpu]) if pr]
-    lines += ["", "Regenerate (needs `ncu` on PATH and `pip install openpyxl`):", "",
+                values += [speedup(ratio(base_rows[i][5].us, cells[1].us))]
+            values += [short_note(data)]
+            lines.append("| " + " | ".join(values) + " |")
+    lines += ["", "GPU predictions and their assumptions are in the workbook's **GPU analysis** sheet.", "",
+              "Regenerate (needs `ncu` on PATH and `pip install openpyxl`):", "",
               "```bash", "python3 results/build_spreadsheet.py", "```", ""]
     MD_OUT.write_text("\n".join(lines))
-
 
 def main():
     validate_inputs(GPUS)
@@ -1284,14 +1280,15 @@ def main():
             predictions[gpu] = [predicted_speedup(r[5], gpu) for r in base_rows]
     wb = Workbook()
     wb.remove(wb.active)
-    positions = {}  # BASELINE comes first in GPUS, so its rows are placed first
     for gpu, rows in results:
-        baseline = (list(zip(positions[BASELINE], predictions[gpu]))
-                    if gpu is not BASELINE else None)
-        positions[gpu] = build_summary(wb.create_sheet(), gpu, rows, baseline)
+        build_summary(wb, gpu, rows, base_rows if gpu is not BASELINE else None)
+    for gpu, rows in results:
+        build_latency(wb, gpu, rows)
+        build_summary(wb, gpu, rows, base_rows if gpu is not BASELINE else None, kernel=True)
+    build_sources(wb, results)
+    build_gpu_analysis(wb, results, predictions)
     for gpu, rows in results:
         build_ncu_details(wb, gpu, rows)
-    wb.calculation.fullCalcOnLoad = True  # openpyxl does not evaluate the Measured formulas
     wb.save(OUT)
     write_markdown(results, predictions)
     print(f"wrote {OUT.relative_to(REPO)} and {MD_OUT.relative_to(REPO)} "
