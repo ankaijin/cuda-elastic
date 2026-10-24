@@ -1,7 +1,7 @@
 # Compiled binaries
 /multi_sensor_attention_graph
 
-# Nsight profiling reports
+# Local agent worktrees and caches
 .claude/worktrees/
 .worktrees/
 .superpowers/

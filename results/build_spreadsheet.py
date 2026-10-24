@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Build results/cuda_performance.xlsx and results/README.md from existing profiles.
 
-The RTX 3090, RTX 4090, and RTX 5090 summary sheets compare application microseconds per
+The RTX 3090, RTX 4090, and RTX 5090 summary sheets show large workloads, with
+small workload diagnostics retained only for the RTX 3090. They compare application microseconds per
 iteration in a back-to-back batch: Direct, Graph, and Agentic optimized, plus
 the two implementation speedups. Target GPUs also show measured GPU speedup.
 Each timing links to its original measurement. Missing results stay pending.
@@ -1038,10 +1039,11 @@ def compact_stage(stage):
     return "Application (small)" if "small shape" in stage else stage.replace(WHOLE_APP, "Application")
 
 
-def build_summary(wb, gpu, rows, base_rows=None, kernel=False):
-    """Compact application summary, or separate kernel comparison table."""
+def build_summary(wb, gpu, rows, base_rows=None, kernel=False, small=False):
+    """Separate large/small application summaries, or kernel comparisons."""
     compare = base_rows is not None
-    title = f"Kernels {gpu.sheet}" if kernel else gpu.sheet
+    title = (f"Kernels {gpu.sheet}" if kernel else
+             f"Small {gpu.sheet}" if small else gpu.sheet)
     headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)", "Graph (us)",
                "Optimized (us)", "Graph speedup\nDirect / Graph", "Optimized speedup\nGraph / Optimized"]
     if compare:
@@ -1051,16 +1053,21 @@ def build_summary(wb, gpu, rows, base_rows=None, kernel=False):
     widths = [24, 30, 30, 20, 15, 15, 15, 15, 17] + ([18] if compare else []) + [48]
     desc = (f"{gpu.label}; {gpu.toolkit}. " +
             ("NCU kernel durations; optimized speedup uses the baseline kernels replaced. " if kernel else
-             "Application time per iteration in a back-to-back batch; lower is better. ") +
+             f"{'Small' if small else 'Large'} workloads: application time per iteration "
+             "in a back-to-back batch; lower is better. ") +
             "Times link to measurements. Notes have full explanations in comments.")
     ws = table_sheet(wb, title, headers, widths, desc)
-    for col, target in enumerate((f"Latency {gpu.sheet}", f"Kernels {gpu.sheet}", "Sources", "GPU analysis"), 1):
+    targets = ([gpu.sheet] + ([f"Small {gpu.sheet}"] if gpu is BASELINE else [])
+               + [f"Latency {gpu.sheet}", f"Kernels {gpu.sheet}", "Sources", "GPU analysis"])
+    for col, target in enumerate((t for t in targets if t != title), 1):
         c = ws.cell(3, col, target)
         c.hyperlink = f"#'{target}'!A1"
         c.font = BLUE
     for i, data in enumerate(rows):
         workload, stage, size, metric, *cells, _ = data
         if cells[1].kernel != kernel:
+            continue
+        if not kernel and ("small shape" in stage) != small:
             continue
         r = ws.max_row + 1
         metric = "NCU kernel" if kernel else ("CUDA events (batched)" if metric == TIMED else metric)
@@ -1095,9 +1102,9 @@ def build_latency(wb, gpu, rows):
                      "Runs and batch counts apply to each version; missing measurements stay pending.")
     for data in rows:
         workload, stage, size, _, *cells, _ = data
-        if cells[1].kernel:
+        if cells[1].kernel or (gpu is not BASELINE and "small shape" in stage):
             continue
-        for version, cell in zip(SHORT, cells):
+        for version, cell, fill in zip(SHORT, cells, GROUP_FILLS):
             r = ws.max_row + 1
             for col, v in enumerate((workload, compact_stage(stage), size, version, cell.batch_n, cell.runs), 1):
                 ws.cell(r, col, v)
@@ -1109,6 +1116,8 @@ def build_latency(wb, gpu, rows):
             if version == "Agentic":
                 write_value(ws, r, 12, cell.agentic_speedups()[1], speedup=True)
             write_note(ws, r, 13, data)
+            for col in range(1, len(headers) + 1):
+                ws.cell(r, col).fill = PatternFill("solid", fgColor=fill)
     finish_table(ws)
 
 
@@ -1135,7 +1144,7 @@ def build_gpu_analysis(wb, results, predictions):
     ws = table_sheet(wb, "GPU analysis",
                      ["GPU", "Workload", "Stage", "Problem size", "Predicted speedup", "Measured speedup", "Notes"],
                      [15, 24, 30, 30, 18, 18, 48],
-                     f"Speedup = {BASELINE.sheet} / target GPU for Graph timings. "
+                     f"Large workloads only. Speedup = {BASELINE.sheet} / target GPU for Graph timings. "
                      "Predictions use hardware scaling; hover Notes for the calculation. Missing measurements stay pending.")
     base_rows = dict(results)[BASELINE]
     for gpu, rows in results:
@@ -1143,6 +1152,8 @@ def build_gpu_analysis(wb, results, predictions):
             continue
         for i, data in enumerate(rows):
             workload, stage, size, _, _, graph, _, _ = data
+            if "small shape" in stage:
+                continue
             prediction = predictions[gpu][i]
             r = ws.max_row + 1
             for col, v in enumerate((gpu.sheet, workload, compact_stage(stage), size), 1):
@@ -1177,39 +1188,127 @@ NCU_DETAIL_METRICS = [
 ]
 
 
+# Keep reports and resource configurations separate when summarizing launches.
+NCU_CONFIG_METRICS = [
+    "launch__grid_size", "launch__block_size",
+    *[f"launch__{kind}_dim_{axis}" for kind in ("grid", "block") for axis in "xyz"],
+    "launch__registers_per_thread", "launch__shared_mem_per_block",
+    "launch__shared_mem_per_block_dynamic", "launch__shared_mem_per_block_static",
+    "launch__func_cache_config", "launch__execution_model",
+]
+
+
+def ncu_metric_median(launches, metric):
+    """Median within a configuration; missing or incompatible metrics stay blank."""
+    samples = [launch.get(metric) for launch in launches]
+    if any(sample is None or not sample[0] for sample in samples):
+        return None
+    if len({sample[1] for sample in samples}) != 1:
+        return None
+    try:
+        return statistics.median(number(sample[0]) for sample in samples)
+    except ValueError:
+        return None
+
+
+def ncu_dimensions(launch, kind):
+    dims = [launch.get(f"launch__{kind}_dim_{axis}", ("", ""))[0] for axis in "xyz"]
+    if all(dims):
+        return " x ".join(dims)
+    return launch.get(f"launch__{kind}_size", ("", ""))[0]
+
+
 def build_ncu_details(wb, gpu, rows):
-    """Every launch in every ncu report a summary sheet uses, with key metrics."""
-    ws = wb.create_sheet(f"ncu metrics ({gpu.sheet})")
-    reports = []
-    for _, _, _, _, *cells, _ in rows:
-        for c in cells:
-            if c.ncu and c.ncu not in reports:
-                reports.append(c.ncu)
-    ws.append(["ncu report", "Launch #", "Kernel"] + [label for _, label in NCU_DETAIL_METRICS])
+    """Compact kernel/configuration medians, with every original launch linked."""
+    title, raw_title = f"ncu metrics ({gpu.sheet})", f"NCU launches {gpu.sheet}"
+    headers = ["Workload", "Version", "Kernel", "Launches", "Median (us)", "Min (us)",
+               "Max (us)", "SM throughput %\n(median)", "DRAM throughput %\n(median)",
+               "Achieved occupancy %\n(median)", "Memory throughput %\n(median)",
+               "Theoretical occupancy %\n(median)", "Grid (x y z)", "Block (x y z)",
+               "Registers / thread", "Shared memory / block", "ncu report", "Launch details",
+               "Problem size"]
+    ws = table_sheet(wb, title, headers,
+                     [24, 14, 46, 11, 15, 15, 15, 17, 17, 18, 18, 19, 22, 22, 17, 22, 50, 20, 30],
+                     "Large workloads; one row per report, kernel, and launch configuration. "
+                     "Medians and min/max describe profiled launches, not application latency or total GPU utilization. "
+                     "Missing metrics stay blank. Source links preserve the selected historical captures.")
+    raw = table_sheet(wb, raw_title,
+                      ["Workload", "Version", "ncu report", "Launch #", "Kernel"]
+                      + [label for _, label in NCU_DETAIL_METRICS],
+                      [24, 14, 50, 11, 46] + [18] * len(NCU_DETAIL_METRICS),
+                      "Every profiled launch in the selected large workload reports. "
+                      "Grouped by kernel/configuration; Launch # preserves the original report order (starting at zero). "
+                      "Durations and units are retained from NCU.")
+    ws.freeze_panes = raw.freeze_panes = "D5"
+    for sheet, target in ((ws, raw_title), (raw, title)):
+        c = sheet.cell(3, 1, target)
+        c.hyperlink, c.font = f"#'{target}'!A1", BLUE
+    reports = {}
+    for workload, stage, size, _, *cells, _ in rows:
+        if "small shape" in stage:
+            continue
+        for version, cell in zip(SHORT, cells):
+            if cell.ncu:
+                reports.setdefault((workload, version, cell.ncu), size)
     if not reports:
-        ws.append([NCU_PENDING])
-        ws.cell(2, 1).font = GREY
-    for path in reports:
+        for sheet in (ws, raw):
+            sheet.cell(5, 1, NCU_PENDING).font = GREY
+    for (workload, version, path), size in reports.items():
+        groups = {}
         for i, launch in enumerate(ncu_rows(path)):
-            values = []
-            for metric, _ in NCU_DETAIL_METRICS:
-                if metric not in launch:
-                    values.append("")
-                    continue
-                v, unit = launch[metric]
-                try:
-                    v = number(v)
-                except ValueError:
-                    pass
-                values.append(f"{v} {unit}".strip() if unit and unit != "%" else v)
-            ws.append([path, i, launch["Kernel Name"][0].split("(")[0]] + values)
-            put_link(ws, ws.max_row, 1, path, Path(path).name)
-    for c in ws[1]:
-        c.font, c.fill = HEADER_FONT, HEADER_FILL
-        c.alignment = Alignment(wrap_text=True, vertical="center")
-    for i, w in enumerate([52, 9, 40] + [16] * len(NCU_DETAIL_METRICS), 1):
-        ws.column_dimensions[get_column_letter(i)].width = w
-    ws.freeze_panes = "A2"
+            key = (launch["Kernel Name"][0],
+                   tuple(launch.get(metric) for metric in NCU_CONFIG_METRICS))
+            groups.setdefault(key, []).append((i, launch))
+        for (kernel, _), indexed in groups.items():
+            launches = [launch for _, launch in indexed]
+            first = launches[0]
+            durations = [launch_us(launch) for launch in launches]
+            r, first_raw = ws.max_row + 1, raw.max_row + 1
+            values = [workload, version, kernel_name(first), len(launches), statistics.median(durations),
+                      min(durations), max(durations)]
+            values += [ncu_metric_median(launches, metric) for metric in (
+                "sm__throughput.avg.pct_of_peak_sustained_elapsed",
+                "gpu__dram_throughput.avg.pct_of_peak_sustained_elapsed",
+                "sm__warps_active.avg.pct_of_peak_sustained_active",
+                "gpu__compute_memory_throughput.avg.pct_of_peak_sustained_elapsed",
+                "sm__maximum_warps_per_active_cycle_pct")]
+            values += [ncu_dimensions(first, "grid"), ncu_dimensions(first, "block"),
+                       ncu_metric_median(launches, "launch__registers_per_thread")]
+            shared, unit = first.get("launch__shared_mem_per_block", ("", ""))
+            values += [f"{shared} {unit}".strip()]
+            for col, value in enumerate(values, 1):
+                if isinstance(value, (int, float)):
+                    write_value(ws, r, col, value)
+                else:
+                    ws.cell(r, col, value)
+            ws.cell(r, 3).comment = Comment(kernel, "build_spreadsheet.py", width=540, height=160)
+            put_link(ws, r, 17, path, Path(path).name)
+            c = ws.cell(r, 18, f"{len(launches)} launches")
+            c.hyperlink, c.font = f"#'{raw_title}'!A{first_raw}", BLUE
+            ws.cell(r, 19, size)
+            fill = PatternFill("solid", fgColor=GROUP_FILLS[SHORT.index(version)])
+            for col in range(1, len(headers) + 1):
+                ws.cell(r, col).fill = fill
+            for i, launch in indexed:
+                rr = raw.max_row + 1
+                raw.cell(rr, 1, workload)
+                raw.cell(rr, 2, version)
+                put_link(raw, rr, 3, path, Path(path).name)
+                raw.cell(rr, 4, i)
+                raw.cell(rr, 5, launch["Kernel Name"][0].split("(")[0])
+                for col, (metric, _) in enumerate(NCU_DETAIL_METRICS, 6):
+                    if metric not in launch:
+                        continue
+                    value, unit = launch[metric]
+                    try:
+                        value = number(value)
+                    except ValueError:
+                        pass
+                    raw.cell(rr, col, f"{value} {unit}".strip() if unit and unit != "%" else value)
+                for col in range(1, raw.max_column + 1):
+                    raw.cell(rr, col).fill = fill
+    finish_table(ws)
+    finish_table(raw)
 
 
 def write_markdown(results, predictions):
@@ -1232,16 +1331,20 @@ def write_markdown(results, predictions):
         "operations in a CUDA Graph. **Optimized** is the agentic optimized implementation "
         "(`*_sota.cu`), which may change kernels, data movement, and launch mode. "
         "Graph speedup = Direct / Graph; optimized speedup = Graph / Optimized.", "",
-        "The [spreadsheet](cuda_performance.xlsx) has compact application summaries plus "
+        "The [spreadsheet](cuda_performance.xlsx) focuses on large workload application "
+        "summaries for each GPU. Small workloads are retained only as RTX 3090 diagnostics. It also has "
         "supporting sheets for isolated latency, kernel comparisons, source files, GPU predictions, "
-        "and full NCU metrics. Notes are brief; cell comments retain the full explanations. "
+        "and compact NCU kernel summaries linked to all individual launches. "
+        "NCU medians describe profiled launches, not application latency or total GPU utilization. "
+        "Notes are brief; cell comments retain the full explanations. "
         "Single/batched timing ratios reflect scheduling and measurement conditions, not pure launch overhead.", "",
         "All application timings include input and output transfers except llama2c, which uses "
         "device-resident data. Batch counts and run counts appear in the notes or latency sheets. "
         "Pending means the measurement is unavailable.",
     ]
     base_rows = dict(results)[BASELINE]
-    for gpu, rows in results:
+    sections = [(gpu, rows, False) for gpu, rows in results] + [(BASELINE, base_rows, True)]
+    for gpu, rows, small in sections:
         compare = gpu is not BASELINE
         headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)", "Graph (us)",
                    "Optimized (us)", "Graph speedup", "Optimized speedup"]
@@ -1249,12 +1352,13 @@ def write_markdown(results, predictions):
             headers += [f"Measured {BASELINE.sheet} / {gpu.sheet} (Graph)"]
         headers += ["Notes"]
         align = ["---"] * 4 + ["--:"] * (len(headers) - 5) + ["---"]
-        lines += ["", f"## {gpu.sheet}", "",
+        title = f"Small {gpu.sheet} diagnostics" if small else gpu.sheet
+        lines += ["", f"## {title}", "",
                   f"GPU: NVIDIA GeForce {gpu.label}. Binaries built with {gpu.toolkit}.", "",
                   "| " + " | ".join(headers) + " |", "|" + "|".join(align) + "|"]
         for i, data in enumerate(rows):
             workload, stage, size, metric, *cells, _ = data
-            if cells[1].kernel:
+            if cells[1].kernel or ("small shape" in stage) != small:
                 continue
             metric = "CUDA events (batched)" if metric == TIMED else metric
             values = [workload, compact_stage(stage), size, metric] + [timing(c) for c in cells]
@@ -1282,6 +1386,7 @@ def main():
     wb.remove(wb.active)
     for gpu, rows in results:
         build_summary(wb, gpu, rows, base_rows if gpu is not BASELINE else None)
+    build_summary(wb, BASELINE, base_rows, small=True)
     for gpu, rows in results:
         build_latency(wb, gpu, rows)
         build_summary(wb, gpu, rows, base_rows if gpu is not BASELINE else None, kernel=True)

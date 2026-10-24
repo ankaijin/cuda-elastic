@@ -78,10 +78,27 @@ Review the workbook and source links, then integrate the report PR before anothe
 
 Keep the workbook tracked. Development/result PRs contribute source inputs; publishing PRs update the generated workbook and tables. Do not use an automatic “ours” merge driver or mark the tracked workbook assume-unchanged. The initial setup PR tests generation but leaves the committed reports unchanged; publish the new 5090 sheet after setup merges.
 
+## Report layout convention
+
+The main results focus on large workloads intended to fully or almost fully use the GPU's relevant compute or memory resources. Support utilization claims with profiling evidence; problem size alone does not establish saturation. Small workloads diagnose launch, dispatch, and latency behavior.
+
+Preserve this convention when adding workloads, GPU results, or report features:
+
+- Put only large application workloads on the primary `RTX 3090`, `RTX 4090`, and `RTX 5090` sheets. Keep these sheets first in the workbook.
+- Keep small workload summaries only on `Small RTX 3090`. Do not add small summary sheets for the 4090 or 5090 under the current reporting scope.
+- Retain large and small workloads in `Latency RTX 3090` for diagnosis. Include only large workloads in `Latency RTX 4090` and `Latency RTX 5090`.
+- Include only large workload comparisons in `GPU analysis`, including kernel comparisons from those large workloads. Match baseline and target GPU rows by workload and stage when filtering; preserve the corresponding prediction and measured speedup.
+- In `results/README.md`, present large workload tables for all GPUs first, followed by a separate RTX 3090 small workload diagnostic section.
+- Keep `ncu metrics (...)` compact: one row per report, workload, implementation, full kernel name, and launch resource configuration. Show launch count, median/minimum/maximum duration, and median throughput/occupancy metrics; keep missing metrics blank. Link each group to the original report and its individual rows on `NCU launches ...`. These descriptive launch statistics do not represent application latency or aggregate GPU utilization. Never combine different reports or launch configurations.
+- Reuse the Direct, Graph, and Agentic column colors for latency rows and NCU rows.
+- Preserve raw outputs and input manifests when changing report visibility. Update the generator rather than editing the workbook manually, and keep navigation links valid.
+
+Change this reporting scope only when the user requests it. Run `python3 -m unittest discover -s tests -v` before regenerating the reports. The report layout tests cover sheet ordering, diagnostic scope, latency rows, large workload comparisons, and navigation links. Extend them when adding new report sections or GPU types.
+
 ## Next experiments from the existing workbook
 
 - **Mono:** investigate optimized small-shape regressions. PageRank's batch per-iteration time is 602.149 us versus Graph's 159.400 us; VWW is 12.097 us versus 8.075 us. Check setup/dispatch costs and consider a size-specific strategy if justified. Repeat anomaly's small-shape single-iteration result: Graph 20.272 us versus Direct 13.616 us. Preserve large-shape baselines, and refresh mono at the same source revision used in new GPU comparisons.
-- **Octacos:** complete correctness checks, then collect `time_all.sh` large and small shapes for direct, graph, and optimized variants, followed by ncu kernel metrics and nsys traces. Its current sheet has older graph-only end-to-end measurements, no ncu metrics, no optimized measurements, and no small-shape timing suite. Select one 4090 and record its UUID.
-- **Kilia:** start with fresh sm_120 builds and correctness checks using CUDA 13.4. Then collect the same timing, ncu, and nsys suites at the common revision. No 5090 measurements are published yet. Treat toolchain differences as an experimental variable.
+- **Octacos:** complete correctness checks, then collect `time_all.sh` large shapes for direct, graph, and optimized variants, followed by ncu kernel metrics and nsys traces. Small shapes are optional diagnostics and are outside the current 4090 report scope. Its current sheet has older graph-only end-to-end measurements, no ncu metrics, no optimized measurements, and no small-shape timing suite. Select one 4090 and record its UUID.
+- **Kilia:** start with fresh sm_120 builds and correctness checks using CUDA 13.4. Then collect the same large workload timing, ncu, and nsys suites at the common revision. Small shapes are outside the current 5090 report scope. No 5090 measurements are published yet. Treat toolchain differences as an experimental variable.
 
 These are next-task recommendations. Setup verification does not run or replace GPU benchmark measurements.
