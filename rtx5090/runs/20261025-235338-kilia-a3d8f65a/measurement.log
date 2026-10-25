@@ -1,0 +1,7 @@
+pagerank        unvalidated_bench    exit 0  rtx5090/loom_private/pagerank/results/20261025-235338-kilia-a3d8f65a-bench-graph.log
+attention       unvalidated_bench    exit 0  rtx5090/loom_private/attention/results/20261025-235338-kilia-a3d8f65a-bench-graph.log
+decoder         unvalidated_bench    exit 0  rtx5090/loom_private/decoder/results/20261025-235338-kilia-a3d8f65a-bench-graph.log
+anomaly         unvalidated_bench    exit 0  rtx5090/loom_private/anomaly/results/20261025-235338-kilia-a3d8f65a-bench-graph.log
+vecadd_memory   unvalidated_bench    exit 0  rtx5090/loom_private/vecadd_memory/results/20261025-235338-kilia-a3d8f65a-bench-graph.log
+vecadd_product  unvalidated_bench    exit 0  rtx5090/loom_private/vecadd_product/results/20261025-235338-kilia-a3d8f65a-bench-graph.log
+PASS: rtx5090/loom_private/suite-20261025-235338-kilia-a3d8f65a-bench.json

@@ -1,0 +1,31 @@
+400/400 legacy files match 4ce57c7c0a333b74e9e6e2bd78142604c4c2cf39
+ok   anomaly-upstream-expected-smoke 212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897 /home/ankai/.cache/cuda-elastic/loom-private-assets/anomaly-upstream-expected-smoke
+ok   anomaly-upstream-expected-validation f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80 /home/ankai/.cache/cuda-elastic/loom-private-assets/anomaly-upstream-expected-validation
+ok   mlperf-tiny-ad01-dataset 31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa /home/ankai/.cache/cuda-elastic/loom-private-assets/mlperf-tiny-ad01-dataset
+ok   mlperf-tiny-ad01-int8-model 87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24 /home/ankai/.cache/cuda-elastic/loom-private-assets/mlperf-tiny-ad01-int8-model
+ok   vecadd-product-operands 89712b453849a8d420cce0c7a5afff97c7c5f5a84509abef8fd47b67075815fb /home/ankai/.cache/cuda-elastic/loom-private-assets/vecadd-product-operands
+ok   vecadd-product-upstream-expected-smoke 39a9a7849bacd718ad79ac23efb85bdc6dcd7a1e18fcf0a5302ccf04a914b39b /home/ankai/.cache/cuda-elastic/loom-private-assets/vecadd-product-upstream-expected-smoke
+make: Entering directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/pagerank'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_120 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/common -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" \
+  /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/pagerank/pagerank.cu /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda-worktrees/lp-baselines/rtx5090/loom_private/pagerank/build/pagerank
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/pagerank'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/attention'
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_120 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/common -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" \
+  /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/attention/attention.cu /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda-worktrees/lp-baselines/rtx5090/loom_private/attention/build/attention
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/attention'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/decoder'
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_120 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/common -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" \
+  /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/decoder/decoder.cu /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/lp-baselines/rtx5090/loom_private/decoder/build/decoder
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/decoder'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/anomaly'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_120 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" \
+  /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/anomaly/anomaly.cu /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/anomaly/model.cpp /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda-worktrees/lp-baselines/rtx5090/loom_private/anomaly/build/anomaly
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/anomaly'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/vecadd_memory'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_120 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/common -DLP_APP=\"vecadd_memory\" -DLP_CONTRACT_SHA256=\"2cfa489f84dfc97ec02b7a5e2ff08e7f9f4a52b9f865f4325da027d422b21920\" \
+  /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/vecadd_memory/vecadd_memory.cu /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/vecadd_memory/oracle.cpp -o /home/ankai/cuda-worktrees/lp-baselines/rtx5090/loom_private/vecadd_memory/build/vecadd_memory
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/vecadd_memory'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/vecadd_product'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_120 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" \
+  /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-baselines/rtx5090/loom_private/vecadd_product/build/vecadd_product
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/vecadd_product'
