@@ -1,0 +1,72 @@
+{
+  "schema": "loom_private.assets/1",
+  "note": "Assets are fetched into a cache outside tracked source (default ~/.cache/cuda-elastic/loom-private-assets, override with LOOM_PRIVATE_ASSET_CACHE). Private Loom files are fetched from the pinned commit with gh and are never committed here.",
+  "assets": {
+    "mlperf-tiny-ad01-int8-model": {
+      "source": {
+        "kind": "git",
+        "url": "https://github.com/mlcommons/tiny.git",
+        "commit": "4addd0fa08d216e20637637874e084895f289da4",
+        "path": "benchmark/training/anomaly_detection/trained_models/ad01_int8.tflite"
+      },
+      "bytes": 276976,
+      "sha256": "87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24",
+      "role": "Model executed by the model-backed anomaly application (private Loom manifest cached input 'model')."
+    },
+    "mlperf-tiny-ad01-dataset": {
+      "source": {
+        "kind": "git",
+        "url": "https://github.com/mlcommons/tiny.git",
+        "commit": "4addd0fa08d216e20637637874e084895f289da4",
+        "path": "benchmark/reference_submissions/anomaly_detection/datasets/dcase01/normal_id_01_00000000_hist_librosa.bin"
+      },
+      "bytes": 102400,
+      "sha256": "31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa",
+      "role": "The 40-sample dataset the anomaly application cycles (private Loom manifest cached input 'smoke-dataset')."
+    },
+    "anomaly-upstream-expected-smoke": {
+      "source": {
+        "kind": "github",
+        "repository": "PolyArch/loom-private",
+        "commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+        "path": "test/applications/mlperf-tiny-anomaly/expected-smoke.txt"
+      },
+      "bytes": 1306,
+      "sha256": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897",
+      "role": "Reference only: upstream oracle bytes for dataset sample 0, used to cross-check the CPU oracle without running the smoke preset."
+    },
+    "anomaly-upstream-expected-validation": {
+      "source": {
+        "kind": "github",
+        "repository": "PolyArch/loom-private",
+        "commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+        "path": "test/applications/mlperf-tiny-anomaly/expected-validation.txt"
+      },
+      "bytes": 2612,
+      "sha256": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80",
+      "role": "Reference only: upstream oracle bytes for dataset samples 2 and 3 (2 warmup, 2 measured), used to cross-check the CPU oracle."
+    },
+    "vecadd-product-operands": {
+      "source": {
+        "kind": "github",
+        "repository": "PolyArch/loom-private",
+        "commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+        "path": "test/applications/vecadd-product/input.txt"
+      },
+      "bytes": 128,
+      "sha256": "89712b453849a8d420cce0c7a5afff97c7c5f5a84509abef8fd47b67075815fb",
+      "role": "The cached operand fixture (two 64-byte operands) the batched vecadd product derives its records from."
+    },
+    "vecadd-product-upstream-expected-smoke": {
+      "source": {
+        "kind": "github",
+        "repository": "PolyArch/loom-private",
+        "commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+        "path": "test/applications/vecadd-product/expected-smoke.txt"
+      },
+      "bytes": 154,
+      "sha256": "39a9a7849bacd718ad79ac23efb85bdc6dcd7a1e18fcf0a5302ccf04a914b39b",
+      "role": "Reference only: upstream oracle bytes for one sample, used to cross-check record 0 without running the smoke preset."
+    }
+  }
+}

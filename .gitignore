@@ -22,3 +22,6 @@ __pycache__/
 
 # llama2c builds (make -C llama2c sota / baseline)
 /*/llama2c/build/
+
+# loom_private application builds
+/*/loom_private/*/build/
