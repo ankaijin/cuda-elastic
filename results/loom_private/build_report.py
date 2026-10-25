@@ -115,8 +115,9 @@ def timing(record, scope):
 def size_text(spec):
     if spec is None:
         return "contract pending"
-    return ", ".join(f"{k}={v:,}" if isinstance(v, int) else f"{k}={v}"
-                     for k, v in spec.get("large", {}).items())
+    # Integer extents only; descriptive strings and nested notes stay in the contract.
+    return ", ".join(f"{k}={v:,}" for k, v in spec.get("large", {}).items()
+                     if isinstance(v, int) and not isinstance(v, bool))
 
 
 def check_cells(record):

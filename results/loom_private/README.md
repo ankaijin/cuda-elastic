@@ -10,8 +10,8 @@ Toolkit: CUDA 13.3.
 
 | Workload | Large problem size | Application scope | Direct (us) | Graph (us) | Compute-only Direct (us) | Compute-only Graph (us) |
 |---|---|---|--:|--:|--:|--:|
-| `pagerank` | contract pending | pending | pending | pending | pending | pending |
-| `attention` | contract pending | pending | pending | pending | pending | pending |
+| `loom-private/pagerank` | nodes=1,048,576, nodes_log2=20, iterations=20, edges=2,097,151, gpu_schedule_levels=16 | upload of the incoming CSR (offsets and sources), out-degrees, and level schedule from pinned host memory; score and contribution initialization; all 20 Gauss-Seidel sweeps; download of the scores to pinned host memory | pending | pending | pending | pending |
+| `loom-private/multisensor-attention` | query_tokens=25,000, context_tokens=250,000, sensor_lanes=3, feature_lanes=4, statistics=4, input_variant=0, audio_input_elements=75,000, imu_input_elements=750,000, score_pairs=6,250,000,000, output_elements=100,000 | upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics (the legacy loom_msa transfer-inclusive convention) | pending | pending | pending | pending |
 | `decoder` | contract pending | pending | pending | pending | pending | pending |
 | `anomaly` | contract pending | pending | pending | pending | pending | pending |
 | `vecadd_memory` | contract pending | pending | pending | pending | pending | pending |
@@ -23,8 +23,8 @@ Toolkit: not yet measured.
 
 | Workload | Large problem size | Application scope | Direct (us) | Graph (us) | Compute-only Direct (us) | Compute-only Graph (us) |
 |---|---|---|--:|--:|--:|--:|
-| `pagerank` | contract pending | pending | pending | pending | pending | pending |
-| `attention` | contract pending | pending | pending | pending | pending | pending |
+| `loom-private/pagerank` | nodes=1,048,576, nodes_log2=20, iterations=20, edges=2,097,151, gpu_schedule_levels=16 | upload of the incoming CSR (offsets and sources), out-degrees, and level schedule from pinned host memory; score and contribution initialization; all 20 Gauss-Seidel sweeps; download of the scores to pinned host memory | pending | pending | pending | pending |
+| `loom-private/multisensor-attention` | query_tokens=25,000, context_tokens=250,000, sensor_lanes=3, feature_lanes=4, statistics=4, input_variant=0, audio_input_elements=75,000, imu_input_elements=750,000, score_pairs=6,250,000,000, output_elements=100,000 | upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics (the legacy loom_msa transfer-inclusive convention) | pending | pending | pending | pending |
 | `decoder` | contract pending | pending | pending | pending | pending | pending |
 | `anomaly` | contract pending | pending | pending | pending | pending | pending |
 | `vecadd_memory` | contract pending | pending | pending | pending | pending | pending |
@@ -36,8 +36,8 @@ Toolkit: not yet measured.
 
 | Workload | Large problem size | Application scope | Direct (us) | Graph (us) | Compute-only Direct (us) | Compute-only Graph (us) |
 |---|---|---|--:|--:|--:|--:|
-| `pagerank` | contract pending | pending | pending | pending | pending | pending |
-| `attention` | contract pending | pending | pending | pending | pending | pending |
+| `loom-private/pagerank` | nodes=1,048,576, nodes_log2=20, iterations=20, edges=2,097,151, gpu_schedule_levels=16 | upload of the incoming CSR (offsets and sources), out-degrees, and level schedule from pinned host memory; score and contribution initialization; all 20 Gauss-Seidel sweeps; download of the scores to pinned host memory | pending | pending | pending | pending |
+| `loom-private/multisensor-attention` | query_tokens=25,000, context_tokens=250,000, sensor_lanes=3, feature_lanes=4, statistics=4, input_variant=0, audio_input_elements=75,000, imu_input_elements=750,000, score_pairs=6,250,000,000, output_elements=100,000 | upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics (the legacy loom_msa transfer-inclusive convention) | pending | pending | pending | pending |
 | `decoder` | contract pending | pending | pending | pending | pending | pending |
 | `anomaly` | contract pending | pending | pending | pending | pending | pending |
 | `vecadd_memory` | contract pending | pending | pending | pending | pending | pending |
@@ -51,8 +51,8 @@ Large-workload correctness checks are validation evidence, not performance measu
 
 | Workload | Contract SHA-256 | Status | Direct | Graph | Direct = Graph | Record |
 |---|---|---|---|---|---|---|
-| `pagerank` | pending | pending | pending | pending | pending | pending |
-| `attention` | pending | pending | pending | pending | pending | pending |
+| `loom-private/pagerank` | `c6d38a8f4184` | pending | pending | pending | pending | pending |
+| `loom-private/multisensor-attention` | `97c0a8fcb064` | pending | pending | pending | pending | pending |
 | `decoder` | pending | pending | pending | pending | pending | pending |
 | `anomaly` | pending | pending | pending | pending | pending | pending |
 | `vecadd_memory` | pending | pending | pending | pending | pending | pending |
@@ -62,8 +62,8 @@ Large-workload correctness checks are validation evidence, not performance measu
 
 | Workload | Contract SHA-256 | Status | Direct | Graph | Direct = Graph | Record |
 |---|---|---|---|---|---|---|
-| `pagerank` | pending | pending | pending | pending | pending | pending |
-| `attention` | pending | pending | pending | pending | pending | pending |
+| `loom-private/pagerank` | `c6d38a8f4184` | pending | pending | pending | pending | pending |
+| `loom-private/multisensor-attention` | `97c0a8fcb064` | pending | pending | pending | pending | pending |
 | `decoder` | pending | pending | pending | pending | pending | pending |
 | `anomaly` | pending | pending | pending | pending | pending | pending |
 | `vecadd_memory` | pending | pending | pending | pending | pending | pending |
@@ -73,8 +73,8 @@ Large-workload correctness checks are validation evidence, not performance measu
 
 | Workload | Contract SHA-256 | Status | Direct | Graph | Direct = Graph | Record |
 |---|---|---|---|---|---|---|
-| `pagerank` | pending | pending | pending | pending | pending | pending |
-| `attention` | pending | pending | pending | pending | pending | pending |
+| `loom-private/pagerank` | `c6d38a8f4184` | pending | pending | pending | pending | pending |
+| `loom-private/multisensor-attention` | `97c0a8fcb064` | pending | pending | pending | pending | pending |
 | `decoder` | pending | pending | pending | pending | pending | pending |
 | `anomaly` | pending | pending | pending | pending | pending | pending |
 | `vecadd_memory` | pending | pending | pending | pending | pending | pending |
