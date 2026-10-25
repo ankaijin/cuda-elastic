@@ -97,7 +97,7 @@ def record_run(repo, device, check, command):
             "RUNS", "BATCH", "SMALL_BATCH", "SHAPES", "GRAPH_REPLAYS", "LAUNCH",
             "APP", "VARIANT", "INPUTS", "SEEDS", "REPLAYS", "NVCC", "NVCCFLAGS",
             "CC", "CXX", "CFLAGS", "CXXFLAGS", "CPPFLAGS", "LDFLAGS", "PATH",
-            "LD_LIBRARY_PATH", "CUDA_HOME", "CUDA_PATH") or key.startswith("PAGERANK_")},
+            "LD_LIBRARY_PATH", "CUDA_HOME", "CUDA_PATH") or key.startswith(("PAGERANK_", "LOOM_PRIVATE_"))},
         "binary_sha256": {},
         "validation": {"command": check, "exit_code": None, "log": "validation.log"},
         "measurement": {"command": command, "exit_code": None, "log": "measurement.log"},

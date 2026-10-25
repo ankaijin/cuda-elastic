@@ -1,0 +1,84 @@
+{
+  "identity": "loom-private/vecadd-product",
+  "suite_version": "v1",
+  "extension_of_upstream": "Batched CUDA extension of upstream's cached-operand product interface. Upstream holds one 128-byte cached input (two 64-byte operands) and writes one 64-byte output slot per measured sample, with warm-up samples rewriting slot 0; its host harness caps measured samples at 64. This workload instead runs 1,048,576 independent records, each with its own two 64-byte operands derived from the cached fixture, and one 64-byte output slot per record. Record 0 equals upstream's single sample.",
+  "upstream": {
+    "repository": "PolyArch/loom-private",
+    "commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+    "manifest_identity": "vecadd-product",
+    "sources": [
+      {
+        "path": "test/applications/vecadd-product/vecadd_product.c",
+        "git_blob": "f9447b7deeb855c634bad74c3bb58b4676cb028f",
+        "sha256": "f6ed75d980de5ab8f69bd73fe09a6640eac6f1d8e85f8f634c4cd71c55ec7505",
+        "role": "the product entry: lane-wise byte sum of the two cached 64-byte operands into a per-sample output slot"
+      },
+      {
+        "path": "test/applications/vecadd-product/input.txt",
+        "git_blob": "0f49c13d444c1944b48bf013e4d93bd2c927cd97",
+        "sha256": "89712b453849a8d420cce0c7a5afff97c7c5f5a84509abef8fd47b67075815fb",
+        "role": "the 128-byte cached operand fixture (registered here as asset vecadd-product-operands)"
+      },
+      {
+        "path": "test/applications/manifest.json",
+        "git_blob": "c85e8274d958d792bcb93920b9841a2b862d93ce",
+        "sha256": "1c89293bc63074c402afa8c133015f2d3e2615042b1bc2c0d69c5dc265ca5e24",
+        "role": "build options, the cached input 'operands', and the smoke profile (0 warmup, 1 measured sample)"
+      }
+    ]
+  },
+  "large": {
+    "records": 1048576,
+    "operand_bytes": 64,
+    "record_input_bytes": 128,
+    "input_bytes": 134217728,
+    "output_slot_bytes": 64,
+    "output_bytes": 67108864,
+    "fixture_bytes": 128,
+    "record_period": 256
+  },
+  "data_generation": {
+    "fixture": "The 128 bytes of asset vecadd-product-operands, f[0..127]. Bytes 0..63 are the left operand and bytes 64..127 the right operand. The file is read at setup and must be exactly 128 bytes with the registered SHA-256; otherwise the run exits 3.",
+    "records": "Record r (0 <= r < R) has 128 input bytes: byte j (0 <= j < 128) is (f[j] + (r mod 256)) mod 256, so the left operand is bytes 0..63 and the right operand bytes 64..127 of the record. Records repeat with period 256. The host materializes all R records into pinned memory during setup (untimed).",
+    "semantics": "Output slot r, byte k (0 <= k < 64), is (record[k] + record[64 + k]) mod 256, written to output bytes 64r .. 64r+63. Each record writes only its own slot. Record 0 is upstream's single sample (the plain sum of the fixture's two operands).",
+    "upstream_cross_check": "Record 0 of the CPU oracle is compared byte for byte with asset vecadd-product-upstream-expected-smoke (line 'measured_sample=0 output=<128 hex digits>'). This reads upstream's reference bytes; it does not run upstream's smoke configuration.",
+    "validity": "records is an integer from 1 to 16,777,216 (2^24; a 2 GiB input and 1 GiB output). Anything else exits 2."
+  },
+  "outputs": [
+    {
+      "name": "slots",
+      "type": "uint8",
+      "count": "R * 64 (67,108,864 bytes at large)",
+      "layout": "slot r occupies bytes 64r .. 64r+63 as downloaded to pinned host memory; the digest is FNV-1a 64 over all bytes. The device output buffer has 256 canary bytes before and after the output extent that must stay untouched."
+    }
+  ],
+  "tolerances": {
+    "slots": {
+      "comparison": "exact: every output byte equals the oracle's byte (integer arithmetic, no tolerance)",
+      "source": "upstream's oracle kind is exact (hex sample lines)",
+      "oracle": "oracle.cpp: independent host implementation that derives every record from the fixture and adds the lanes with plain integer arithmetic modulo 256, on a few std::thread workers",
+      "extra_checks": "the 256 canary bytes on each side of the device output extent are unchanged; the oracle's record 0 equals the upstream reference bytes"
+    },
+    "cross_invocation": "two Direct and two Graph invocations must produce bitwise-identical outputs"
+  },
+  "timing_scope": {
+    "application": "upload of the 128-byte-per-record inputs from pinned host memory, the lane-wise byte-sum kernel over all records, and the download of the 64-byte-per-record outputs to pinned host memory",
+    "compute": "the lane-wise byte-sum kernel over all records with the inputs resident; no transfers",
+    "excluded": "fixture loading and hash verification, record materialization, allocation, poisoning, CUDA Graph construction, bench warmups, the CPU oracle, and output checking. Upstream's warm-up samples (which only rewrite slot 0 before measurement) correspond to the bench warmups, which run before the timed interval starts; every measured invocation writes all output slots."
+  },
+  "assets": {
+    "vecadd-product-operands": "89712b453849a8d420cce0c7a5afff97c7c5f5a84509abef8fd47b67075815fb",
+    "vecadd-product-upstream-expected-smoke": "39a9a7849bacd718ad79ac23efb85bdc6dcd7a1e18fcf0a5302ccf04a914b39b"
+  },
+  "reference_only_upstream_configurations": [
+    {
+      "name": "smoke",
+      "warmup_samples": 0,
+      "measured_samples": 1,
+      "evaluation_tier": "functional",
+      "oracle_path": "test/applications/vecadd-product/expected-smoke.txt",
+      "oracle_git_blob": "31c0cce384bf67334f2b47f86d819bb784a40f58",
+      "oracle_sha256": "39a9a7849bacd718ad79ac23efb85bdc6dcd7a1e18fcf0a5302ccf04a914b39b"
+    }
+  ]
+}

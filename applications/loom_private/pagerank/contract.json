@@ -1,0 +1,101 @@
+{
+  "identity": "loom-private/pagerank",
+  "suite_version": "v1",
+  "extension_of_upstream": false,
+  "upstream": {
+    "repository": "PolyArch/loom-private",
+    "commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+    "manifest_identity": "gapbs-pagerank",
+    "sources": [
+      {
+        "path": "test/applications/gapbs-pagerank-smoke.h",
+        "git_blob": "78854a22ca19c8eabdf7b349957e800a92d7769e",
+        "sha256": "a9694fa43762b69e8ad74df5a5ee24d7d8a0b476f63e570c03289180a0c35ddd",
+        "role": "graph generator, harness, and host Gauss-Seidel reference wrapped around the GAPBS kernel"
+      },
+      {
+        "path": "test/applications/manifest.json",
+        "git_blob": "c85e8274d958d792bcb93920b9841a2b862d93ce",
+        "sha256": "1c89293bc63074c402afa8c133015f2d3e2615042b1bc2c0d69c5dc265ca5e24",
+        "role": "build options (-ffp-contract=off) and the smoke and validation inputs"
+      }
+    ],
+    "kernel": {
+      "repository": "https://github.com/sbeamer/gapbs.git",
+      "submodule": "externals/gapbs",
+      "commit": "2972aeb2703165bafd921222f4ed7196f542d3a8",
+      "path": "src/pr.cc",
+      "function": "PageRankPullGS"
+    }
+  },
+  "large": {
+    "nodes": 1048576,
+    "nodes_log2": 20,
+    "iterations": 20,
+    "edges": 2097151,
+    "damping": 0.85,
+    "epsilon": 0.0,
+    "initial_score": "1/N in float (1.0f / 1048576)",
+    "base_score": "(1 - 0.85)/N in float ((1.0f - 0.85f) / 1048576)",
+    "gpu_schedule_levels": 16
+  },
+  "data_generation": {
+    "graph": "No inputs are read. For N nodes (N a power of two, N >= 4), node n has out-degree 1 + (n mod 3), and its out-neighbour i (i = 0 .. degree-1) is (7n + 13i + 1) mod N. The edge count is N + sum over n of (n mod 3), which is 2,097,151 for N = 2^20. Self-loops and repeated targets across different sources are kept.",
+    "incoming_lists": "The pull direction uses incoming lists built from the out-edges with a stable counting sort by target: sources are visited in ascending order and each source's edges in order of i, so every node's incoming list is in ascending source order. Sums follow that order.",
+    "semantics": "Ordered Gauss-Seidel pull PageRank in float. Start: score 1/N and contribution c_n = (1/N) / outdeg(n) for every node. Each of the iterations visits u = 0 .. N-1 in order: total = 0; for each incoming source v in list order, total += c_v; s_u = base + 0.85 * total; then c_u = s_u / outdeg(u) at once, so later nodes in the same sweep read the new c_u while sources v >= u contribute the value from the previous sweep. Epsilon is 0, so every iteration runs. The output is the score vector after the last iteration.",
+    "validity": "N must be a power of two and at least 3 (upstream static assertion; here 4 <= N <= 2^26), iterations from 1 to 1000; anything else exits 2.",
+    "gpu_schedule": "Host preprocessing (untimed) assigns each node a dependency level: 0 when it has no incoming source v < u, else 1 + the largest level among those sources. Each level is one kernel launch per sweep. Two contribution buffers hold the previous and current sweep; reads of v < u use the current buffer, reads of v >= u the previous buffer. Each node's sum runs sequentially in list order in one thread, so the result equals the sequential loop bitwise."
+  },
+  "outputs": [
+    {
+      "name": "scores",
+      "type": "float32",
+      "count": "N (1,048,576 at large)",
+      "layout": "little-endian IEEE-754 binary32, indexed by node id 0 .. N-1, as downloaded to pinned host memory; the digest is FNV-1a 64 over these bytes"
+    }
+  ],
+  "tolerances": {
+    "scores": {
+      "comparison": "|actual - expected| <= 1e-5 * expected, evaluated in float, for every node; non-finite actual or expected values fail",
+      "source": "the per-node relative bound in private Loom's gapbs-pagerank-smoke.h (every score exceeds the positive base score, so one relative bound covers every node)",
+      "oracle": "oracle.cpp: an independent sequential host implementation of the ordered Gauss-Seidel loop that regenerates the graph itself",
+      "observed": "the GPU scores are expected to match the oracle bitwise (same float operations in the same order, --fmad=false, -ffp-contract=off); the check still applies the upstream tolerance"
+    },
+    "cross_invocation": "two Direct and two Graph invocations must produce bitwise-identical scores"
+  },
+  "timing_scope": {
+    "application": "upload of the incoming CSR (offsets and sources), out-degrees, and level schedule from pinned host memory; score and contribution initialization; all 20 Gauss-Seidel sweeps; download of the scores to pinned host memory",
+    "compute": "score and contribution initialization and all 20 sweeps with graph and schedule resident; no transfers",
+    "excluded": "graph generation, incoming-CSR construction, level computation, copies into pinned buffers, allocation, CUDA Graph construction, warmups, the CPU oracle, and output checking"
+  },
+  "assets": {},
+  "reference_only_upstream_configurations": [
+    {
+      "name": "smoke",
+      "nodes": 4,
+      "iterations": 8,
+      "evaluation_tier": "functional",
+      "oracle_path": "test/applications/gapbs-pagerank-expected-smoke.txt",
+      "oracle_git_blob": "73a42140ecf69058d69e64e9dedd78d01a2c0012",
+      "oracle_sha256": "2d7b839e40d0d0211e4e664efe9a5062c8df21ca5a6e4d59219d1cf3ad2049a0"
+    },
+    {
+      "name": "validation",
+      "nodes": 2048,
+      "iterations": 12,
+      "evaluation_tier": "qualified",
+      "oracle_path": "test/applications/gapbs-pagerank-expected-validation.txt",
+      "oracle_git_blob": "7c47bc7e5c82b21453dacc0c398fd8eee87a6b5a",
+      "oracle_sha256": "8b408943931e561d345fb465c252539f72a0b6c137bf12118e7452c34c40cc91"
+    },
+    {
+      "name": "validation-scale-eda",
+      "nodes": 2048,
+      "iterations": 16,
+      "evaluation_tier": "qualified",
+      "oracle_path": "test/applications/gapbs-pagerank-expected-scale.txt",
+      "oracle_git_blob": "340873bc4b1bea612d1b23ae939723951ff70930",
+      "oracle_sha256": "73e3ae70b63bf158c592dc2e6357d4c4f91cab2a6764c9a415141ed6d7028d3c"
+    }
+  ]
+}

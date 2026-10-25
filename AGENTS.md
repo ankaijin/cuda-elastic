@@ -11,3 +11,4 @@
 - Serialize GPU work with the shared `GPU_LOCK`. Timing scripts already lock; wrap checks and `profile_ncu_all.sh` as documented.
 - Use explicit input paths. Null means pending. Never substitute another GPU's value or an unvalidated prediction.
 - Preserve existing worktrees, unpushed commits, and historical profiles. Do not force-push shared branches.
+- The private Loom suite lives in `applications/loom_private/` with its own report in `results/loom_private/`. Keep it separate from the legacy workloads; `applications/loom_private/tools/legacy_freeze.py verify` must pass.

@@ -1,0 +1,38 @@
+{
+  "folder": "rtx4090",
+  "label": "RTX 4090 (sm_89, 24 GB)",
+  "toolkit": "not yet measured",
+  "suite_version": "v1",
+  "applications": {
+    "pagerank": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "attention": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "decoder": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "anomaly": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "vecadd_memory": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "vecadd_product": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    }
+  }
+}
