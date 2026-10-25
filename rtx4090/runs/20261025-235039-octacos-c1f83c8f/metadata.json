@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "run_id": "20261025-235039-octacos-c1f83c8f",
+  "source_commit": "296aa928542ce31d456c1b37ec473064f8bdc545",
+  "source_branch": "octacos/loom-private-baselines",
+  "host": "octacos",
+  "started_utc": "2026-10-25T23:50:39.794965+00:00",
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "uuid": "GPU-00a9d35f-cc0c-242e-e073-06d0390af440",
+    "driver": "555.58.02",
+    "folder": "rtx4090"
+  },
+  "installed_tools": {
+    "nvcc": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Wed_Jan_15_19:20:09_PST_2025\nCuda compilation tools, release 12.8, V12.8.61\nBuild cuda_12.8.r12.8/compiler.35404655_0",
+    "ncu": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2024 NVIDIA Corporation\nVersion 2025.1.0.0 (build 35237751) (public-release)",
+    "nsys": "NVIDIA Nsight Systems version 2024.6.2.225-246235244400v0"
+  },
+  "environment": {
+    "PATH": "/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin",
+    "CUDA_VISIBLE_DEVICES": "GPU-00a9d35f-cc0c-242e-e073-06d0390af440",
+    "GPU": "rtx4090",
+    "ARCH": "sm_89",
+    "TIMESTAMP": "20261025-235039-octacos-c1f83c8f",
+    "GPU_LOCK": "/tmp/cuda-elastic-gpu.lock"
+  },
+  "binary_sha256": {
+    "rtx4090/loom_private/vecadd_memory/build/vecadd_memory": "9f3c96db38ed97ea4f2c694572c481a2321da3507cd6f7924222997e2f19c322",
+    "rtx4090/loom_private/vecadd_memory/build/vecadd_memory_drop_last_mutant": "7142029806c7d8d7f92f3b705b283c79bfd820b9da65da4824662d35e6b49845",
+    "rtx4090/loom_private/vecadd_memory/build/test_host": "074bd4bf138e247eafdc59e6aa7d08bde8c525ecb333eec29fc3deb1e5128dda",
+    "rtx4090/loom_private/decoder/build/decoder": "199c4f04ed382a33132f6163fafb6e8cf122229a6142f6ef7df2942a4929b20a",
+    "rtx4090/loom_private/pagerank/build/pagerank_jacobi_mutant": "853fb1cdd95e23527da8d8264c313fec532101d26ba11d4d2f9902ef365ac328",
+    "rtx4090/loom_private/pagerank/build/pagerank": "988e4ed24e39245b55fc1040dfedd324646a2d4dbf29dedd446aa6b9c21a8cee",
+    "rtx4090/loom_private/pagerank/build/test_host": "efae9041d77a92e5927a718d9d128cc92ff049db9c70e2a50ac6b4219b65c6d1",
+    "rtx4090/loom_private/anomaly/build/anomaly_skip_last_mutant": "4343d869cec72a3b2eddbcee425f4d6c2f4c00f7022e3f10439c6d18646fd3e8",
+    "rtx4090/loom_private/anomaly/build/anomaly": "7116bd0cae836c1dfefd9452689d604d5cdad9fea7bd9abff5a6923f9cee5fd3",
+    "rtx4090/loom_private/anomaly/build/test_host": "a124a4ef1c52aed2386a9cf1fcf04470b4718c1cddfd16262c1e5f3db60640fc",
+    "rtx4090/loom_private/vecadd_product/build/vecadd_product_slow_warmup": "c8e0379d37d05032af8f6926ed525c75c3b2cdf5a61a63a7bf4af8daee152a90",
+    "rtx4090/loom_private/vecadd_product/build/vecadd_product_mutant4": "cc85abfeee0a54a61d61fa592c21aed3b2f9bd1b2fa0a037b21d4d563131d1e0",
+    "rtx4090/loom_private/vecadd_product/build/vecadd_product_mutant1": "4024fa6d5684ba2384a6497c6d1f6e200e99cfea6126437d16612f6cd55cd8e4",
+    "rtx4090/loom_private/vecadd_product/build/vecadd_product": "233b09eaa1fb6eeabde819829f74215b3bf3b2621859b203501b95e197cf1dfb",
+    "rtx4090/loom_private/vecadd_product/build/test_host": "e6c72aee50d2932369a81a1310f334245236133ed9eab52db77d9768b74a00b7",
+    "rtx4090/loom_private/vecadd_product/build/vecadd_product_mutant2": "1db285fb095c59ab7fa871b95af528b52cb57c4495da3354748c1cc34dc8a0c6",
+    "rtx4090/loom_private/vecadd_product/build/vecadd_product_mutant3": "64d0fdaa073be3d74a3e73950801c37c86bf159c8ae49fb13e9d856a0f0cb8b4",
+    "rtx4090/loom_private/attention/build/attention": "2b023a004d96112896dd5ace77fff2a8bb7003669383af7c72306c182d7ab900",
+    "rtx4090/llama2c/llama2c_cuda_graph": "78a4d79b42153f366453f48fe48ce8329d63b61c8b56f3d3d4dc44b98fd4f88a",
+    "rtx4090/loom_msa/build/msa_baseline_4x4": "8824f9ba403d33815c1b8881fb4654871a23ded3ff26a112d8b7de33d02d9432",
+    "rtx4090/loom_msa/build/msa_optimized_medium": "c26cabddf40bb40feb6fa6b52853c46e4526eab4ee29f3a781121c0ea959e08e",
+    "rtx4090/loom_msa/build/msa_baseline_medium": "109ff2570750c974f03338454946849127270302cc19091b0ccd7ff8dad2a812",
+    "rtx4090/loom_msa/build/msa_optimized_4x4": "d00e8b511a094b427dc90e8d6018865d319efa7515c2133a9bfc93b32b859ac5",
+    "rtx4090/loom_msa/build/msa_baseline_large": "b3942ecdccfd6615ac07aabfee8222796325cb549e6e4e2833276416ea34fe98",
+    "rtx4090/loom_msa/build/reference": "0c6e3c9c1b43ff535b36a472111496cbe98ff8081f339f599ffe4a9bdbc5fe59",
+    "rtx4090/loom_msa/build/msa_optimized_large": "e38ae79ecc996a184ea614be67cdb4ed75f34a3a4e16183b825ed060510db9ad",
+    "rtx4090/pagerank/gapbs_pagerank_cuda_graph": "2c1bb7e48163f24aff4e8a0cb230b5b3b41b68adfb241609bf47eb28bdb145eb"
+  },
+  "validation": {
+    "command": "python3 applications/loom_private/tools/legacy_freeze.py verify && python3 applications/loom_private/tools/fetch_assets.py --verify-only && for a in pagerank attention decoder anomaly vecadd_memory vecadd_product; do make -B -C applications/loom_private/$a build || exit 1; done && for a in pagerank attention decoder anomaly vecadd_memory vecadd_product; do make -C applications/loom_private/$a test || exit 1; done",
+    "exit_code": 0,
+    "log": "validation.log"
+  },
+  "measurement": {
+    "command": [
+      "python3",
+      "applications/loom_private/run_suite.py",
+      "--no-build"
+    ],
+    "exit_code": 0,
+    "log": "measurement.log"
+  },
+  "status": "completed",
+  "artifacts": [
+    "rtx4090/loom_private/anomaly/results/20261025-235039-octacos-c1f83c8f-check.json",
+    "rtx4090/loom_private/anomaly/results/20261025-235039-octacos-c1f83c8f-check.log",
+    "rtx4090/loom_private/attention/results/20261025-235039-octacos-c1f83c8f-check.json",
+    "rtx4090/loom_private/attention/results/20261025-235039-octacos-c1f83c8f-check.log",
+    "rtx4090/loom_private/decoder/results/20261025-235039-octacos-c1f83c8f-check.json",
+    "rtx4090/loom_private/decoder/results/20261025-235039-octacos-c1f83c8f-check.log",
+    "rtx4090/loom_private/pagerank/results/20261025-235039-octacos-c1f83c8f-check.json",
+    "rtx4090/loom_private/pagerank/results/20261025-235039-octacos-c1f83c8f-check.log",
+    "rtx4090/loom_private/suite-20261025-235039-octacos-c1f83c8f-check.json",
+    "rtx4090/loom_private/vecadd_memory/results/20261025-235039-octacos-c1f83c8f-check.json",
+    "rtx4090/loom_private/vecadd_memory/results/20261025-235039-octacos-c1f83c8f-check.log",
+    "rtx4090/loom_private/vecadd_product/results/20261025-235039-octacos-c1f83c8f-check.json",
+    "rtx4090/loom_private/vecadd_product/results/20261025-235039-octacos-c1f83c8f-check.log"
+  ],
+  "source_changes_after_validation": "",
+  "source_changes_after_measurement": "",
+  "finished_utc": "2026-10-25T23:52:35.371964+00:00"
+}

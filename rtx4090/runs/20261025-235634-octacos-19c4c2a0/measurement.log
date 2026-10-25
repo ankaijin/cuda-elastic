@@ -1,0 +1,7 @@
+pagerank        unvalidated_bench    exit 0  rtx4090/loom_private/pagerank/results/20261025-235634-octacos-19c4c2a0-bench-graph.log
+attention       unvalidated_bench    exit 0  rtx4090/loom_private/attention/results/20261025-235634-octacos-19c4c2a0-bench-graph.log
+decoder         unvalidated_bench    exit 0  rtx4090/loom_private/decoder/results/20261025-235634-octacos-19c4c2a0-bench-graph.log
+anomaly         unvalidated_bench    exit 0  rtx4090/loom_private/anomaly/results/20261025-235634-octacos-19c4c2a0-bench-graph.log
+vecadd_memory   unvalidated_bench    exit 0  rtx4090/loom_private/vecadd_memory/results/20261025-235634-octacos-19c4c2a0-bench-graph.log
+vecadd_product  unvalidated_bench    exit 0  rtx4090/loom_private/vecadd_product/results/20261025-235634-octacos-19c4c2a0-bench-graph.log
+PASS: rtx4090/loom_private/suite-20261025-235634-octacos-19c4c2a0-bench.json
