@@ -9,7 +9,10 @@ the legacy results/inputs manifests. Each application has three selections:
 `check` (a `--action check` record), `bench_direct` and `bench_graph` (`--action
 bench` records). Paths are relative to that GPU's folder. Null means pending.
 Missing files, unsafe paths, records of another workload, records of another
-action or launch, and records that validated an older contract are errors.
+action or launch (a check must cover both launch modes), records that
+validated an older contract, records whose integer dimensions differ from the
+contract's `large` values, and records from a GPU other than the folder's are
+errors.
 
 Timing cells come only from bench records, so a correctness check never
 appears as a performance measurement. Nothing is rerun. Requires openpyxl.
@@ -17,6 +20,7 @@ appears as a performance measurement. Nothing is rerun. Requires openpyxl.
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -27,9 +31,11 @@ MD_OUT = HERE / "README.md"
 XLSX_OUT = HERE / f"loom_private_{VERSION}.xlsx"
 GPUS = ["rtx3090", "rtx4090", "rtx5090"]
 APPS = ["pagerank", "attention", "decoder", "anomaly", "vecadd_memory", "vecadd_product"]
-SELECTIONS = {"check": ("check", None), "bench_direct": ("bench", "direct"),
+SELECTIONS = {"check": ("check", "both"), "bench_direct": ("bench", "direct"),
               "bench_graph": ("bench", "graph")}
 PENDING = "pending"
+# Integer `large` entries that are not problem extents (left out of the size column).
+NON_EXTENT_KEYS = {"expected_checksum"}
 
 
 def sha256(path):
@@ -63,6 +69,17 @@ def resolve(folder, value):
     return path
 
 
+def is_integer(value):
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def device_matches(folder, name):
+    """True when the record's device name is the folder's GPU (rtx3090 -> RTX 3090)."""
+    model = re.fullmatch(r"rtx(\d+)", folder)
+    return (model is not None and isinstance(name, str)
+            and re.fullmatch(rf"(NVIDIA )?(GeForce )?RTX {model.group(1)}", name) is not None)
+
+
 def load_record(folder, app, key, value, spec):
     path = resolve(folder, value)
     if path is None:
@@ -75,7 +92,7 @@ def load_record(folder, app, key, value, spec):
     if spec is None or record.get("identity") != spec.get("identity"):
         raise ValueError(f"{where}: record identity {record.get('identity')!r} "
                          f"is not application {app}")
-    if record.get("action") != action or (launch and record.get("launch") != launch):
+    if record.get("action") != action or record.get("launch") != launch:
         raise ValueError(f"{where}: selected as {key} but records "
                          f"{record.get('action')}/{record.get('launch')}")
     if record.get("contract_sha256") != spec["_sha256"]:
@@ -83,6 +100,17 @@ def load_record(folder, app, key, value, spec):
                          f"current contract is {spec['_sha256']}")
     if record.get("preset") != "large" or record.get("overrides"):
         raise ValueError(f"{where}: only unmodified large-preset records can be selected")
+    dimensions = record.get("dimensions")
+    if not isinstance(dimensions, dict):
+        raise ValueError(f"{where}: record has no dimensions")
+    for name, expected in spec.get("large", {}).items():
+        actual = dimensions.get(name)
+        if is_integer(expected) and is_integer(actual) and actual != expected:
+            raise ValueError(f"{where}: dimension {name}={actual} differs from the "
+                             f"contract's large value {expected}")
+    device = (record.get("device") or {}).get("name")
+    if not device_matches(folder, device):
+        raise ValueError(f"{where}: recorded on {device!r}, not the {folder} folder's GPU")
     record["_path"] = f"{folder}/{value}"
     return record
 
@@ -115,9 +143,10 @@ def timing(record, scope):
 def size_text(spec):
     if spec is None:
         return "contract pending"
-    # Integer extents only; descriptive strings and nested notes stay in the contract.
+    # Integer extents only; descriptive strings, nested notes, and non-extent
+    # integers such as expected checksums stay in the contract.
     return ", ".join(f"{k}={v:,}" for k, v in spec.get("large", {}).items()
-                     if isinstance(v, int) and not isinstance(v, bool))
+                     if is_integer(v) and k not in NON_EXTENT_KEYS and "checksum" not in k)
 
 
 def check_cells(record):

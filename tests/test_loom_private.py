@@ -78,6 +78,8 @@ class ReportTests(unittest.TestCase):
         record = {"schema": "loom_private.result/1", "identity": "loom-private/pagerank",
                   "contract_sha256": self.contract_sha, "preset": "large", "overrides": {},
                   "action": "check", "launch": "both", "status": "pass",
+                  "dimensions": {"vertices": 1048576, "levels": 16},
+                  "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6"},
                   "outputs_agree": True, "timing": None,
                   "checks": [{"launch": "direct", "pass": True},
                              {"launch": "graph", "pass": True}]}
@@ -122,6 +124,38 @@ class ReportTests(unittest.TestCase):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 self.select("check", value)
 
+    def test_check_record_must_cover_both_launch_modes(self):
+        name = self.write_record("direct-only.json", launch="direct")
+        with self.assertRaisesRegex(ValueError, "selected as check"):
+            self.select("check", name)
+
+    def test_dimensions_must_match_the_contract(self):
+        name = self.write_record("other-size.json", dimensions={"vertices": 1024})
+        with self.assertRaisesRegex(ValueError, "dimension vertices=1024 differs"):
+            self.select("check", name)
+
+    def test_dimensions_without_an_integer_contract_value_are_not_compared(self):
+        name = self.write_record("extra.json", dimensions={"vertices": 1048576, "levels": 3})
+        _, rows = self.select("check", name)
+        self.assertEqual(rows[0]["check"]["status"], "pass")
+
+    def test_record_from_another_gpu_is_rejected(self):
+        name = self.write_record("4090.json", device={"name": "NVIDIA GeForce RTX 4090"})
+        with self.assertRaisesRegex(ValueError, "not the rtx3090 folder's GPU"):
+            self.select("check", name)
+
+    def test_device_name_matching(self):
+        self.assertTrue(self.m.device_matches("rtx3090", "NVIDIA GeForce RTX 3090"))
+        self.assertTrue(self.m.device_matches("rtx5090", "NVIDIA GeForce RTX 5090"))
+        self.assertFalse(self.m.device_matches("rtx3090", "NVIDIA GeForce RTX 3090 Ti"))
+        self.assertFalse(self.m.device_matches("rtx3090", "NVIDIA GeForce RTX 4090"))
+        self.assertFalse(self.m.device_matches("rtx3090", None))
+
+    def test_size_text_leaves_out_checksums(self):
+        spec = {"large": {"length": 1048576, "expected_checksum": 1649265868800,
+                          "output_checksum": 7, "element_type": "int32", "flag": True}}
+        self.assertEqual(self.m.size_text(spec), "length=1,048,576")
+
     def test_bench_record_fills_timing(self):
         timing = {"application": {"batch_per_iteration_us": 12.5},
                   "compute": {"batch_per_iteration_us": 10.0}}
@@ -129,6 +163,46 @@ class ReportTests(unittest.TestCase):
                                  status="unvalidated_bench", timing=timing)
         _, rows = self.select("bench_graph", name)
         self.assertEqual(self.m.timing(rows[0]["bench_graph"], "application"), 12.5)
+
+
+class ContractTests(unittest.TestCase):
+    """Every application contract against the suite README schema and assets.json."""
+    APPS = ["pagerank", "attention", "decoder", "anomaly", "vecadd_memory", "vecadd_product"]
+    # The fields listed under "Workload contracts" in applications/loom_private/README.md.
+    FIELDS = ["identity", "suite_version", "extension_of_upstream", "upstream", "large",
+              "data_generation", "outputs", "tolerances", "timing_scope", "assets",
+              "reference_only_upstream_configurations"]
+
+    def test_contracts_have_every_schema_field(self):
+        readme = (SUITE / "README.md").read_text()
+        for field in self.FIELDS:
+            self.assertIn(f"`{field}`", readme)
+        for app in self.APPS:
+            contract = json.loads((SUITE / app / "contract.json").read_text())
+            with self.subTest(app=app):
+                self.assertEqual([f for f in self.FIELDS if f not in contract], [])
+                self.assertEqual(contract["suite_version"], "v1")
+
+    def test_contract_assets_match_registered_hashes(self):
+        registered = json.loads((SUITE / "assets.json").read_text())["assets"]
+        for app in self.APPS:
+            assets = json.loads((SUITE / app / "contract.json").read_text())["assets"]
+            for name, digest in assets.items():
+                with self.subTest(app=app, asset=name):
+                    self.assertIn(name, registered)
+                    self.assertEqual(digest, registered[name]["sha256"])
+
+
+class ReportFreshnessTests(unittest.TestCase):
+    # NOTE: this fails whenever a contract, the report generator, or a selected
+    # record changes until results/loom_private/README.md is regenerated with
+    # `python3 results/loom_private/build_report.py`. That is its purpose.
+    def test_committed_report_is_current(self):
+        report = load(REPO / "results/loom_private/build_report.py", "lp_report_fresh")
+        expected = report.markdown([report.load_gpu(folder) for folder in report.GPUS]) + "\n"
+        self.assertEqual((REPO / "results/loom_private/README.md").read_text(), expected,
+                         "results/loom_private/README.md is stale: rerun "
+                         "results/loom_private/build_report.py")
 
 
 if __name__ == "__main__":

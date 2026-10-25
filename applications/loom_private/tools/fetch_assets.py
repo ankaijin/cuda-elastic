@@ -44,10 +44,17 @@ def verify(path, spec):
     return None
 
 
+def has_commit(clone, commit):
+    """True when the clone holds the pinned commit (a partial clone does not)."""
+    return (clone / ".git").is_dir() and subprocess.run(
+        ["git", "-C", str(clone), "cat-file", "-e", f"{commit}^{{commit}}"],
+        capture_output=True).returncode == 0
+
+
 def fetch_bytes(source, cache):
     if source["kind"] == "git":
         clone = cache / "git" / f"{Path(source['url']).stem}-{source['commit'][:12]}"
-        if not (clone / ".git").is_dir():
+        if not has_commit(clone, source["commit"]):
             clone.mkdir(parents=True, exist_ok=True)
             subprocess.run(["git", "init", "-q", str(clone)], check=True)
             subprocess.run(["git", "-C", str(clone), "fetch", "-q", "--depth", "1",

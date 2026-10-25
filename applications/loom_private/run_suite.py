@@ -42,6 +42,10 @@ def run_app(app, args, folder, stamp):
     out.mkdir(parents=True, exist_ok=True)
     name = f"{stamp}-{args.action}" + (f"-{args.launch}" if args.action == "bench" else "")
     record, log = out / f"{name}.json", out / f"{name}.log"
+    # A record or log left by an earlier run with the same stamp must never be
+    # reported as this run's result.
+    record.unlink(missing_ok=True)
+    log.unlink(missing_ok=True)
     make = ["make", "-C", str(SUITE / app)]
     commands = [] if args.no_build else [make + ["build"]]
     if args.action == "check":
