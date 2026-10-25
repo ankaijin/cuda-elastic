@@ -95,6 +95,15 @@ Preserve this convention when adding workloads, GPU results, or report features:
 
 Change this reporting scope only when the user requests it. Run `python3 -m unittest discover -s tests -v` before regenerating the reports. The report layout tests cover sheet ordering, diagnostic scope, latency rows, large workload comparisons, and navigation links. Extend them when adding new report sections or GPU types.
 
+## Private Loom suite
+
+`applications/loom_private/` ports six private Loom applications (commit `4a75f8d`) as new workload identities. It does not change the legacy workloads, their selected inputs, raw results, or generated reports; `python3 applications/loom_private/tools/legacy_freeze.py verify` checks that against `legacy-freeze.json`.
+
+- Fetch assets first with `python3 applications/loom_private/tools/fetch_assets.py`. The cache lives outside the repository (`LOOM_PRIVATE_ASSET_CACHE`); private Loom fixtures are fetched with `gh` at the pinned commit and never committed.
+- `python3 applications/loom_private/run_suite.py [APP ...]` builds and runs large correctness checks (Direct and Graph). Benchmarks need `--action bench --launch direct|graph`. Its Makefile targets lock `GPU_LOCK`; do not wrap it in flock.
+- Record a run with `python3 results/record_run.py --check "python3 applications/loom_private/run_suite.py" -- python3 applications/loom_private/run_suite.py --no-build --action bench --launch graph`. Its result records carry workload identity, contract hash, dimensions, asset hashes, and timing scope, and share the run id.
+- Select records in `results/loom_private/inputs/<gpu>.json` (independent of `results/inputs/`) and regenerate with `python3 results/loom_private/build_report.py`. Timings come only from bench records; correctness checks are listed separately.
+
 ## Next experiments from the existing workbook
 
 - **Mono:** investigate optimized small-shape regressions. PageRank's batch per-iteration time is 602.149 us versus Graph's 159.400 us; VWW is 12.097 us versus 8.075 us. Check setup/dispatch costs and consider a size-specific strategy if justified. Repeat anomaly's small-shape single-iteration result: Graph 20.272 us versus Direct 13.616 us. Preserve large-shape baselines, and refresh mono at the same source revision used in new GPU comparisons.

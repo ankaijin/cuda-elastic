@@ -9,6 +9,10 @@ Hand-written CUDA ports of the kernels in several Loom application workloads, ea
 
 **Results:** [`results/README.md`](results/README.md) and [`results/cuda_performance.xlsx`](results/cuda_performance.xlsx) compare application time per iteration for Direct, CUDA Graph, and agentic optimized implementations. The workbook also has latency, kernel, source, GPU prediction, and full NCU detail sheets. Timing cells link to their source measurements; short notes have full explanations in comments.
 
+## Private Loom workloads (suite v1)
+
+[`applications/loom_private/`](applications/loom_private) holds six newer applications ported from private Loom commit `4a75f8d`: ordered Gauss–Seidel PageRank, multisensor attention, a llama2c decoder, model-backed MLPerf Tiny anomaly inference, and two vecadd workloads. They are separate workload identities with their own contracts, CPU oracles, large-workload checks (`python3 applications/loom_private/run_suite.py`), and results page ([`results/loom_private/`](results/loom_private/README.md)). The workloads below and their results are the legacy portfolio and stay unchanged.
+
 ## Workloads
 
 | Directory | Workload | Kernels | Largest size profiled |
