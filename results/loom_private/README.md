@@ -12,10 +12,10 @@ Toolkit: CUDA 13.3.
 |---|---|---|--:|--:|--:|--:|
 | `loom-private/pagerank` | nodes=1,048,576, nodes_log2=20, iterations=20, edges=2,097,151, gpu_schedule_levels=16 | upload of the incoming CSR (offsets and sources), out-degrees, and level schedule from pinned host memory; score and contribution initialization; all 20 Gauss-Seidel sweeps; download of the scores to pinned host memory | pending | pending | pending | pending |
 | `loom-private/multisensor-attention` | query_tokens=25,000, context_tokens=250,000, sensor_lanes=3, feature_lanes=4, statistics=4, input_variant=0, audio_input_elements=75,000, imu_input_elements=750,000, score_pairs=6,250,000,000, output_elements=100,000 | upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics (the legacy loom_msa transfer-inclusive convention) | pending | pending | pending | pending |
-| `decoder` | contract pending | pending | pending | pending | pending | pending |
-| `anomaly` | contract pending | pending | pending | pending | pending | pending |
-| `vecadd_memory` | contract pending | pending | pending | pending | pending | pending |
-| `vecadd_product` | contract pending | pending | pending | pending | pending | pending |
+| `loom-private/llama2c-decoder` | batch=1,024, width=16,384, vocab=8,192, steps=4, generated_tokens=4,096, classifier_macs_per_step=137,438,953,472, classifier_macs_total=549,755,813,888, model_floats=268,451,840, model_bytes=1,073,807,360 | Prompt upload (pinned H2D, batch int32), device token reset from the prompts, all steps (rmsnorm, dense classifier matmul, softmax+argmax with on-device feedback), generated-token download (pinned D2H, batch x steps int32). Weights and working buffers are resident from setup. | pending | pending | pending | pending |
+| `loom-private/mlperf-tiny-anomaly-model` | samples=104,858, sample_elements=640, dataset_samples=40, input_float32_elements=67,109,120, input_bytes=268,436,480, output_int8_bytes=67,109,120, layers=10, macs_per_sample=264,192 | upload the float32 samples [samples][640] (268,436,480 bytes at large) from pinned host memory; the inference kernel for every sample; download the int8 outputs [samples][640] (67,109,120 bytes) | pending | pending | pending | pending |
+| `loom-private/vecadd-memory` | length=1,048,576, multiplier=2, bias=0 | upload of lhs and rhs from pinned host memory, the element-wise add, and download of result to pinned host memory | pending | pending | pending | pending |
+| `loom-private/vecadd-product` | records=1,048,576, operand_bytes=64, record_input_bytes=128, input_bytes=134,217,728, output_slot_bytes=64, output_bytes=67,108,864, fixture_bytes=128, record_period=256 | upload of the 128-byte-per-record inputs from pinned host memory, the lane-wise byte-sum kernel over all records, and the download of the 64-byte-per-record outputs to pinned host memory | pending | pending | pending | pending |
 
 ## RTX 4090 (sm_89, 24 GB): timing
 
@@ -25,10 +25,10 @@ Toolkit: not yet measured.
 |---|---|---|--:|--:|--:|--:|
 | `loom-private/pagerank` | nodes=1,048,576, nodes_log2=20, iterations=20, edges=2,097,151, gpu_schedule_levels=16 | upload of the incoming CSR (offsets and sources), out-degrees, and level schedule from pinned host memory; score and contribution initialization; all 20 Gauss-Seidel sweeps; download of the scores to pinned host memory | pending | pending | pending | pending |
 | `loom-private/multisensor-attention` | query_tokens=25,000, context_tokens=250,000, sensor_lanes=3, feature_lanes=4, statistics=4, input_variant=0, audio_input_elements=75,000, imu_input_elements=750,000, score_pairs=6,250,000,000, output_elements=100,000 | upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics (the legacy loom_msa transfer-inclusive convention) | pending | pending | pending | pending |
-| `decoder` | contract pending | pending | pending | pending | pending | pending |
-| `anomaly` | contract pending | pending | pending | pending | pending | pending |
-| `vecadd_memory` | contract pending | pending | pending | pending | pending | pending |
-| `vecadd_product` | contract pending | pending | pending | pending | pending | pending |
+| `loom-private/llama2c-decoder` | batch=1,024, width=16,384, vocab=8,192, steps=4, generated_tokens=4,096, classifier_macs_per_step=137,438,953,472, classifier_macs_total=549,755,813,888, model_floats=268,451,840, model_bytes=1,073,807,360 | Prompt upload (pinned H2D, batch int32), device token reset from the prompts, all steps (rmsnorm, dense classifier matmul, softmax+argmax with on-device feedback), generated-token download (pinned D2H, batch x steps int32). Weights and working buffers are resident from setup. | pending | pending | pending | pending |
+| `loom-private/mlperf-tiny-anomaly-model` | samples=104,858, sample_elements=640, dataset_samples=40, input_float32_elements=67,109,120, input_bytes=268,436,480, output_int8_bytes=67,109,120, layers=10, macs_per_sample=264,192 | upload the float32 samples [samples][640] (268,436,480 bytes at large) from pinned host memory; the inference kernel for every sample; download the int8 outputs [samples][640] (67,109,120 bytes) | pending | pending | pending | pending |
+| `loom-private/vecadd-memory` | length=1,048,576, multiplier=2, bias=0 | upload of lhs and rhs from pinned host memory, the element-wise add, and download of result to pinned host memory | pending | pending | pending | pending |
+| `loom-private/vecadd-product` | records=1,048,576, operand_bytes=64, record_input_bytes=128, input_bytes=134,217,728, output_slot_bytes=64, output_bytes=67,108,864, fixture_bytes=128, record_period=256 | upload of the 128-byte-per-record inputs from pinned host memory, the lane-wise byte-sum kernel over all records, and the download of the 64-byte-per-record outputs to pinned host memory | pending | pending | pending | pending |
 
 ## RTX 5090 (sm_120, 32 GB): timing
 
@@ -38,10 +38,10 @@ Toolkit: not yet measured.
 |---|---|---|--:|--:|--:|--:|
 | `loom-private/pagerank` | nodes=1,048,576, nodes_log2=20, iterations=20, edges=2,097,151, gpu_schedule_levels=16 | upload of the incoming CSR (offsets and sources), out-degrees, and level schedule from pinned host memory; score and contribution initialization; all 20 Gauss-Seidel sweeps; download of the scores to pinned host memory | pending | pending | pending | pending |
 | `loom-private/multisensor-attention` | query_tokens=25,000, context_tokens=250,000, sensor_lanes=3, feature_lanes=4, statistics=4, input_variant=0, audio_input_elements=75,000, imu_input_elements=750,000, score_pairs=6,250,000,000, output_elements=100,000 | upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics (the legacy loom_msa transfer-inclusive convention) | pending | pending | pending | pending |
-| `decoder` | contract pending | pending | pending | pending | pending | pending |
-| `anomaly` | contract pending | pending | pending | pending | pending | pending |
-| `vecadd_memory` | contract pending | pending | pending | pending | pending | pending |
-| `vecadd_product` | contract pending | pending | pending | pending | pending | pending |
+| `loom-private/llama2c-decoder` | batch=1,024, width=16,384, vocab=8,192, steps=4, generated_tokens=4,096, classifier_macs_per_step=137,438,953,472, classifier_macs_total=549,755,813,888, model_floats=268,451,840, model_bytes=1,073,807,360 | Prompt upload (pinned H2D, batch int32), device token reset from the prompts, all steps (rmsnorm, dense classifier matmul, softmax+argmax with on-device feedback), generated-token download (pinned D2H, batch x steps int32). Weights and working buffers are resident from setup. | pending | pending | pending | pending |
+| `loom-private/mlperf-tiny-anomaly-model` | samples=104,858, sample_elements=640, dataset_samples=40, input_float32_elements=67,109,120, input_bytes=268,436,480, output_int8_bytes=67,109,120, layers=10, macs_per_sample=264,192 | upload the float32 samples [samples][640] (268,436,480 bytes at large) from pinned host memory; the inference kernel for every sample; download the int8 outputs [samples][640] (67,109,120 bytes) | pending | pending | pending | pending |
+| `loom-private/vecadd-memory` | length=1,048,576, multiplier=2, bias=0 | upload of lhs and rhs from pinned host memory, the element-wise add, and download of result to pinned host memory | pending | pending | pending | pending |
+| `loom-private/vecadd-product` | records=1,048,576, operand_bytes=64, record_input_bytes=128, input_bytes=134,217,728, output_slot_bytes=64, output_bytes=67,108,864, fixture_bytes=128, record_period=256 | upload of the 128-byte-per-record inputs from pinned host memory, the lane-wise byte-sum kernel over all records, and the download of the 64-byte-per-record outputs to pinned host memory | pending | pending | pending | pending |
 
 ## Correctness
 
@@ -52,31 +52,31 @@ Large-workload correctness checks are validation evidence, not performance measu
 | Workload | Contract SHA-256 | Status | Direct | Graph | Direct = Graph | Record |
 |---|---|---|---|---|---|---|
 | `loom-private/pagerank` | `c6d38a8f4184` | pending | pending | pending | pending | pending |
-| `loom-private/multisensor-attention` | `97c0a8fcb064` | pending | pending | pending | pending | pending |
-| `decoder` | pending | pending | pending | pending | pending | pending |
-| `anomaly` | pending | pending | pending | pending | pending | pending |
-| `vecadd_memory` | pending | pending | pending | pending | pending | pending |
-| `vecadd_product` | pending | pending | pending | pending | pending | pending |
+| `loom-private/multisensor-attention` | `e8f7a56bcebd` | pending | pending | pending | pending | pending |
+| `loom-private/llama2c-decoder` | `847d3367d564` | pending | pending | pending | pending | pending |
+| `loom-private/mlperf-tiny-anomaly-model` | `7a3e32a8349e` | pending | pending | pending | pending | pending |
+| `loom-private/vecadd-memory` | `2cfa489f84df` | pending | pending | pending | pending | pending |
+| `loom-private/vecadd-product` | `d26fb78405a3` | pending | pending | pending | pending | pending |
 
 ### RTX 4090 (sm_89, 24 GB)
 
 | Workload | Contract SHA-256 | Status | Direct | Graph | Direct = Graph | Record |
 |---|---|---|---|---|---|---|
 | `loom-private/pagerank` | `c6d38a8f4184` | pending | pending | pending | pending | pending |
-| `loom-private/multisensor-attention` | `97c0a8fcb064` | pending | pending | pending | pending | pending |
-| `decoder` | pending | pending | pending | pending | pending | pending |
-| `anomaly` | pending | pending | pending | pending | pending | pending |
-| `vecadd_memory` | pending | pending | pending | pending | pending | pending |
-| `vecadd_product` | pending | pending | pending | pending | pending | pending |
+| `loom-private/multisensor-attention` | `e8f7a56bcebd` | pending | pending | pending | pending | pending |
+| `loom-private/llama2c-decoder` | `847d3367d564` | pending | pending | pending | pending | pending |
+| `loom-private/mlperf-tiny-anomaly-model` | `7a3e32a8349e` | pending | pending | pending | pending | pending |
+| `loom-private/vecadd-memory` | `2cfa489f84df` | pending | pending | pending | pending | pending |
+| `loom-private/vecadd-product` | `d26fb78405a3` | pending | pending | pending | pending | pending |
 
 ### RTX 5090 (sm_120, 32 GB)
 
 | Workload | Contract SHA-256 | Status | Direct | Graph | Direct = Graph | Record |
 |---|---|---|---|---|---|---|
 | `loom-private/pagerank` | `c6d38a8f4184` | pending | pending | pending | pending | pending |
-| `loom-private/multisensor-attention` | `97c0a8fcb064` | pending | pending | pending | pending | pending |
-| `decoder` | pending | pending | pending | pending | pending | pending |
-| `anomaly` | pending | pending | pending | pending | pending | pending |
-| `vecadd_memory` | pending | pending | pending | pending | pending | pending |
-| `vecadd_product` | pending | pending | pending | pending | pending | pending |
+| `loom-private/multisensor-attention` | `e8f7a56bcebd` | pending | pending | pending | pending | pending |
+| `loom-private/llama2c-decoder` | `847d3367d564` | pending | pending | pending | pending | pending |
+| `loom-private/mlperf-tiny-anomaly-model` | `7a3e32a8349e` | pending | pending | pending | pending | pending |
+| `loom-private/vecadd-memory` | `2cfa489f84df` | pending | pending | pending | pending | pending |
+| `loom-private/vecadd-product` | `d26fb78405a3` | pending | pending | pending | pending | pending |
 
