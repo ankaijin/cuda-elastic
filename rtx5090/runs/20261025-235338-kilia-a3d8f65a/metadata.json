@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "run_id": "20261025-235338-kilia-a3d8f65a",
+  "source_commit": "d8969dae271608502cf79a4a7dfd4ae91eb4ae93",
+  "source_branch": "kilia/loom-private-baselines",
+  "host": "kilia",
+  "started_utc": "2026-10-25T23:53:38.435275+00:00",
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+    "driver": "615.71.10",
+    "folder": "rtx5090"
+  },
+  "installed_tools": {
+    "nvcc": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0",
+    "ncu": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2026 NVIDIA Corporation\nVersion 2026.3.1.0 (build 38829034) (public-release)",
+    "nsys": "NVIDIA Nsight Systems version 2026.3.2.476-263238834031v0"
+  },
+  "environment": {
+    "PATH": "/usr/local/cuda/bin:/home/ankai/.local/bin:/home/ankai/bin:/usr/share/Modules/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin",
+    "CUDA_VISIBLE_DEVICES": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+    "GPU": "rtx5090",
+    "ARCH": "sm_120",
+    "TIMESTAMP": "20261025-235338-kilia-a3d8f65a",
+    "GPU_LOCK": "/tmp/cuda-elastic-gpu.lock"
+  },
+  "binary_sha256": {
+    "rtx5090/loom_private/pagerank/build/pagerank_jacobi_mutant": "05a1ebcf0fa7acc3c09e584bd543aa4e105d18c27eb8b00d3142063e17a61468",
+    "rtx5090/loom_private/pagerank/build/test_host": "4bacdad66496d516fe22ea72e3737c737aa93f224a49a2bdb19a0598160e2c04",
+    "rtx5090/loom_private/pagerank/build/pagerank": "cee8fa65b1f969d70d83d722137e6fb796cb095620f617543ed6662b73648119",
+    "rtx5090/loom_private/attention/build/attention": "6a6ed684223cce8d27dfe66f41ef3da146ef21097cb7fe9f9e29034eef835b41",
+    "rtx5090/loom_private/decoder/build/decoder": "b7f2106cf95283ab96360d89214b6a585b096a27d2ac75cde6eac96f320d878b",
+    "rtx5090/loom_private/anomaly/build/anomaly_skip_last_mutant": "0a15bcdf5e5beb629d02e2da4c337b07e194db422cc57198b795c084e1378256",
+    "rtx5090/loom_private/anomaly/build/test_host": "b7bdd1015282c58fa09c77ca3bd215340cb068f64da6a5d6e62bf5c478d36b78",
+    "rtx5090/loom_private/anomaly/build/anomaly": "1640895c85f002e0f45d993d7d4060134948cfe2fa8af5fc047a3583d27d4de9",
+    "rtx5090/loom_private/vecadd_memory/build/vecadd_memory_drop_last_mutant": "75bd6804aef84a0f0af09946f79fe735fa2acb44155021696ef4a2d2ba001084",
+    "rtx5090/loom_private/vecadd_memory/build/test_host": "49d39b00485e00da2f0c612dbd3c099bb3ee5a9d0e5a4acea8fe9a0fe017d007",
+    "rtx5090/loom_private/vecadd_memory/build/vecadd_memory": "a4e1aa2cad5332b4ee3fb86cd2044f2b09ca1da12886ddead0bfae44ec2b5a78",
+    "rtx5090/loom_private/vecadd_product/build/vecadd_product_mutant1": "37649c482c990269b6783d16d858a2344c8c6f1a6e21d8b5615a067c5eb22717",
+    "rtx5090/loom_private/vecadd_product/build/vecadd_product_mutant2": "4083524698ac77fc48163f88019306d664af229db1b3c94b61b8d26660253b2f",
+    "rtx5090/loom_private/vecadd_product/build/vecadd_product_mutant3": "2d27d88dd7aa107b0fbe6a70515c5f4b28274e87f38ef5b189692557d79dda58",
+    "rtx5090/loom_private/vecadd_product/build/vecadd_product_mutant4": "5adbc7a64874f316ebf7ce52c0ca1210a49c69e3205effa85fb7e5f61ae9d72c",
+    "rtx5090/loom_private/vecadd_product/build/vecadd_product_slow_warmup": "d07fbd9eda4a894ef1d44a02e92e365d422c01477453a7e3ce190f69c7d224c9",
+    "rtx5090/loom_private/vecadd_product/build/test_host": "74c1ca9f0dfebe5c77e1f13fdae1bedcd71590973658a86af2b6e7bd45131520",
+    "rtx5090/loom_private/vecadd_product/build/vecadd_product": "9069f2b53cdf5a3d4c9c28d7139614c06165665011c95bd9019a4384351b8692"
+  },
+  "validation": {
+    "command": "python3 applications/loom_private/tools/legacy_freeze.py verify && python3 applications/loom_private/tools/fetch_assets.py --verify-only && for a in pagerank attention decoder anomaly vecadd_memory vecadd_product; do make -B -C applications/loom_private/$a build || exit 1; done",
+    "exit_code": 0,
+    "log": "validation.log"
+  },
+  "measurement": {
+    "command": [
+      "python3",
+      "applications/loom_private/run_suite.py",
+      "--no-build",
+      "--action",
+      "bench",
+      "--launch",
+      "graph"
+    ],
+    "exit_code": 0,
+    "log": "measurement.log"
+  },
+  "status": "completed",
+  "artifacts": [
+    "rtx5090/loom_private/anomaly/results/20261025-235338-kilia-a3d8f65a-bench-graph.json",
+    "rtx5090/loom_private/anomaly/results/20261025-235338-kilia-a3d8f65a-bench-graph.log",
+    "rtx5090/loom_private/attention/results/20261025-235338-kilia-a3d8f65a-bench-graph.json",
+    "rtx5090/loom_private/attention/results/20261025-235338-kilia-a3d8f65a-bench-graph.log",
+    "rtx5090/loom_private/decoder/results/20261025-235338-kilia-a3d8f65a-bench-graph.json",
+    "rtx5090/loom_private/decoder/results/20261025-235338-kilia-a3d8f65a-bench-graph.log",
+    "rtx5090/loom_private/pagerank/results/20261025-235338-kilia-a3d8f65a-bench-graph.json",
+    "rtx5090/loom_private/pagerank/results/20261025-235338-kilia-a3d8f65a-bench-graph.log",
+    "rtx5090/loom_private/suite-20261025-235338-kilia-a3d8f65a-bench.json",
+    "rtx5090/loom_private/vecadd_memory/results/20261025-235338-kilia-a3d8f65a-bench-graph.json",
+    "rtx5090/loom_private/vecadd_memory/results/20261025-235338-kilia-a3d8f65a-bench-graph.log",
+    "rtx5090/loom_private/vecadd_product/results/20261025-235338-kilia-a3d8f65a-bench-graph.json",
+    "rtx5090/loom_private/vecadd_product/results/20261025-235338-kilia-a3d8f65a-bench-graph.log"
+  ],
+  "source_changes_after_validation": "",
+  "source_changes_after_measurement": "",
+  "finished_utc": "2026-10-25T23:54:14.121539+00:00"
+}
