@@ -1,0 +1,100 @@
+{
+  "identity": "loom-private/vecadd-memory",
+  "suite_version": "v1",
+  "extension_of_upstream": "Large size only. Upstream's default vector length is 64 and its preset lengths are 4096, 65536, and 131072; this port runs 1,048,576 elements (the element count of the legacy standalone vec_add.cu) with upstream's default multiplier 2 and bias 0. The kernel semantics are unchanged.",
+  "upstream": {
+    "repository": "PolyArch/loom-private",
+    "commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+    "manifest_identity": "vecadd-memory",
+    "sources": [
+      {
+        "path": "test/applications/vecadd-memory/vecadd_memory.c",
+        "git_blob": "5107aef766ecfed38e6bddd0afb0a47efadf9ddf",
+        "sha256": "1679e2a799566851fe00eeae42f35532cf95c091191d8316a0b61857f2a5c660",
+        "role": "input generation, the element-wise int32 add, and the host result and checksum check"
+      },
+      {
+        "path": "test/applications/manifest.json",
+        "git_blob": "c85e8274d958d792bcb93920b9841a2b862d93ce",
+        "sha256": "1c89293bc63074c402afa8c133015f2d3e2615042b1bc2c0d69c5dc265ca5e24",
+        "role": "build options (-ffp-contract=off) and the smoke and validation settings"
+      }
+    ]
+  },
+  "large": {
+    "length": 1048576,
+    "multiplier": 2,
+    "bias": 0,
+    "element_type": "int32",
+    "expected_checksum": 1649265868800
+  },
+  "data_generation": {
+    "inputs": "No inputs are read. For index i = 0 .. length-1: lhs[i] = i and rhs[i] = i * multiplier + bias, both int32. The upstream defaults are multiplier 2 and bias 0, which this port keeps for the large workload.",
+    "semantics": "result[i] = lhs[i] + rhs[i] in int32, so result[i] = i * (multiplier + 1) + bias. The 64-bit checksum is the sum of every result element accumulated in a signed 64-bit integer; for the large workload it is 3 * N * (N - 1) / 2 = 1,649,265,868,800. The oracle computes it, nothing hardcodes it.",
+    "validity": "length must be at least 1 and at most 2^27, multiplier and bias must fit int32, and every lhs, rhs, and result value must fit int32 (the values are linear in i, so the extremes are at i = 0 and i = length-1, checked in 128-bit arithmetic); anything else exits 2 with a message. Upstream has no such guard because its sizes are fixed; the checks keep the int32 arithmetic free of signed overflow."
+  },
+  "outputs": [
+    {
+      "name": "result",
+      "type": "int32",
+      "count": "length (1,048,576 at large)",
+      "layout": "little-endian int32, indexed by element, as downloaded to pinned host memory; the digest is FNV-1a 64 over these bytes"
+    },
+    {
+      "name": "checksum",
+      "type": "int64",
+      "count": "1",
+      "layout": "host-side sum of the downloaded result elements, compared with the oracle's checksum; not a device output"
+    }
+  ],
+  "tolerances": {
+    "result": {
+      "comparison": "exact integer equality for every element",
+      "source": "private Loom's vecadd_memory.c returns failure when any result differs from i * (multiplier + 1) + bias",
+      "oracle": "oracle.cpp: an independent host loop that builds both inputs in 64-bit arithmetic and adds them"
+    },
+    "checksum": {
+      "comparison": "exact equality of the 64-bit sums",
+      "source": "the checksum private Loom's vecadd_memory.c prints on the host and its expected-*.txt oracles record"
+    },
+    "cross_invocation": "two Direct and two Graph invocations must produce bitwise-identical results"
+  },
+  "timing_scope": {
+    "application": "upload of lhs and rhs from pinned host memory, the element-wise add, and download of result to pinned host memory",
+    "compute": "the element-wise add with lhs and rhs resident on the device; no transfers",
+    "excluded": "input generation, allocation, CUDA Graph construction, warmups, the CPU oracle, and output checking"
+  },
+  "assets": {},
+  "reference_only_upstream_configurations": [
+    {
+      "name": "smoke",
+      "length": 4096,
+      "multiplier": 2,
+      "bias": 0,
+      "evaluation_tier": "functional",
+      "oracle_path": "test/applications/vecadd-memory/expected-smoke.txt",
+      "oracle_git_blob": "544769967390d4f9de2116675e0f1f249f158081",
+      "oracle_sha256": "9d1f4a74564203124cb454cbf2ddfd08c27ded28701a29964954077340a98b7d"
+    },
+    {
+      "name": "validation",
+      "length": 65536,
+      "multiplier": 3,
+      "bias": 1,
+      "evaluation_tier": "qualified",
+      "oracle_path": "test/applications/vecadd-memory/expected-validation.txt",
+      "oracle_git_blob": "bb1a4d1f73769e56fbc58f353f5956ef378ea677",
+      "oracle_sha256": "25607ba17bfc0265f8ccb3c7debaa95caf6bbf3de0cca052f13e9a75c7de8da2"
+    },
+    {
+      "name": "validation-scale-eda",
+      "length": 131072,
+      "multiplier": 5,
+      "bias": 7,
+      "evaluation_tier": "qualified",
+      "oracle_path": "test/applications/vecadd-memory/expected-scale.txt",
+      "oracle_git_blob": "ac4313406668269791ee5c56d3884de4fd57a68c",
+      "oracle_sha256": "3ff98ea8850bef7b9f63cd5c8ffd96969e4d2e85fd4a5b93c2af44926a87ed13"
+    }
+  ]
+}
