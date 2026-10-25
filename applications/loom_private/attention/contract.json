@@ -1,0 +1,98 @@
+{
+  "identity": "loom-private/multisensor-attention",
+  "suite_version": "v1",
+  "extension_of_upstream": "Upstream uses one token count for both the audio queries and the IMU context; this workload generalizes the same generator and computation to separate query and context extents (25,000 queries attending over 250,000 context tokens). With equal extents it is the upstream computation.",
+  "upstream": {
+    "repository": "PolyArch/loom-private",
+    "commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+    "sources": [
+      {
+        "path": "test/applications/loom-multisensor-attention/main.c",
+        "git_blob": "8ccf7585e0b96284a36e1bcd3f9d5e973e990440",
+        "sha256": "ff828f30731147bd3467067f81d5e76ed213dd442914440748e5128efa6df09f"
+      }
+    ],
+    "legacy_cuda_adapted": "loom_msa/msa_baseline.cu (one block per query row, fixed-shape shared-memory reduction trees), adapted and copied into this directory; loom_msa/ is unchanged"
+  },
+  "large": {
+    "query_tokens": 25000,
+    "context_tokens": 250000,
+    "sensor_lanes": 3,
+    "feature_lanes": 4,
+    "statistics": 4,
+    "input_variant": 0,
+    "input_scale": 1.0,
+    "audio_input_elements": 75000,
+    "imu_input_elements": 750000,
+    "score_pairs": 6250000000,
+    "output_elements": 100000,
+    "overridable_for_tests": {
+      "query_tokens": "1 .. 4194304 (weights 4t + lane + 1 stay exact in float32)",
+      "context_tokens": "1 .. 16777216",
+      "input_variant": "0 (scale 1.0), 1 (scale 0.5), 2 (scale 1.5)"
+    }
+  },
+  "data_generation": {
+    "sensor_sample": "sample(o, p) = float((int)((o * 37 + p * 101) mod 251) - 125) * (1/128), then times the variant scale; o and p are 32-bit unsigned and the products are taken modulo 2^32 as upstream does",
+    "wraparound": "none at these extents: the largest ordinal is 3 * 250000 - 1 = 749999, and 749999 * 37 + 101 = 27750064 < 2^32; within the override limits the largest is 3 * 2^24 - 1, giving 1862270977 < 2^32",
+    "audio": "audio[t][l] = sample(3t + l, 0) for t < query_tokens, l < 3, float32",
+    "imu": "imu[t][l] = sample(3t + l, 1) for t < context_tokens, l < 3, float32",
+    "exactness": "every sample is a multiple of 1/128 (3/256 for scale 1.5) with magnitude below 1.5, so the projections, every lane product, every score, and the row maximum are exact in float32 (the squares in the projection energy are exact too, but its float partial sums can round)",
+    "query_projection": "query[t] = (x, y, z, x + y) from audio[t] = (x, y, z)",
+    "key_value_projection": "key_value[c] = (x, y, z, x - y) from imu[c] = (x, y, z); the same vector is both key and value",
+    "attention": "for each query row t: score[c] = 0.5 * (((q0 k0 + q1 k1) + q2 k2) + q3 k3) over every context token c; m = max over c of score[c]; p[c] = expf(score[c] - m); attention[t][l] = (sum over c of p[c] * key_value[c][l]) / (sum over c of p[c])",
+    "residual": "output[t][l] = attention[t][l] + query[t][l] * 0.125",
+    "statistics": "over the query_tokens x 4 elements in token-major order (e = 4t + l): s0 = sum query^2 (projection energy), s1 = sum attention (attention sum), s2 = sum (e + 1) * attention (weighted sum), s3 = max |attention|",
+    "combined_checksum": "s2 + 3 s0 + 7 s1 + 11 s3, evaluated in float32 left to right from the device statistics, as upstream does"
+  },
+  "outputs": {
+    "output": "float32 [query_tokens][4] row-major, little-endian (100000 values, 400000 bytes at large); every element is checked",
+    "statistics": "float32 [4] = s0, s1, s2, s3 (16 bytes); each is checked",
+    "combined_checksum": "derived on the host from statistics; checked",
+    "not_downloaded": "the attention matrix [query_tokens][4] stays on the device as an intermediate, as in upstream; it is covered through the residual output",
+    "digest": "FNV-1a 64 over the output bytes followed by the statistics bytes; must agree bitwise across two Direct and two Graph invocations"
+  },
+  "tolerances": {
+    "comparison": "|actual - expected| <= 1e-4 * (1 + |expected|) for every output element, every statistic, and the combined checksum; NaN fails",
+    "source": "upstream outside_tolerance() in main.c (one relative bound for float32 reductions in any order), preserved unchanged",
+    "oracle": "oracle.cpp, an independent host implementation: regenerates the inputs from the formula, evaluates scores, exp, softmax sums, attention, residual, and statistics in double precision, streaming twice over the context per query row (no query x context matrix); rows are distributed over std::thread workers, each row computed by one thread, statistics accumulated sequentially in token-major order",
+    "device_accumulation": "float32, as upstream. Attention: per row, thread i of 256 sums columns i, i + 256, ... in increasing order, then a fixed binary tree. Statistics: one block, thread i of 1024 sums elements i, i + 1024, ... in increasing order, then a fixed binary tree. No atomics; the order is fixed, so results are bitwise deterministic.",
+    "cancellation_analysis": "Float accumulation was measured against the double oracle at the large preset before choosing it: worst |error| / tolerance is 0.0045 for the output elements, 0.0052 for the attention sum (698.866), 0.0052 for the weighted sum (3.493e7), 0.0006 for max |attention|, 0 for projection energy (every square is exact; float partial sums round only once they outgrow the 1/16384 grid), and 0.0045 for the combined checksum. The attention sum shows no destructive cancellation at this extent, so no wider accumulator is needed; the tolerance is not loosened. The scores are exact, so the device and oracle differ only through expf rounding and float32 summation."
+  },
+  "timing_scope": {
+    "application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics (the legacy loom_msa transfer-inclusive convention)",
+    "compute": "the same projections, attention, residual and statistics kernels with the sensor inputs already resident on the device; no host-device transfers",
+    "excluded": "allocation, input generation, graph construction, warmups, the CPU oracle, and output checking"
+  },
+  "assets": {},
+  "reference_only_upstream_configurations": [
+    {
+      "name": "smoke",
+      "tokens": 4,
+      "input_variant": 0,
+      "input_scale": 1.0,
+      "expected_path": "test/applications/loom-multisensor-attention/expected-smoke.txt",
+      "git_blob": "058f38c78378e311b544ce0060f803a8c6972c69",
+      "sha256": "26d2d587076315a2fc763fc1aca9ccaf4e5a2f396aeb0b8df714140f51e946f4"
+    },
+    {
+      "name": "validation",
+      "tokens": 64,
+      "input_variant": 1,
+      "input_scale": 0.5,
+      "expected_path": "test/applications/loom-multisensor-attention/expected-validation.txt",
+      "git_blob": "84eac24cbe60075fc1e7d38d6442fa5f2155b07f",
+      "sha256": "3dfc48951479c980d40d2b587fd251fa5d236e1444324dae1894be909e7cefd1"
+    },
+    {
+      "name": "validation-scale-eda",
+      "tokens": 96,
+      "input_variant": 2,
+      "input_scale": 1.5,
+      "expected_path": "test/applications/loom-multisensor-attention/expected-scale.txt",
+      "git_blob": "333e6d32d5118b602db70acc43229e4d49c9a718",
+      "sha256": "ed962a0f66d4d6b3afc945e5bf3d689ffd15b01f470d3556a9eee630a8ccc44b"
+    }
+  ],
+  "reference_only_note": "Upstream configurations use equal query and context extents and are documentation only; no target runs them."
+}
