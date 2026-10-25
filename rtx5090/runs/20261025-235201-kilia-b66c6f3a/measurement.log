@@ -1,0 +1,7 @@
+pagerank        pass                 exit 0  rtx5090/loom_private/pagerank/results/20261025-235201-kilia-b66c6f3a-check.log
+attention       pass                 exit 0  rtx5090/loom_private/attention/results/20261025-235201-kilia-b66c6f3a-check.log
+decoder         pass                 exit 0  rtx5090/loom_private/decoder/results/20261025-235201-kilia-b66c6f3a-check.log
+anomaly         pass                 exit 0  rtx5090/loom_private/anomaly/results/20261025-235201-kilia-b66c6f3a-check.log
+vecadd_memory   pass                 exit 0  rtx5090/loom_private/vecadd_memory/results/20261025-235201-kilia-b66c6f3a-check.log
+vecadd_product  pass                 exit 0  rtx5090/loom_private/vecadd_product/results/20261025-235201-kilia-b66c6f3a-check.log
+PASS: rtx5090/loom_private/suite-20261025-235201-kilia-b66c6f3a-check.json
