@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "run_id": "20261025-235325-mono-34308366",
+  "source_commit": "f3d310d82222eb1e1edcd8d10c2934fa6689b001",
+  "source_branch": "mono/loom-private-baselines",
+  "host": "mono",
+  "started_utc": "2026-10-25T23:53:25.955331+00:00",
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3090",
+    "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+    "driver": "610.43.02",
+    "folder": "rtx3090"
+  },
+  "installed_tools": {
+    "nvcc": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Jun_09_02:43:40_PM_PDT_2026\nCuda compilation tools, release 13.3, V13.3.73\nBuild cuda_13.3.r13.3/compiler.38244171_0",
+    "ncu": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2026 NVIDIA Corporation\nVersion 2026.2.1.0 (build 38283040) (public-release)",
+    "nsys": "NVIDIA Nsight Systems version 2026.1.3.425-261338342291v0"
+  },
+  "environment": {
+    "PATH": "/usr/local/cuda/bin:/usr/local/cuda/bin:/home/ankai/.local/bin:/home/ankai/bin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin",
+    "CUDA_VISIBLE_DEVICES": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+    "GPU": "rtx3090",
+    "ARCH": "sm_86",
+    "TIMESTAMP": "20261025-235325-mono-34308366",
+    "GPU_LOCK": "/tmp/cuda-elastic-gpu.lock"
+  },
+  "binary_sha256": {
+    "rtx3090/llama2c/llama2c_cuda_graph": "341e94625ea926a9c4311637ba97d3c3c4169d47449c0ac8c81a7b06e5362556",
+    "rtx3090/loom_msa/multi_sensor_attention_graph": "1830851c9441b07edb02a6f0060286af2e9ac8ae9e004aa2a2167e503fdb2029",
+    "rtx3090/loom_msa/multi_sensor_attention_graph_opt": "8723bfe513a18fb26e98dabf23ee20f86291de8139bba2b6193292e59282ba2f",
+    "rtx3090/pagerank/gapbs_pagerank_cuda_graph": "201c11752f74009bb58f2f9e327134b5a190e85d66868329dbbd3a11069c9a22",
+    "rtx3090/loom_msa/build/msa_baseline_4x4": "1b2f87096b471cf81afef601aa5d820ec3322c700a0f078ac66f0365d2326455",
+    "rtx3090/loom_msa/build/msa_baseline_large": "50b3ab43bccb43212872b453aa786c1321474eb47bf7f133859d86300f867fcf",
+    "rtx3090/loom_msa/build/msa_baseline_medium": "c72cb3b031a97d6db9a8b734ca95023087a736a3d21519870f2a5b1f3d6d9bb7",
+    "rtx3090/loom_msa/build/msa_optimized_4x4": "73b838857fb3d3681fbb905e5c06a794292a120e2cd56ceb11e5fcae20e35b22",
+    "rtx3090/loom_msa/build/msa_optimized_large": "1dcd4364bb3ef6751bf19d67a038b7bf7f634f274a2eadd62fe3be47789156ee",
+    "rtx3090/loom_msa/build/msa_optimized_medium": "f37cb91840c5d65af22192b7dbbc584c292bff38bd84411a0985f99c37f439c8",
+    "rtx3090/loom_msa/build/msa_sota_4x4": "74045923d1d41f380d15f5c6e6b58085f648e478fcbae4d1e77d6fb7edf97eab",
+    "rtx3090/loom_msa/build/msa_sota_large": "2eac8a3ab6c83ad39f590e192647eb64a58e4bf63bf9e5e58215cea76d451096",
+    "rtx3090/loom_msa/build/msa_sota_large_1chunk": "ec4006c128833f587a5514900faf781001343ec67d5fbfb8265107dc52ca642e",
+    "rtx3090/loom_msa/build/msa_sota_medium": "eb3562127005a72c80f21c81a7db3635dd02719d4b1c6d19714d695146427a5d",
+    "rtx3090/loom_msa/build/reference": "03675f768b3af16418392146993072783ca70b2791edf59509941678d98ae5d0",
+    "rtx3090/loom_private/anomaly/build/anomaly_skip_last_mutant": "366061b7ae8e5b34825d0325ba2f4c56b6765d9e0c1a002af0eec4914219c776",
+    "rtx3090/loom_private/anomaly/build/test_host": "b7bdd1015282c58fa09c77ca3bd215340cb068f64da6a5d6e62bf5c478d36b78",
+    "rtx3090/loom_private/anomaly/build/anomaly": "7ad407dc1ebb09e0964f31d2339e2033bcde6d01fba4a12d49ac645fd2385687",
+    "rtx3090/loom_private/attention/build/attention": "3a5ef47377f682479162e7efe7f9ffbbf34c6ac0f9ce7b3150577d4578c72116",
+    "rtx3090/loom_private/decoder/build/decoder": "4ea31fd206e9e2ebe0c8a9918ee1c89231b4737b0bc4f1a6f0ae212fb3963a9a",
+    "rtx3090/loom_private/pagerank/build/pagerank_jacobi_mutant": "63523f2524141e33a8f6b0eb61f9450fbacf00bb50af49d1a07374f60363ba78",
+    "rtx3090/loom_private/pagerank/build/test_host": "4bacdad66496d516fe22ea72e3737c737aa93f224a49a2bdb19a0598160e2c04",
+    "rtx3090/loom_private/pagerank/build/pagerank": "4b92dc8a0eb39298630cad8bf4e5c82d8d8b80e2f29b206f788351f5a1cc51f4",
+    "rtx3090/loom_private/vecadd_memory/build/vecadd_memory_drop_last_mutant": "46615caa280413f43015ddab327c59c552c94a1d2009c98c93bfc59b40fd97b2",
+    "rtx3090/loom_private/vecadd_memory/build/test_host": "49d39b00485e00da2f0c612dbd3c099bb3ee5a9d0e5a4acea8fe9a0fe017d007",
+    "rtx3090/loom_private/vecadd_memory/build/vecadd_memory": "6efcc1ae00ce068909abe3c6ae0a68cd7e9b2e7734c6a3466d72239b37e073b8",
+    "rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant1": "9d451086e5c8ae9d5fa4bf61c6920b4755c53ebd39eab2b30b0576da3a904de0",
+    "rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant2": "37d52b326245a5fbd63f24413d6ed4341a933daca13ebb3d9300bdb45efc7f82",
+    "rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant3": "94b98f1242bf9b9899699c75ade0bd308b5229214c5ce139e14619b0fe237f84",
+    "rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant4": "17776e720d264a3a63d904c3f67b77935af408621a770682e0c5ba1c2d52197d",
+    "rtx3090/loom_private/vecadd_product/build/vecadd_product_slow_warmup": "900fc2d73eee5e3ae9e7eb300e11c2c77ca08468733bdc820154470cc8e19550",
+    "rtx3090/loom_private/vecadd_product/build/test_host": "74c1ca9f0dfebe5c77e1f13fdae1bedcd71590973658a86af2b6e7bd45131520",
+    "rtx3090/loom_private/vecadd_product/build/vecadd_product": "303ddc3d17c1da517c7280499faf23802aa20b2e34e30e37a0eaa09e06c9d33e"
+  },
+  "validation": {
+    "command": "python3 applications/loom_private/tools/legacy_freeze.py verify && python3 applications/loom_private/tools/fetch_assets.py --verify-only && for a in pagerank attention decoder anomaly vecadd_memory vecadd_product; do make -B -C applications/loom_private/$a build || exit 1; done",
+    "exit_code": 0,
+    "log": "validation.log"
+  },
+  "measurement": {
+    "command": [
+      "python3",
+      "applications/loom_private/run_suite.py",
+      "--no-build",
+      "--action",
+      "bench",
+      "--launch",
+      "graph"
+    ],
+    "exit_code": 0,
+    "log": "measurement.log"
+  },
+  "status": "completed",
+  "artifacts": [
+    "rtx3090/loom_private/anomaly/results/20261025-235325-mono-34308366-bench-graph.json",
+    "rtx3090/loom_private/anomaly/results/20261025-235325-mono-34308366-bench-graph.log",
+    "rtx3090/loom_private/attention/results/20261025-235325-mono-34308366-bench-graph.json",
+    "rtx3090/loom_private/attention/results/20261025-235325-mono-34308366-bench-graph.log",
+    "rtx3090/loom_private/decoder/results/20261025-235325-mono-34308366-bench-graph.json",
+    "rtx3090/loom_private/decoder/results/20261025-235325-mono-34308366-bench-graph.log",
+    "rtx3090/loom_private/pagerank/results/20261025-235325-mono-34308366-bench-graph.json",
+    "rtx3090/loom_private/pagerank/results/20261025-235325-mono-34308366-bench-graph.log",
+    "rtx3090/loom_private/suite-20261025-235325-mono-34308366-bench.json",
+    "rtx3090/loom_private/vecadd_memory/results/20261025-235325-mono-34308366-bench-graph.json",
+    "rtx3090/loom_private/vecadd_memory/results/20261025-235325-mono-34308366-bench-graph.log",
+    "rtx3090/loom_private/vecadd_product/results/20261025-235325-mono-34308366-bench-graph.json",
+    "rtx3090/loom_private/vecadd_product/results/20261025-235325-mono-34308366-bench-graph.log"
+  ],
+  "source_changes_after_validation": "",
+  "source_changes_after_measurement": "",
+  "finished_utc": "2026-10-25T23:54:42.224571+00:00"
+}
