@@ -68,8 +68,8 @@ make -C applications/loom_private/pagerank test
 ```
 
 `check-large` runs the oracle once, then two Direct and two Graph invocations.
-Each invocation starts from poisoned outputs. On the RTX 3090 the whole check
-takes about half a second of wall time, mostly the oracle and graph setup.
+Each invocation starts from poisoned outputs and zeroed device inputs (an
+edgeless graph), so a skipped write, download, or upload fails the check.
 `test` builds two test-only binaries and runs them with small `--set nodes=…
 --set iterations=…` overrides. None of these overrides matches an upstream
 smoke or validation configuration.

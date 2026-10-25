@@ -188,6 +188,15 @@ public:
     // 0xFF bytes are a NaN float: any score or contribution left unwritten
     // fails the finiteness check or propagates into one.
     const size_t bytes = sizeof(float) * (size_t)nodes_;
+    // The device inputs are zeroed: an edgeless graph with out-degree 0 whose
+    // schedule names only node 0. An invocation that skips their upload then
+    // leaves every other score at 1/N and the contributions infinite, so it
+    // fails the check, without any out-of-bounds index.
+    const size_t node_bytes = sizeof(int) * (size_t)nodes_;
+    LP_CUDA(cudaMemsetAsync(d_in_offsets_, 0, node_bytes + sizeof(int), stream));
+    LP_CUDA(cudaMemsetAsync(d_in_sources_, 0, sizeof(int) * (size_t)edges_, stream));
+    LP_CUDA(cudaMemsetAsync(d_out_degrees_, 0, node_bytes, stream));
+    LP_CUDA(cudaMemsetAsync(d_level_nodes_, 0, node_bytes, stream));
     LP_CUDA(cudaMemsetAsync(d_scores_, 0xFF, bytes, stream));
     LP_CUDA(cudaMemsetAsync(d_contrib_[0], 0xFF, bytes, stream));
     LP_CUDA(cudaMemsetAsync(d_contrib_[1], 0xFF, bytes, stream));

@@ -86,9 +86,20 @@ public:
 
   // Host and device results both start as the bitwise complement of the
   // expected value when the oracle has run (so no element can already hold its
-  // correct value), else as a fixed pattern.
+  // correct value), else as a fixed pattern. The inputs are poisoned first.
   void poison_outputs(cudaStream_t stream) override {
     const size_t count = (size_t)length_;
+    // The device inputs hold the bitwise complement of their host sources
+    // (staged through h_result_), so an invocation that skips either upload
+    // gets a different sum at every element.
+    for (size_t i = 0; i < count; ++i) h_result_[i] = ~h_lhs_[i];
+    LP_CUDA(cudaMemcpyAsync(d_lhs_, h_result_, count * sizeof(int32_t),
+                            cudaMemcpyHostToDevice, stream));
+    LP_CUDA(cudaStreamSynchronize(stream));
+    for (size_t i = 0; i < count; ++i) h_result_[i] = ~h_rhs_[i];
+    LP_CUDA(cudaMemcpyAsync(d_rhs_, h_result_, count * sizeof(int32_t),
+                            cudaMemcpyHostToDevice, stream));
+    LP_CUDA(cudaStreamSynchronize(stream));
     for (size_t i = 0; i < count; ++i)
       h_result_[i] = have_reference_ ? ~expected_.result[i] : kPoisonPattern;
     LP_CUDA(cudaMemcpyAsync(d_result_, h_result_, count * sizeof(int32_t),

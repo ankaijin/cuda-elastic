@@ -51,7 +51,7 @@
   "tolerances": {
     "comparison": "exact: every output byte must equal the oracle byte",
     "source": "upstream compares the int8 output bytes exactly (expected files hold the hex bytes); integer accumulation is exact and the floating-point requantization is reproduced operation for operation, so no tolerance is needed",
-    "oracle": "oracle.cpp: an independent scalar host implementation using the parsed model data (scales, zero points, int8 weights, int32 biases) and the verified dataset; it infers the 40 unique dataset samples once (single-threaded, well under a second); the expected output for sample i is oracle sample i mod 40",
+    "oracle": "oracle.cpp: an independent scalar host implementation using the parsed model data (scales, zero points, int8 weights, int32 biases) and the verified dataset; it infers the 40 unique dataset samples once (single-threaded); the expected output for sample i is oracle sample i mod 40",
     "oracle_cross_check": "in check mode the oracle bytes for dataset samples 0, 2, and 3 are compared with upstream's reference oracle bytes (assets anomaly-upstream-expected-smoke: measured sample 0 = dataset sample 0; anomaly-upstream-expected-validation: 2 warmups, measured samples 0 and 1 = dataset samples 2 and 3). This compares bytes only; no upstream configuration is executed. A disagreement exits 1; a missing or corrupt reference file exits 3."
   },
   "timing_scope": {

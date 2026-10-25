@@ -55,6 +55,8 @@ expect vocab-gt-width 2 'vocab must satisfy' -- --set vocab=17 --set width=16
 expect steps-1 2 'steps must be' -- --set steps=1 --set width=32 --set vocab=8
 expect batch-0 2 'batch must be' -- --set batch=0
 expect width-0 2 'width must be' -- --set width=0
+# 2^24 - 15: the square sum would reach 2^24 (rejected before allocation).
+expect width-over-exact 2 'width must be' -- --set batch=1 --set width=16777201 --set vocab=2 --set steps=2
 expect too-large 2 'GiB' -- --set batch=1048576
 expect not-integer 2 'not an integer' -- --set batch=abc
 expect unknown-key 2 "unsupported --set key 'rows'" -- --set rows=4

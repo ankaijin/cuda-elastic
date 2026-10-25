@@ -51,7 +51,8 @@ accumulated by a single thread, in increasing column order, starting from
 `matmul` uses.
 
 The rmsnorm square sum and the softmax reductions use fixed tree orders, so
-results are deterministic. For this model the square sum is an exact float
+results are deterministic. For this model the square sum is $W + 15$, and the
+binary limits $W \le 2^{24} - 16$, so every partial sum is an exact float
 integer in any order. The upstream smoke configuration (width 128, 16 rows)
 and validation configuration (width 1024, 64 rows) are recorded in the
 contract as references only. No target runs them.
@@ -67,7 +68,7 @@ make -C applications/loom_private/decoder test
 `test` runs [`tests/run_tests.sh`](tests/run_tests.sh) under one GPU lock. It
 covers five correct shapes given with `--set batch=… width=… vocab=…
 steps=…`. These include prompt and token wraparound, the minimum shape
-$V = W = 2$, $V = W$, ragged tiles, and a Graph-only run. It also covers nine
+$V = W = 2$, $V = W$, ragged tiles, and a Graph-only run. It also covers ten
 invalid inputs that must exit 2, and three injected faults that must exit 1
 and report the offending index with its expected and actual values. The fault
 hook is `--set fault=1|2|3`: it corrupts one token, one activation, or one

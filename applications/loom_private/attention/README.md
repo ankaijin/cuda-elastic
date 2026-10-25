@@ -72,7 +72,7 @@ make -C applications/loom_private/attention check-large CHECK_JSON=/tmp/lp-atten
 make -C applications/loom_private/attention test
 ```
 
-`check-large` runs the CPU oracle once (about 2 s on 32 cores), then two
+`check-large` runs the CPU oracle once (multithreaded), then two
 Direct and two Graph invocations. The binary also accepts
 `--set query_tokens=N`, `--set context_tokens=N`, and `--set input_variant=0|1|2`
 with `--action check`, for tests only. The limits are $1 \le Q \le 2^{22}$

@@ -50,8 +50,7 @@ make -C applications/loom_private/vecadd_memory test
 ```
 
 `check-large` runs the oracle once, then two Direct and two Graph invocations.
-Each invocation starts from poisoned outputs. On the RTX 3090 the whole check
-takes about a quarter of a second of wall time. `test` builds two test-only
+Each invocation starts from poisoned outputs. `test` builds two test-only
 binaries and runs them with small `--set length=… --set multiplier=… --set
 bias=…` overrides. None of them matches an upstream smoke or validation
 configuration.
@@ -69,7 +68,9 @@ the host-side 64-bit sum of the downloaded results must equal the oracle's
 checksum. A mismatch exits 1 and prints the first eight indices with
 expected and actual values. Poisoning writes the bitwise complement of each
 expected value to both the host and the device result buffers, so no element
-holds its correct value before the run and a skipped write cannot pass.
+holds its correct value before the run and a skipped write cannot pass. The
+device inputs are set to the bitwise complement of the host inputs, so a
+skipped upload of either one changes every sum.
 
 ## Tests (`make test`)
 

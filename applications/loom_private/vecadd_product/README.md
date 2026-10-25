@@ -51,10 +51,9 @@ make -C applications/loom_private/vecadd_product test
 ```
 
 `check-large` runs the oracle once, then two Direct and two Graph invocations.
-Each starts from poisoned outputs. On the RTX 3090 the whole check takes about
-0.8 s of wall time. `test` builds the host test, four mutants, and a
-slow-warmup binary, and runs them under the GPU lock in about 20 s. No upstream
-smoke or validation configuration is run by any target.
+Each starts from poisoned outputs. `test` builds the host test, four mutants,
+and a slow-warmup binary, and runs them under the GPU lock. No upstream smoke or
+validation configuration is run by any target.
 
 ## Oracle and checks
 
@@ -77,7 +76,9 @@ expected byte, and actual byte. Beyond the bytes themselves:
   outputs are poisoned and must be unchanged after the invocation. Input and
   output sizes are exactly $128R$ and $64R$ bytes.
 - **Poison.** Before every invocation the device and host outputs hold a
-  position-dependent byte pattern, so a skipped or stale slot fails.
+  position-dependent byte pattern, so a skipped or stale slot fails. The
+  device input holds every left operand complemented, so a skipped upload
+  changes every output byte.
 - **Wraparound and isolation.** Over one 256-record period about half of the
   lanes (8,165 of 16,384) have a true sum above 255. Adjacent slots differ in
   every lane by construction, so a sum landing in a neighbour's slot is caught.
@@ -119,10 +120,11 @@ lock):
   non-integer, an unknown key, an unknown preset, and `--set` with bench exit
   2.
 - **Warmup exclusion.** A test binary (`-DLP_VECADD_TEST_SLOW_WARMUP`) makes
-  the first three application invocations also spin the GPU for 300 ms. A
-  bench with 3 warmups shows a batch of about 25 ms; with 0 warmups the same
-  three invocations land in the timed batch, about 925 ms. So bench warmups
-  are outside the timed interval. Every measured invocation also starts from
+  the first three application invocations also spin the GPU for at least
+  300 ms each. The test asserts that a bench with 3 warmups reports an
+  application batch under 200 ms, and that the same bench with 0 warmups, where
+  those three invocations land in the timed batch, reports one over 800 ms. So
+  bench warmups are outside the timed interval. Every measured invocation also starts from
   poisoned outputs in check mode and must write all slots. This runs the large
   bench with 2 or 3 iterations only for timing records; it does not run the
   oracle and is not a performance claim.

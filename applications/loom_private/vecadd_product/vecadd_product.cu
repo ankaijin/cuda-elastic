@@ -185,6 +185,17 @@ public:
     // Distinct poison per byte position; the canary guards on both sides get
     // their own pattern. Host poison is the same bytes the device receives.
     const size_t bytes = records_ * 64;
+    // Device input: every left operand complemented (staged through
+    // h_output_), right operands as uploaded. If an invocation skips the
+    // upload, each output byte is (255 - a + b) mod 256, which never equals
+    // (a + b) mod 256 because 2a is even, so every byte fails the check.
+    for (uint64_t r = 0; r < records_; ++r)
+      for (int j = 0; j < 64; ++j) h_output_[r * 64 + j] = (uint8_t)~h_input_[r * 128 + j];
+    LP_CUDA(cudaMemcpy2DAsync(d_input_, 128, h_output_, 64, 64, records_,
+                              cudaMemcpyHostToDevice, stream));
+    LP_CUDA(cudaMemcpy2DAsync(d_input_ + 64, 128, h_input_ + 64, 128, 64, records_,
+                              cudaMemcpyHostToDevice, stream));
+    LP_CUDA(cudaStreamSynchronize(stream)); // before h_output_ is reused
     for (size_t i = 0; i < bytes; ++i) h_output_[i] = poison_byte(i);
     LP_CUDA(cudaMemcpyAsync(d_output_, h_output_, bytes, cudaMemcpyHostToDevice, stream));
     LP_CUDA(cudaMemcpyAsync(d_output_base_, h_guard_, kGuardBytes,

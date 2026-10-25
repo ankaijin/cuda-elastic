@@ -36,7 +36,10 @@ python3 applications/loom_private/run_suite.py
 ```
 
 `run_suite.py` builds and checks the named applications (all six by default)
-at the large preset. Each application's `make test` runs its own small tests.
+at the large preset. Each application's `make test` runs its own tests,
+mostly with small `--set` overrides; `vecadd_product`'s tests also run
+large-preset bench invocations (no oracle) to exercise the bench path and
+warmup exclusion.
 Upstream smoke and validation configurations are documented in each
 `contract.json` as references only; no target runs them.
 
@@ -55,13 +58,14 @@ copied here.
 default is `--preset large --action check --launch both`. Bench needs an explicit
 `--launch direct` or `--launch graph`. `--set key=value` overrides a dimension
 for tests (check only) and is recorded in the result. `--asset name=path`
-replaces a cached asset path. `--json-out PATH` writes the result record.
+replaces a cached asset path; an unknown asset name exits 2. `--json-out PATH` writes the result record.
 Exit codes: 0 pass, 1 mismatch, 2 usage or invalid dimensions, 3 missing or
 corrupt asset, 70 CUDA error.
 
 **Correctness.** `make check-large` runs the CPU oracle once, then two
 invocations in Direct mode and two in Graph mode of the same computation. Each
-invocation starts from poisoned outputs and must pass the oracle. All four
+invocation starts from poisoned outputs (and, for applications that upload
+inputs per invocation, poisoned device inputs) and must pass the oracle. All four
 output digests must agree bitwise. The result record (`RESULT {...}` on
 stdout) carries the workload identity, contract hash, dimensions, asset
 hashes, timing scopes, and per-invocation status.

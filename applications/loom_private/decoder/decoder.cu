@@ -45,7 +45,8 @@ __global__ void init_model_kernel(float *embedding, float *classifier,
 // llama2.c rmsnorm on the embedding row of each sequence's current token:
 // ss = sum x^2; ss = ss / width; ss += 1e-5f; ss = 1 / sqrtf(ss);
 // o[j] = weight[j] * (ss * x[j]). The block reduces ss in a fixed tree order;
-// for this model every partial sum is an exact float integer, so the result
+// for this model the sum is width + 15 and width <= 2^24 - 16 (validated in
+// make_decoder), so every partial sum is an exact float integer and the result
 // equals llama2.c's sequential sum.
 __global__ void __launch_bounds__(kRowThreads)
 rmsnorm_kernel(float *normalized, const int *tokens, const float *embedding,
@@ -295,7 +296,10 @@ public:
   }
 
   void poison_outputs(cudaStream_t stream) override {
-    // 0xFF bytes: int32 -1 (an invalid token) and float NaN.
+    // 0xFF bytes: int32 -1 (an invalid token) and float NaN. The prompts are
+    // an input, poisoned too, so an invocation that skips their upload
+    // starts from invalid tokens and fails the check.
+    LP_CUDA(cudaMemsetAsync(d_prompts_, 0xFF, (size_t)B_ * sizeof(int), stream));
     LP_CUDA(cudaMemsetAsync(d_tokens_, 0xFF, (size_t)B_ * sizeof(int), stream));
     LP_CUDA(cudaMemsetAsync(d_generated_, 0xFF, generated_count() * sizeof(int), stream));
     LP_CUDA(cudaMemsetAsync(d_normalized_, 0xFF, normalized_count() * sizeof(float), stream));
@@ -372,8 +376,13 @@ std::unique_ptr<lp::Workload> make_decoder(lp::Options &options) {
 
   if (batch < 1 || batch > (1LL << 20))
     lp::fail(lp::kExitUsage, "batch must be in [1, 1048576] (got %lld)", batch);
-  if (width < 2 || width > (1LL << 24))
-    lp::fail(lp::kExitUsage, "width must be in [2, 16777216] (got %lld)", width);
+  // The rmsnorm square sum is width + 15; keeping it below 2^24 keeps every
+  // partial sum an exact float integer, so the tree order matches llama2.c.
+  if (width < 2 || width > (1LL << 24) - 16)
+    lp::fail(lp::kExitUsage,
+             "width must be in [2, 16777200] so the rmsnorm square sum "
+             "(width + 15) stays an exact float integer (got %lld)",
+             width);
   if (vocab < 2 || vocab > width)
     lp::fail(lp::kExitUsage,
              "vocab must satisfy 2 <= vocab <= width: every token owns one "
