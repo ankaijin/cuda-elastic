@@ -5,32 +5,32 @@
   "suite_version": "v1",
   "applications": {
     "pagerank": {
-      "check": null,
+      "check": "loom_private/pagerank/results/20261025-191236-mono-bf8619ed-check.json",
       "bench_direct": null,
       "bench_graph": null
     },
     "attention": {
-      "check": null,
+      "check": "loom_private/attention/results/20261025-191236-mono-bf8619ed-check.json",
       "bench_direct": null,
       "bench_graph": null
     },
     "decoder": {
-      "check": null,
+      "check": "loom_private/decoder/results/20261025-191236-mono-bf8619ed-check.json",
       "bench_direct": null,
       "bench_graph": null
     },
     "anomaly": {
-      "check": null,
+      "check": "loom_private/anomaly/results/20261025-191236-mono-bf8619ed-check.json",
       "bench_direct": null,
       "bench_graph": null
     },
     "vecadd_memory": {
-      "check": null,
+      "check": "loom_private/vecadd_memory/results/20261025-191236-mono-bf8619ed-check.json",
       "bench_direct": null,
       "bench_graph": null
     },
     "vecadd_product": {
-      "check": null,
+      "check": "loom_private/vecadd_product/results/20261025-191236-mono-bf8619ed-check.json",
       "bench_direct": null,
       "bench_graph": null
     }

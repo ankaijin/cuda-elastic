@@ -51,12 +51,12 @@ Large-workload correctness checks are validation evidence, not performance measu
 
 | Workload | Contract SHA-256 | Status | Direct | Graph | Direct = Graph | Record |
 |---|---|---|---|---|---|---|
-| `loom-private/pagerank` | `c6d38a8f4184` | pending | pending | pending | pending | pending |
-| `loom-private/multisensor-attention` | `e8f7a56bcebd` | pending | pending | pending | pending | pending |
-| `loom-private/llama2c-decoder` | `847d3367d564` | pending | pending | pending | pending | pending |
-| `loom-private/mlperf-tiny-anomaly-model` | `7a3e32a8349e` | pending | pending | pending | pending | pending |
-| `loom-private/vecadd-memory` | `2cfa489f84df` | pending | pending | pending | pending | pending |
-| `loom-private/vecadd-product` | `d26fb78405a3` | pending | pending | pending | pending | pending |
+| `loom-private/pagerank` | `c6d38a8f4184` | pass | 2/2 pass | 2/2 pass | yes | [record](../../rtx3090/loom_private/pagerank/results/20261025-191236-mono-bf8619ed-check.json) |
+| `loom-private/multisensor-attention` | `e8f7a56bcebd` | pass | 2/2 pass | 2/2 pass | yes | [record](../../rtx3090/loom_private/attention/results/20261025-191236-mono-bf8619ed-check.json) |
+| `loom-private/llama2c-decoder` | `847d3367d564` | pass | 2/2 pass | 2/2 pass | yes | [record](../../rtx3090/loom_private/decoder/results/20261025-191236-mono-bf8619ed-check.json) |
+| `loom-private/mlperf-tiny-anomaly-model` | `7a3e32a8349e` | pass | 2/2 pass | 2/2 pass | yes | [record](../../rtx3090/loom_private/anomaly/results/20261025-191236-mono-bf8619ed-check.json) |
+| `loom-private/vecadd-memory` | `2cfa489f84df` | pass | 2/2 pass | 2/2 pass | yes | [record](../../rtx3090/loom_private/vecadd_memory/results/20261025-191236-mono-bf8619ed-check.json) |
+| `loom-private/vecadd-product` | `d26fb78405a3` | pass | 2/2 pass | 2/2 pass | yes | [record](../../rtx3090/loom_private/vecadd_product/results/20261025-191236-mono-bf8619ed-check.json) |
 
 ### RTX 4090 (sm_89, 24 GB)
 
