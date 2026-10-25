@@ -88,8 +88,14 @@ expect truncated-dataset 3 'has 102399 bytes' "$bin" --set samples=7 \
 { cat "$cache/$dataset"; printf 'x'; } >"$scratch/dataset-long"
 expect oversized-dataset 3 'has more than 102400 bytes' "$bin" --set samples=7 \
   --asset "$dataset=$scratch/dataset-long"
-sed 's/^measured_sample=0 output=dd/measured_sample=0 output=de/' \
-  "$cache/$smoke" >"$scratch/smoke-corrupt"
+cp "$cache/$smoke" "$scratch/smoke-corrupt"
+python3 - "$scratch/smoke-corrupt" <<'EOF'
+import sys
+path = sys.argv[1]
+data = bytearray(open(path, "rb").read())
+data[len(data) // 2] ^= 0x01  # one bit inside the hex payload
+open(path, "wb").write(data)
+EOF
 expect corrupt-reference 3 'has sha256' "$bin" --set samples=7 \
   --asset "$smoke=$scratch/smoke-corrupt"
 
@@ -100,6 +106,9 @@ expect too-many-samples 2 'samples must be in' "$bin" --set samples=1048577
 expect non-integer-samples 2 'not an integer' "$bin" --set samples=12x
 expect unknown-key 2 'unsupported --set key' "$bin" --set batch=4
 expect unknown-preset 2 'unknown preset' "$bin" --preset smoke
+# A misspelled --asset name must not be ignored (the cached path would be used).
+expect unknown-asset 2 "unsupported --asset name 'mlperf-tiny-ad01-datset'" "$bin" \
+  --set samples=7 --asset "mlperf-tiny-ad01-datset=$cache/$dataset"
 expect bench-with-set 2 'only valid with --action check' "$bin" --action bench \
   --launch direct --set samples=7
 

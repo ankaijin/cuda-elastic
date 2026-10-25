@@ -9,7 +9,8 @@
 //   --action check|bench      check is the default; bench must be explicit
 //   --iterations N --warmup W bench only (defaults 20 and 3)
 //   --set key=value           dimension override, check only, for tests
-//   --asset name=path         application asset path override
+//   --asset name=path         application asset path override (the factory
+//                             resolves every asset; other names exit 2)
 //   --json-out PATH           also write the result record to PATH
 //
 // Exit codes: 0 pass, 1 output mismatch, 2 usage or invalid dimensions,
@@ -185,16 +186,28 @@ struct Options {
     return value;
   }
   // Asset path from --asset, else the fallback (normally from the cache).
-  std::string asset(const std::string &key, const std::string &fallback) const {
+  // Marks the name as known; run_main rejects --asset names that the factory
+  // never asked for, so the factory must resolve every asset path it may use.
+  std::string asset(const std::string &key, const std::string &fallback) {
+    assets_known_.push_back(key);
     auto it = assets.find(key);
     return it == assets.end() ? fallback : it->second;
   }
   const std::vector<std::pair<std::string, std::string>> &consumed() const {
     return consumed_;
   }
+  // First --asset name no asset() call asked for, or "" when there is none.
+  std::string unknown_asset() const {
+    for (const auto &entry : assets)
+      if (std::find(assets_known_.begin(), assets_known_.end(), entry.first) ==
+          assets_known_.end())
+        return entry.first;
+    return "";
+  }
 
 private:
   std::vector<std::pair<std::string, std::string>> consumed_;
+  std::vector<std::string> assets_known_;
 };
 
 // Default asset cache, outside tracked source. Fetch with
@@ -431,6 +444,9 @@ inline int run_main(int argc, char **argv, Factory factory) {
   if (!options.overrides.empty())
     fail(kExitUsage, "unsupported --set key '%s'",
          options.overrides.begin()->first.c_str());
+  const std::string unknown_asset = options.unknown_asset();
+  if (!unknown_asset.empty())
+    fail(kExitUsage, "unsupported --asset name '%s'", unknown_asset.c_str());
 
   int device = 0;
   cudaDeviceProp properties{};

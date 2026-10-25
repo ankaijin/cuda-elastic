@@ -142,11 +142,20 @@ int main(int argc, char **argv) {
   std::printf("    %zu single-byte corruptions, %zu rejected\n", tried, rejected);
   expect(robust && rejected > 0, "corruption-robustness");
 
-  // The oracle reproduces upstream sample 0's first bytes and rejects NaN.
+  // The oracle reproduces upstream's cached smoke reference (dataset sample 0)
+  // byte for byte, and rejects NaN.
   const std::vector<int8_t> outputs = anomaly_oracle::infer_dataset(model, dataset);
-  expect((uint8_t)outputs[0] == 0xdd && (uint8_t)outputs[1] == 0x0f &&
-             (uint8_t)outputs[2] == 0x2c,
-         "oracle-sample-0-prefix");
+  {
+    std::vector<std::vector<uint8_t>> expected;
+    std::string error;
+    const bool parsed_reference = anomaly_oracle::parse_expected(
+        read_file(cache + "/anomaly-upstream-expected-smoke"), 1, expected, error);
+    if (!parsed_reference) std::printf("    %s\n", error.c_str());
+    expect(parsed_reference && expected[0].size() == anomaly_model::kSampleElements &&
+               std::memcmp(expected[0].data(), outputs.data(),
+                           anomaly_model::kSampleElements) == 0,
+           "oracle-sample-0-matches-smoke-reference");
+  }
   {
     std::vector<uint8_t> copy = dataset;
     const float nan = std::numeric_limits<float>::quiet_NaN();

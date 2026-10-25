@@ -26,10 +26,15 @@ APP_DIR := $(LP_ROOT)/$(APP)
 GPU := $(or $(GPU),$(shell $(ROOT)/gpu.sh name))
 ARCH := $(or $(ARCH),$(shell $(ROOT)/gpu.sh arch))
 NVCC ?= nvcc
-# --fmad=false and -ffp-contract=off keep floating-point arithmetic as written,
-# matching private Loom's -ffp-contract=off builds and the CPU oracles.
-NVCCFLAGS ?= -O3 -std=c++17 -arch=$(ARCH) -lineinfo --fmad=false \
-             -Xcompiler -ffp-contract=off
+# NVCCFLAGS holds the tunable flags and may be overridden. The required set
+# below is always added (through LP_FLAGS, which every compile rule, including
+# the applications' test rules, passes): the language standard, this GPU's
+# architecture, and --fmad=false with -ffp-contract=off, which keep
+# floating-point arithmetic as written, matching private Loom's
+# -ffp-contract=off builds and the CPU oracles.
+NVCCFLAGS ?= -O3 -lineinfo
+LP_REQUIRED_NVCCFLAGS := -std=c++17 -arch=$(ARCH) --fmad=false \
+                         -Xcompiler -ffp-contract=off
 OUT := $(ROOT)/$(GPU)/loom_private/$(APP)
 BUILD := $(OUT)/build
 BIN := $(BUILD)/$(APP)
@@ -37,7 +42,7 @@ GPU_LOCK ?= /tmp/cuda-elastic-gpu.lock
 LOCK := flock $(GPU_LOCK)
 CONTRACT := $(APP_DIR)/contract.json
 CONTRACT_SHA256 = $(shell sha256sum $(CONTRACT) | cut -d' ' -f1)
-LP_FLAGS = -I$(LP_ROOT)/common -DLP_APP=\"$(APP)\" \
+LP_FLAGS = $(LP_REQUIRED_NVCCFLAGS) -I$(LP_ROOT)/common -DLP_APP=\"$(APP)\" \
            -DLP_CONTRACT_SHA256=\"$(CONTRACT_SHA256)\"
 # CHECK_JSON=path (BENCH_JSON=path) also writes the result record there.
 CHECK_ARGS = $(if $(CHECK_JSON),--json-out $(CHECK_JSON))

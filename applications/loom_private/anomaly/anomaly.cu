@@ -143,9 +143,17 @@ inference_kernel(const float *__restrict__ input, const int8_t *__restrict__ wei
     y[i] = activations[current][i];
 }
 
-std::vector<uint8_t> load_asset(const lp::Options &options, const AssetSpec &spec) {
-  const std::string path =
-      options.asset(spec.name, lp::asset_cache() + "/" + spec.name);
+// Asset paths, resolved from --asset (or the cache) by the factory so that the
+// harness can reject unknown --asset names before setup.
+struct AssetPaths {
+  std::string model, dataset, smoke, validation;
+};
+
+std::string asset_path(lp::Options &options, const AssetSpec &spec) {
+  return options.asset(spec.name, lp::asset_cache() + "/" + spec.name);
+}
+
+std::vector<uint8_t> load_asset(const std::string &path, const AssetSpec &spec) {
   std::vector<uint8_t> bytes;
   std::string error;
   if (!anomaly_assets::load_verified(spec.name, path, spec.bytes, spec.sha256,
@@ -156,8 +164,8 @@ std::vector<uint8_t> load_asset(const lp::Options &options, const AssetSpec &spe
 
 class Anomaly final : public lp::Workload {
 public:
-  Anomaly(const lp::Options &options, long long samples)
-      : options_(options), samples_(samples) {}
+  Anomaly(lp::Action action, AssetPaths paths, long long samples)
+      : action_(action), paths_(std::move(paths)), samples_(samples) {}
 
   ~Anomaly() override {
     cudaFreeHost(h_input_);
@@ -204,14 +212,14 @@ public:
   }
 
   void setup(cudaStream_t stream) override {
-    model_bytes_ = load_asset(options_, kModelAsset);
-    dataset_ = load_asset(options_, kDatasetAsset);
+    model_bytes_ = load_asset(paths_.model, kModelAsset);
+    dataset_ = load_asset(paths_.dataset, kDatasetAsset);
     hashes_ = {{kModelAsset.name, lp::Json::quote(kModelAsset.sha256)},
                {kDatasetAsset.name, lp::Json::quote(kDatasetAsset.sha256)}};
-    if (options_.action == lp::Action::Check) {
+    if (action_ == lp::Action::Check) {
       // Needed only by the oracle cross-check; bench does not read them.
-      smoke_ = load_asset(options_, kSmokeAsset);
-      validation_ = load_asset(options_, kValidationAsset);
+      smoke_ = load_asset(paths_.smoke, kSmokeAsset);
+      validation_ = load_asset(paths_.validation, kValidationAsset);
       hashes_.push_back({kSmokeAsset.name, lp::Json::quote(kSmokeAsset.sha256)});
       hashes_.push_back(
           {kValidationAsset.name, lp::Json::quote(kValidationAsset.sha256)});
@@ -368,7 +376,8 @@ private:
   size_t input_bytes() const { return (size_t)elements() * sizeof(float); }
   size_t output_bytes() const { return (size_t)elements(); }
 
-  const lp::Options options_; // a copy: --asset paths and the action
+  const lp::Action action_;
+  const AssetPaths paths_;
   long long samples_;
   std::vector<uint8_t> model_bytes_, dataset_, smoke_, validation_;
   lp::JsonObject hashes_;
@@ -388,7 +397,9 @@ std::unique_ptr<lp::Workload> make_workload(lp::Options &options) {
   if (samples < 1 || samples > kMaxSamples)
     lp::fail(lp::kExitUsage, "samples must be in [1, %lld], got %lld", kMaxSamples,
              samples);
-  return std::make_unique<Anomaly>(options, samples);
+  AssetPaths paths{asset_path(options, kModelAsset), asset_path(options, kDatasetAsset),
+                   asset_path(options, kSmokeAsset), asset_path(options, kValidationAsset)};
+  return std::make_unique<Anomaly>(options.action, std::move(paths), samples);
 }
 
 } // namespace

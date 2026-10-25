@@ -82,7 +82,7 @@ make -C applications/loom_private/anomaly test
 
 The binary accepts `--set samples=N` with $1 \le N \le 2^{20}$, for tests
 only (check action). Values outside that range exit 2.
-`--asset name=path` replaces a cached asset.
+`--asset name=path` replaces a cached asset; an unknown asset name exits 2.
 
 `make test` first runs the host test [`tests/test_host.cpp`](tests/test_host.cpp),
 which needs no GPU. It checks SHA-256 test vectors and that the pinned model
@@ -90,7 +90,8 @@ parses into the expected ten layers. It checks that corrupted copies (wrong
 identifier, wrong size, bad root offset, schema version 2) are rejected. The
 binary never reaches the parser with such copies, because their hash fails
 first. A sweep of single-byte corruptions must either parse or be rejected,
-never crash. The oracle must reject a non-finite input.
+never crash. The oracle's output for dataset sample 0 must equal the cached
+upstream smoke reference, and the oracle must reject a non-finite input.
 
 Then [`tests/run_tests.sh`](tests/run_tests.sh) runs these GPU cases:
 
@@ -101,7 +102,8 @@ Then [`tests/run_tests.sh`](tests/run_tests.sh) runs these GPU cases:
 - Asset failures that must exit 3: a byte flipped in a copy of the model, a
   missing model, a missing dataset, a truncated dataset, an oversized dataset,
   and a corrupt reference file.
-- Invalid dimensions or usage that must exit 2.
+- Invalid dimensions or usage that must exit 2, including a misspelled
+  `--asset` name.
 
 ## Oracle and tolerance
 
