@@ -1,0 +1,89 @@
+{
+  "identity": "loom-private/mlperf-tiny-anomaly-model",
+  "suite_version": "v1",
+  "extension_of_upstream": "A large CUDA extension of the upstream sample contract. Upstream runs the complete int8 ad01 model on at most the 40 samples of the pinned dataset (warmup samples followed by measured samples, in dataset order). This workload runs the same per-sample computation on 104,858 samples, where sample i is dataset sample i mod 40, and every sample is inferred on the GPU. Per-sample arithmetic is the upstream arithmetic, unchanged.",
+  "upstream": {
+    "repository": "PolyArch/loom-private",
+    "commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+    "sources": [
+      {
+        "path": "test/applications/mlperf-tiny-anomaly/runner.cpp",
+        "git_blob": "5271360b36fcba714dd04c62a7aab14e8773c0b1",
+        "sha256": "0abb4eeb0e46e868d1a72ba7497eb606d5c6c03dfa23c64feb32371ce5b65201"
+      }
+    ],
+    "model_source": "mlcommons/tiny 4addd0fa08d216e20637637874e084895f289da4 benchmark/training/anomaly_detection/trained_models/ad01_int8.tflite (the private Loom submodule externals/mlperf-tiny pins this commit)",
+    "independence": "The FlatBuffer reader (model.cpp) is written from the public TFLite schema; the kernels (anomaly.cu) and the CPU oracle (oracle.cpp) are separate implementations of the semantics described here. No private Loom code is copied.",
+    "not_the_legacy_workload": "The legacy mlperf-anomaly/ dequantize+MSE workload is unrelated and unchanged."
+  },
+  "large": {
+    "samples": 104858,
+    "sample_elements": 640,
+    "dataset_samples": 40,
+    "input_float32_elements": 67109120,
+    "input_bytes": 268436480,
+    "output_int8_bytes": 67109120,
+    "layers": 10,
+    "layer_widths": [640, 128, 128, 128, 128, 8, 128, 128, 128, 128, 640],
+    "macs_per_sample": 264192,
+    "overridable_for_tests": {
+      "samples": "1 .. 1048576 (--set samples=N, check only)"
+    }
+  },
+  "data_generation": {
+    "assets": "the model (276,976 bytes) and the 40-sample dataset (102,400 bytes) are read from the asset cache and must match the sizes and SHA-256 values under 'assets'; otherwise the run exits 3 before any GPU work",
+    "dataset": "40 samples x 640 float32, little-endian, sample-major; every value must be finite (checked at setup; a non-finite value exits 3)",
+    "large_input": "input[i][e] = dataset[i mod 40][e] for i < samples, e < 640, materialized once at setup in pinned host memory",
+    "model_validation": "TFL3 file identifier; schema version 3; exactly one operator code, FULLY_CONNECTED (9) version 4 (the effective code is deprecated_builtin_code when builtin_code < 127, else builtin_code); 33 buffers; one subgraph with 31 tensors, inputs [0], outputs [30]; tensors 0 and 30 are int8 with 640 elements; every tensor has rank 1 or 2, positive extents, and exactly one finite positive scale and one zero point; 10 operators, each opcode index 0 with inputs (input, weights, bias) and one output, FullyConnectedOptions with weights_format 0, keep_num_dims false, asymmetric_quantize_inputs false, activation RELU on layers 1-9 and NONE on layer 10; layer k's input is layer k-1's output (layer 1 reads tensor 0) and layer 10 writes tensor 30; per layer: int8 input, weights [out][in], and output, int32 bias [out], weight and bias buffers of exactly out*in and 4*out bytes, weight and bias zero points 0, activation zero points within [-128, 127], widths at most 640. Any violation exits 3.",
+    "input_quantization": "q[e] = sat(double(x[e] /f s0), z0) where s0, z0 are tensor 0's scale and zero point and /f is IEEE binary32 division (round to nearest even)",
+    "sat": "sat(v, z): if v <= -1024 return -128; if v >= 1024 return 127; r = trunc(v - 0.5) if v < 0 else trunc(v + 0.5), with the +-0.5 added in binary64 and trunc toward zero; return clip(r + z, -128, 127). This is upstream's round-half-away-from-zero expression, preserved literally (including its behavior for values one ulp below a half).",
+    "fully_connected": "for each output o: acc = sum over i of (a[i] - z_in) * w[o][i], exact integer; real = (double(acc) * double(s_in)) * double(s_w) + double(bias[o]) * double(s_bias), evaluated left to right in binary64; q = sat(real / double(s_out), z_out) with the division in binary64; on layers 1-9 q = max(q, z_out) (ReLU); a' = q as int8",
+    "output": "the int8 activations of tensor 30 after layer 10",
+    "accumulation_bound": "|a - z_in| <= 255 and |w| <= 128 with at most 640 terms, so |acc| <= 20,889,600 < 2^31; the GPU accumulates in int32 (exact, any order) and the oracle in int64, as upstream",
+    "rounding_argument": "Every floating-point step is a single correctly rounded IEEE-754 operation on both sides: the GPU uses __fdiv_rn for the input division and __dmul_rn, __dadd_rn, __dsub_rn, __ddiv_rn for every binary64 operation (no contraction into FMA is possible with explicit intrinsics, and the build also passes --fmad=false); the host oracle is x86-64 SSE2 code compiled with -ffp-contract=off (no FMA, no x87 excess precision). float-to-double and int32-to-double conversions are exact (|acc| < 2^53, |bias| < 2^31), comparisons are exact, and the double-to-int64 truncation is cvt.rzi on the GPU and cvttsd2si on the host, both toward zero. The operation sequence is the same on both sides, so the outputs are bitwise identical, which the check requires.",
+    "non_finite_inputs": "rejected: the dataset is checked at setup (exit 3) and again by the CPU oracle; the kernels see only verified finite inputs"
+  },
+  "outputs": {
+    "output": "int8 [samples][640] row-major (67,109,120 bytes at large); every byte is compared with the oracle byte for dataset sample i mod 40",
+    "digest": "FNV-1a 64 over all output bytes; must agree bitwise across two Direct and two Graph invocations",
+    "poison": "before each invocation the device input copy is set to 0xff bytes, and the device output to 0xa5 or 0x5a (alternating between invocations) and the host output to the complement, so a skipped write or download fails the check"
+  },
+  "tolerances": {
+    "comparison": "exact: every output byte must equal the oracle byte",
+    "source": "upstream compares the int8 output bytes exactly (expected files hold the hex bytes); integer accumulation is exact and the floating-point requantization is reproduced operation for operation, so no tolerance is needed",
+    "oracle": "oracle.cpp: an independent scalar host implementation using the parsed model data (scales, zero points, int8 weights, int32 biases) and the verified dataset; it infers the 40 unique dataset samples once (single-threaded, well under a second); the expected output for sample i is oracle sample i mod 40",
+    "oracle_cross_check": "in check mode the oracle bytes for dataset samples 0, 2, and 3 are compared with upstream's reference oracle bytes (assets anomaly-upstream-expected-smoke: measured sample 0 = dataset sample 0; anomaly-upstream-expected-validation: 2 warmups, measured samples 0 and 1 = dataset samples 2 and 3). This compares bytes only; no upstream configuration is executed. A disagreement exits 1; a missing or corrupt reference file exits 3."
+  },
+  "timing_scope": {
+    "application": "upload the float32 samples [samples][640] (268,436,480 bytes at large) from pinned host memory; the inference kernel for every sample; download the int8 outputs [samples][640] (67,109,120 bytes)",
+    "compute": "the inference kernel for every sample with the samples already resident on the device; no host-device transfers",
+    "excluded": "model and dataset loading and hashing, model parsing and validation, weight and bias upload, input materialization, allocation, graph construction, warmups, the CPU oracle, and output checking"
+  },
+  "assets": {
+    "mlperf-tiny-ad01-int8-model": "87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24",
+    "mlperf-tiny-ad01-dataset": "31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa",
+    "anomaly-upstream-expected-smoke": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897",
+    "anomaly-upstream-expected-validation": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80"
+  },
+  "reference_only_upstream_configurations": [
+    {
+      "name": "smoke",
+      "warmup_samples": 0,
+      "measured_samples": 1,
+      "dataset_samples_measured": [0],
+      "expected_path": "test/applications/mlperf-tiny-anomaly/expected-smoke.txt",
+      "git_blob": "41316b5f9bf0dd547dee550a49afcbb9a4c1a7f4",
+      "sha256": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897"
+    },
+    {
+      "name": "validation",
+      "warmup_samples": 2,
+      "measured_samples": 2,
+      "dataset_samples_measured": [2, 3],
+      "expected_path": "test/applications/mlperf-tiny-anomaly/expected-validation.txt",
+      "git_blob": "4a20987edc4837337a71fb45ed07b733837224a1",
+      "sha256": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80"
+    }
+  ],
+  "reference_only_note": "No target runs these configurations. Their expected output bytes are used only to cross-check the CPU oracle for dataset samples 0, 2, and 3."
+}
