@@ -1,38 +1,38 @@
 {
   "folder": "rtx5090",
   "label": "RTX 5090 (sm_120, 32 GB)",
-  "toolkit": "not yet measured",
+  "toolkit": "CUDA 13.4",
   "suite_version": "v1",
   "applications": {
     "pagerank": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/pagerank/results/20261025-235201-kilia-b66c6f3a-check.json",
+      "bench_direct": "loom_private/pagerank/results/20261025-235302-kilia-84e59307-bench-direct.json",
+      "bench_graph": "loom_private/pagerank/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
     },
     "attention": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/attention/results/20261025-235201-kilia-b66c6f3a-check.json",
+      "bench_direct": "loom_private/attention/results/20261025-235302-kilia-84e59307-bench-direct.json",
+      "bench_graph": "loom_private/attention/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
     },
     "decoder": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/decoder/results/20261025-235201-kilia-b66c6f3a-check.json",
+      "bench_direct": "loom_private/decoder/results/20261025-235302-kilia-84e59307-bench-direct.json",
+      "bench_graph": "loom_private/decoder/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
     },
     "anomaly": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/anomaly/results/20261025-235201-kilia-b66c6f3a-check.json",
+      "bench_direct": "loom_private/anomaly/results/20261025-235302-kilia-84e59307-bench-direct.json",
+      "bench_graph": "loom_private/anomaly/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
     },
     "vecadd_memory": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/vecadd_memory/results/20261025-235201-kilia-b66c6f3a-check.json",
+      "bench_direct": "loom_private/vecadd_memory/results/20261025-235302-kilia-84e59307-bench-direct.json",
+      "bench_graph": "loom_private/vecadd_memory/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
     },
     "vecadd_product": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/vecadd_product/results/20261025-235201-kilia-b66c6f3a-check.json",
+      "bench_direct": "loom_private/vecadd_product/results/20261025-235302-kilia-84e59307-bench-direct.json",
+      "bench_graph": "loom_private/vecadd_product/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
     }
   }
 }
