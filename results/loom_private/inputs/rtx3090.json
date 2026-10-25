@@ -1,0 +1,38 @@
+{
+  "folder": "rtx3090",
+  "label": "RTX 3090 (sm_86, 24 GB)",
+  "toolkit": "CUDA 13.3",
+  "suite_version": "v1",
+  "applications": {
+    "pagerank": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "attention": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "decoder": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "anomaly": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "vecadd_memory": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "vecadd_product": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    }
+  }
+}

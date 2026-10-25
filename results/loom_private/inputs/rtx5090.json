@@ -1,0 +1,38 @@
+{
+  "folder": "rtx5090",
+  "label": "RTX 5090 (sm_120, 32 GB)",
+  "toolkit": "not yet measured",
+  "suite_version": "v1",
+  "applications": {
+    "pagerank": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "attention": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "decoder": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "anomaly": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "vecadd_memory": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    },
+    "vecadd_product": {
+      "check": null,
+      "bench_direct": null,
+      "bench_graph": null
+    }
+  }
+}

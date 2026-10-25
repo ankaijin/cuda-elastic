@@ -11,6 +11,7 @@
 # Targets:
 #   build        builds $(BIN) for this GPU (the default)
 #   check-large  runs the large correctness check in Direct and Graph modes
+#   bench        times the large workload (LAUNCH=direct|graph required)
 #   test         the application's own tests (never the large check)
 #   clean        removes this GPU's build directory
 #
@@ -38,10 +39,13 @@ CONTRACT := $(APP_DIR)/contract.json
 CONTRACT_SHA256 = $(shell sha256sum $(CONTRACT) | cut -d' ' -f1)
 LP_FLAGS = -I$(LP_ROOT)/common -DLP_APP=\"$(APP)\" \
            -DLP_CONTRACT_SHA256=\"$(CONTRACT_SHA256)\"
-# CHECK_JSON=path also writes the check's result record there.
+# CHECK_JSON=path (BENCH_JSON=path) also writes the result record there.
 CHECK_ARGS = $(if $(CHECK_JSON),--json-out $(CHECK_JSON))
+# bench needs LAUNCH=direct or LAUNCH=graph; ITERATIONS and WARMUP are optional.
+BENCH_ARGS = --launch $(LAUNCH) $(if $(ITERATIONS),--iterations $(ITERATIONS)) \
+             $(if $(WARMUP),--warmup $(WARMUP)) $(if $(BENCH_JSON),--json-out $(BENCH_JSON))
 
-.PHONY: build check-large test clean
+.PHONY: build check-large bench test clean
 
 build: $(BIN)
 
@@ -53,6 +57,11 @@ $(BIN): $(addprefix $(APP_DIR)/,$(SRCS) $(HEADERS)) $(CONTRACT) \
 
 check-large: $(BIN)
 	$(LOCK) $(BIN) --preset large --action check --launch both $(CHECK_ARGS)
+
+bench: $(BIN)
+	@case "$(LAUNCH)" in direct|graph) ;; \
+	  *) echo "bench needs LAUNCH=direct or LAUNCH=graph" >&2; exit 2;; esac
+	$(LOCK) $(BIN) --preset large --action bench $(BENCH_ARGS)
 
 clean:
 	rm -rf $(BUILD)
