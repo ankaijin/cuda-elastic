@@ -1,0 +1,35 @@
+$ make -C /home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/attention check-large CHECK_JSON=/home/ankai/cuda-worktrees/lp-baselines/rtx3090/loom_private/attention/results/20261025-234934-mono-39816759-check.json
+make: Entering directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/attention'
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-baselines/rtx3090/loom_private/attention/build/attention --preset large --action check --launch both --json-out /home/ankai/cuda-worktrees/lp-baselines/rtx3090/loom_private/attention/results/20261025-234934-mono-39816759-check.json
+attention: setup 0.00 s
+attention: CPU oracle 1.70 s
+attention: output worst |error|/tolerance 0.00447
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865356, |error|/tolerance 0.00516
+attention: weighted_sum: expected 34930094.3, actual 34930076, |error|/tolerance 0.00523
+attention: max_abs_attention: expected 0.614218135, actual 0.614218235, |error|/tolerance 0.000617
+attention: combined_checksum: expected 35066971.6, actual 35066956, |error|/tolerance 0.00445
+attention: direct invocation 1: PASS, digest 5d1575bb929d28d1 (0.03 s, untimed)
+attention: output worst |error|/tolerance 0.00447
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865356, |error|/tolerance 0.00516
+attention: weighted_sum: expected 34930094.3, actual 34930076, |error|/tolerance 0.00523
+attention: max_abs_attention: expected 0.614218135, actual 0.614218235, |error|/tolerance 0.000617
+attention: combined_checksum: expected 35066971.6, actual 35066956, |error|/tolerance 0.00445
+attention: direct invocation 2: PASS, digest 5d1575bb929d28d1 (0.03 s, untimed)
+attention: output worst |error|/tolerance 0.00447
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865356, |error|/tolerance 0.00516
+attention: weighted_sum: expected 34930094.3, actual 34930076, |error|/tolerance 0.00523
+attention: max_abs_attention: expected 0.614218135, actual 0.614218235, |error|/tolerance 0.000617
+attention: combined_checksum: expected 35066971.6, actual 35066956, |error|/tolerance 0.00445
+attention: graph invocation 1: PASS, digest 5d1575bb929d28d1 (0.03 s, untimed)
+attention: output worst |error|/tolerance 0.00447
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865356, |error|/tolerance 0.00516
+attention: weighted_sum: expected 34930094.3, actual 34930076, |error|/tolerance 0.00523
+attention: max_abs_attention: expected 0.614218135, actual 0.614218235, |error|/tolerance 0.000617
+attention: combined_checksum: expected 35066971.6, actual 35066956, |error|/tolerance 0.00445
+attention: graph invocation 2: PASS, digest 5d1575bb929d28d1 (0.03 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "5d1575bb929d28d1"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "5d1575bb929d28d1"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "5d1575bb929d28d1"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "5d1575bb929d28d1"}], "outputs_agree": true, "timing": null, "status": "pass"}
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-baselines/applications/loom_private/attention'
