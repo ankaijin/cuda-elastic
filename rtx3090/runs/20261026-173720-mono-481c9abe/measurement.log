@@ -1,0 +1,14 @@
+pagerank        pass                 exit 0  rtx3090/loom_private/pagerank/results/20261026-173720-mono-481c9abe-check.log
+attention       pass                 exit 0  rtx3090/loom_private/attention/results/20261026-173720-mono-481c9abe-check.log
+decoder         pass                 exit 0  rtx3090/loom_private/decoder/results/20261026-173720-mono-481c9abe-check.log
+anomaly         pass                 exit 0  rtx3090/loom_private/anomaly/results/20261026-173720-mono-481c9abe-check.log
+vecadd_memory   pass                 exit 0  rtx3090/loom_private/vecadd_memory/results/20261026-173720-mono-481c9abe-check.log
+vecadd_product  pass                 exit 0  rtx3090/loom_private/vecadd_product/results/20261026-173720-mono-481c9abe-check.log
+PASS: rtx3090/loom_private/suite-20261026-173720-mono-481c9abe-check.json
+pagerank        pass                 exit 0  rtx3090/loom_private/pagerank/results/20261026-173720-mono-481c9abe-check-optimized.log
+attention       pass                 exit 0  rtx3090/loom_private/attention/results/20261026-173720-mono-481c9abe-check-optimized.log
+decoder         pass                 exit 0  rtx3090/loom_private/decoder/results/20261026-173720-mono-481c9abe-check-optimized.log
+anomaly         pass                 exit 0  rtx3090/loom_private/anomaly/results/20261026-173720-mono-481c9abe-check-optimized.log
+vecadd_memory   pass                 exit 0  rtx3090/loom_private/vecadd_memory/results/20261026-173720-mono-481c9abe-check-optimized.log
+vecadd_product  pass                 exit 0  rtx3090/loom_private/vecadd_product/results/20261026-173720-mono-481c9abe-check-optimized.log
+PASS: rtx3090/loom_private/suite-20261026-173720-mono-481c9abe-check-optimized.json
