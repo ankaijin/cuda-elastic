@@ -1,0 +1,74 @@
+{
+ "schema": "loom_private.suite/1",
+ "suite_version": "v1",
+ "stamp": "20261026-173721-octacos-7914e968",
+ "source_commit": "90b0b41e5df515ff346fb0048b3b0590553fcb1a",
+ "gpu_folder": "rtx4090",
+ "action": "check",
+ "launch": "both",
+ "variant": "optimized",
+ "repeat": 1,
+ "preset": "large",
+ "applications": [
+  {
+   "application": "pagerank",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/pagerank/results/20261026-173721-octacos-7914e968-check-optimized.log",
+   "log_sha256": "4124f6024a77dc564f7e363587c1ae74e7b8088e40a1b5ef8b63ba44402aeda2",
+   "record": "rtx4090/loom_private/pagerank/results/20261026-173721-octacos-7914e968-check-optimized.json",
+   "record_sha256": "3a1309622b3517cc4b67cd4e6621160db0faef7ad2b8c02f03056e65916266e5",
+   "status": "pass"
+  },
+  {
+   "application": "attention",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/attention/results/20261026-173721-octacos-7914e968-check-optimized.log",
+   "log_sha256": "5482894935c85ce5432795fb7f32011f4552434930ce265d1709c12854f69c49",
+   "record": "rtx4090/loom_private/attention/results/20261026-173721-octacos-7914e968-check-optimized.json",
+   "record_sha256": "9ee569656bea38f308556dc4a7e1b4c9f59124cea2f769ebfb0a7d2b84f696ae",
+   "status": "pass"
+  },
+  {
+   "application": "decoder",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/decoder/results/20261026-173721-octacos-7914e968-check-optimized.log",
+   "log_sha256": "4d2d6e74602379fa1987c9c88a5d75799c2d817ceebdff63a60d5708516ca97b",
+   "record": "rtx4090/loom_private/decoder/results/20261026-173721-octacos-7914e968-check-optimized.json",
+   "record_sha256": "c6c1a8e49d5e98091fe917219b4bf03d406ee1e0f161844408f9041a7e69e2c5",
+   "status": "pass"
+  },
+  {
+   "application": "anomaly",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/anomaly/results/20261026-173721-octacos-7914e968-check-optimized.log",
+   "log_sha256": "98d93834be78cb232009f130b95a3dc9ed1ecc5daa00d02bd25dfac4324030b6",
+   "record": "rtx4090/loom_private/anomaly/results/20261026-173721-octacos-7914e968-check-optimized.json",
+   "record_sha256": "0e5764b3fdc3ff29b23ff7604222d08191ab093aa5e4942b52490dc7c8164590",
+   "status": "pass"
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/vecadd_memory/results/20261026-173721-octacos-7914e968-check-optimized.log",
+   "log_sha256": "355c2241c876884aa0fc67f26dfd51de3f5edbf3face4746c934343d303cdb2e",
+   "record": "rtx4090/loom_private/vecadd_memory/results/20261026-173721-octacos-7914e968-check-optimized.json",
+   "record_sha256": "31eca2de8efd4a44272f42483c41a5b14c30d3312510dab27e1bd2c75df49298",
+   "status": "pass"
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/vecadd_product/results/20261026-173721-octacos-7914e968-check-optimized.log",
+   "log_sha256": "a329dc9e3e6f65e35fe00642b344ce6094211514da9502d3710d373c23f9207f",
+   "record": "rtx4090/loom_private/vecadd_product/results/20261026-173721-octacos-7914e968-check-optimized.json",
+   "record_sha256": "d8d81e91e8ecebf69a854e9adf69bae5bc67302d81ed1561aa9c94c05359e783",
+   "status": "pass"
+  }
+ ]
+}
