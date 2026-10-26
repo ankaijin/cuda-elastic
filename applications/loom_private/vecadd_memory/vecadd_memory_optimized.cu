@@ -13,7 +13,6 @@ namespace {
 
 constexpr int kBlock = 256;
 constexpr int32_t kPoisonPattern = (int32_t)0xA5A5A5A5u;
-constexpr int kMaxChunks = 64;
 constexpr int kKernelVariants = 3;
 
 // Four elements per access through 16-byte loads and stores. A chunk's base
@@ -24,10 +23,6 @@ template <int kVectors, bool kStreaming>
 __global__ void vecadd_kernel(const int32_t *__restrict__ lhs,
                               const int32_t *__restrict__ rhs,
                               int32_t *__restrict__ result, long long length) {
-#ifdef LP_VECADD_MUTANT_DROP_LAST
-  // Test-only mutant: never writes the last element.
-  length -= 1;
-#endif
   const long long full = length >> 2;
   long long v = (long long)blockIdx.x * blockDim.x * kVectors + threadIdx.x;
 #pragma unroll
@@ -36,14 +31,20 @@ __global__ void vecadd_kernel(const int32_t *__restrict__ lhs,
     const int4 *pa = reinterpret_cast<const int4 *>(lhs) + v;
     const int4 *pb = reinterpret_cast<const int4 *>(rhs) + v;
     int4 *pr = reinterpret_cast<int4 *>(result) + v;
-    const int4 a = kStreaming ? __ldcs(pa) : *pa;
-    const int4 b = kStreaming ? __ldcs(pb) : *pb;
+    int4 a, b;
+    if constexpr (kStreaming) {
+      a = __ldcs(pa);
+      b = __ldcs(pb);
+    } else {
+      a = *pa;
+      b = *pb;
+    }
     int4 sum;
     sum.x = a.x + b.x;
     sum.y = a.y + b.y;
     sum.z = a.z + b.z;
     sum.w = a.w + b.w;
-    if (kStreaming) __stcs(pr, sum);
+    if constexpr (kStreaming) __stcs(pr, sum);
     else *pr = sum;
   }
   if (blockIdx.x == 0 && threadIdx.x == 0)
@@ -51,12 +52,29 @@ __global__ void vecadd_kernel(const int32_t *__restrict__ lhs,
 }
 
 // Per-GPU choices, from measurements (see the README). `kernel` indexes
-// launch(); LP_VECADD_CHUNKS and LP_VECADD_KERNEL override them for the tests
-// and for tuning, and never change the result.
+// launch().
 struct Tuning {
   int chunks;
   int kernel;
 };
+
+#ifdef LP_VECADD_TEST_TUNING
+// Test builds only (`make test`): LP_VECADD_CHUNKS (1 to 64) and
+// LP_VECADD_KERNEL (0 to kKernelVariants - 1) override the choices, so small
+// problems cross chunk boundaries and every kernel shape runs on any GPU. The
+// result does not depend on them. A value out of range exits 2. The suite
+// binary has none of this.
+int override_from_env(const char *name, int low, int high, int fallback) {
+  const char *text = std::getenv(name);
+  if (!text) return fallback;
+  char *end = nullptr;
+  const long value = std::strtol(text, &end, 10);
+  if (end == text || *end || value < low || value > high)
+    lp::fail(lp::kExitUsage, "%s must be an integer from %d to %d, got '%s'", name, low,
+             high, text);
+  return (int)value;
+}
+#endif
 
 Tuning tuning_for(const cudaDeviceProp &properties) {
   Tuning tuning{8, 0};
@@ -66,14 +84,10 @@ Tuning tuning_for(const cudaDeviceProp &properties) {
   case 120: tuning = {4, 2}; break; // RTX 5090: L2 resident, streaming hints
   default: break;
   }
-  if (const char *text = std::getenv("LP_VECADD_CHUNKS")) {
-    const int value = std::atoi(text);
-    if (value >= 1 && value <= kMaxChunks) tuning.chunks = value;
-  }
-  if (const char *text = std::getenv("LP_VECADD_KERNEL")) {
-    const int value = std::atoi(text);
-    if (value >= 0 && value < kKernelVariants) tuning.kernel = value;
-  }
+#ifdef LP_VECADD_TEST_TUNING
+  tuning.chunks = override_from_env("LP_VECADD_CHUNKS", 1, 64, tuning.chunks);
+  tuning.kernel = override_from_env("LP_VECADD_KERNEL", 0, kKernelVariants - 1, tuning.kernel);
+#endif
   return tuning;
 }
 
@@ -165,7 +179,8 @@ public:
 #endif
         LP_CUDA(cudaMemcpy2DAsync(d_lhs_ + begin, pitch_, h_lhs_ + begin, pitch_,
                                   bytes, 2, cudaMemcpyHostToDevice, side));
-      launch(d_lhs_ + begin, d_rhs_ + begin, d_result_ + begin, count, side);
+      launch(d_lhs_ + begin, d_rhs_ + begin, d_result_ + begin, count,
+             c + 1 == chunks_, side);
 #ifdef LP_VECADD_MUTANT_SKIP_DOWNLOAD
       // Test-only mutant: the last chunk is never downloaded.
       if (c + 1 < chunks_)
@@ -174,12 +189,14 @@ public:
                                 cudaMemcpyDeviceToHost, side));
       LP_CUDA(cudaEventRecord(joins_[(size_t)c], side));
     }
+#ifndef LP_VECADD_MUTANT_NO_JOIN // Test-only mutant: the join is dropped.
     for (int c = 0; c < chunks_; ++c)
       LP_CUDA(cudaStreamWaitEvent(stream, joins_[(size_t)c], 0));
+#endif
   }
 
   void enqueue_compute(cudaStream_t stream) override {
-    launch(d_lhs_, d_rhs_, d_result_, length_, stream);
+    launch(d_lhs_, d_rhs_, d_result_, length_, true, stream);
   }
 
   // Host and device results both start as the bitwise complement of the
@@ -237,8 +254,15 @@ public:
   }
 
 private:
+  // `last` marks the launch that covers the end of the vectors.
   void launch(const int32_t *lhs, const int32_t *rhs, int32_t *result,
-              long long count, cudaStream_t stream) const {
+              long long count, bool last, cudaStream_t stream) const {
+#ifdef LP_VECADD_MUTANT_DROP_LAST
+    // Test-only mutant: never writes the last element.
+    if (last) count -= 1;
+#else
+    (void)last;
+#endif
     const long long vectors = count / 4;
     switch (tuning_.kernel) {
     case 0: run<1, true>(lhs, rhs, result, count, vectors, stream); break;

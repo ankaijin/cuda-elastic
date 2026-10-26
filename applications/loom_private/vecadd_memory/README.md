@@ -136,14 +136,14 @@ make -C applications/loom_private/vecadd_memory test VARIANT=optimized
 ### Why
 
 The application scope is dominated by PCIe: two 4 MiB uploads and a 4 MiB
-download, against a kernel of a few microseconds (the 4090 and 5090 serve it
-from L2). The baseline issues them in sequence on one stream, so the two
-copy directions never overlap. A copy-only microbenchmark (128 MiB up and
-64 MiB down, 16 chunks) shows what overlap can buy: on the 3090 and 4090 the
-concurrent transfer takes about the same time as the upload alone, so the two
-directions are independent. On the 5090 the concurrent transfer takes nearly
-the sum of the two directions, so uploads and downloads share a limit, and
-only a small gain is available there.
+download, while the kernel is a small fraction of the scope (the 4090 and 5090
+serve it from L2). The baseline issues them in sequence on one stream, so the
+two copy directions never overlap. How much overlap can buy depends on the
+platform. A copy-only measurement made outside this repository, with the
+product's transfer sizes and 16 chunks (see the
+[vecadd_product](../vecadd_product/README.md) variant notes), found the two
+directions independent on the 3090 and 4090, and sharing a limit on the 5090,
+so only a small gain is available there.
 
 ### What changed
 
@@ -174,14 +174,15 @@ with the chunk counts 1 to 16 and the kernel shapes below on all three GPUs.
 | RTX 4090 (sm_89) | 8 | 4 vectors per thread | Best chunk count; the kernel is launch and L2 bound, and 4 vectors per thread was the fastest shape. |
 | RTX 5090 (sm_120) | 4 | 2 vectors per thread, streaming hints | Best chunk count (the PCIe directions share a limit, so fewer, larger chunks win); streaming hints with 2 vectors per thread was the fastest shape. |
 
-More chunks than the best add per-copy overhead (about 5 to 10 microseconds
-each); fewer leave the first upload and the last download exposed. The kernel
-differences are a few percent at most, because the compute scope is a few
-microseconds of mostly launch and DRAM latency.
+More chunks than the best add per-copy overhead; fewer leave the first upload
+and the last download exposed. The kernel differences are a few percent at
+most, because the compute scope is mostly launch and DRAM latency.
 
-`LP_VECADD_CHUNKS` (1 to 64) and `LP_VECADD_KERNEL` (0, 1, 2 for the rows
-above) override the choices. The tests use them to run every path on every GPU;
-they never change the result.
+The suite binary reads no environment variable and has no override. The test
+builds (`-DLP_VECADD_TEST_TUNING`, made by `make test VARIANT=optimized`) read
+`LP_VECADD_CHUNKS` (1 to 64) and `LP_VECADD_KERNEL` (0, 1, 2 for the rows above),
+so the tests can run every path on every GPU; a value out of range exits 2, and
+the overrides never change the result.
 
 ### Numerics
 
@@ -193,15 +194,23 @@ whole result.
 
 ### Tests (`make test VARIANT=optimized`)
 
-Everything the baseline's `make test` runs, against the optimized binary, plus:
+Everything the baseline's `make test` runs, against the optimized binary, plus
+the following. The tuning binary and the mutants are test builds with
+`-DLP_VECADD_TEST_TUNING`; the suite binary keeps the default configuration, is
+shown to ignore the variables, and runs the bench and the default tests.
 
 - every combination of 4 chunk counts (1, 3, 8, 64; more chunks than vectors
   included), the three kernel shapes, and lengths 1, 5, 257, 5,000, 1,000,003,
   and 1,000,004, in Direct and Graph, and the large size in every kernel shape;
-- the drop-last mutant in every kernel shape, at a length whose last element
-  is in the 16-byte path and at one whose last element is in the scalar tail;
+- out-of-range overrides exit 2;
+- the drop-last mutant (it drops only the final element, whatever the chunk
+  count) in every kernel shape at 1, 8, and 64 chunks, at a length whose last
+  element is in the 16-byte path and at one whose last element is in the scalar
+  tail;
 - two mutants that skip the last chunk's upload or download, at 1, 4, and 64
   chunks and at the large size; each must fail the check;
+- a mutant that drops the harness stream's join of the chunks: Direct must fail
+  the check, and the Graph capture must fail with unjoined work (exit 70);
 - `compute-sanitizer --tool memcheck` at several chunk counts and at length 5;
 - a short bench in both launch modes, whose record names the variant.
 

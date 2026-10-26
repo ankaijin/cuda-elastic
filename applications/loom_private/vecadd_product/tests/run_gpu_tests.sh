@@ -6,7 +6,7 @@
 # the bench test below runs the large workload only for its timing record.
 #   run_gpu_tests.sh <binary> <build dir with mutant/slow-warmup binaries> <scratch dir> [variant]
 # The optimized variant's test binaries carry an _optimized suffix, and it adds
-# chunking and chunk-copy tests.
+# chunking, chunk-copy and fork/join tests.
 set -uo pipefail
 
 bin=$1
@@ -137,15 +137,25 @@ else
 fi
 
 if [[ $variant == optimized ]]; then
+  # The optimized mutants and the tuning binary are built with
+  # -DLP_VECADD_TEST_TUNING, so LP_VECADD_CHUNKS sets the chunk count in them.
+  # The suite binary has no override: it ignores the variable, so a stray value
+  # cannot change a measured configuration.
+  tuning="$build/vecadd_product_tuning_optimized"
+  expect suite-binary-ignores-tuning-env 0 env LP_VECADD_CHUNKS=0 "$bin" --set records=1000
   # Chunking: LP_VECADD_CHUNKS forces the chunk count (it is capped at the
   # record count), so small record counts cross chunk boundaries, including
   # more chunks than records, uneven chunk sizes, and chunk starts that are not
   # multiples of the 256-record period. Every case runs Direct and Graph.
   for chunks in 1 2 3 5 16 64; do
     for n in 1 2 3 7 255 257 1000 65537 1000003; do
-      expect "chunks-$chunks-records-$n" 0 env LP_VECADD_CHUNKS=$chunks "$bin" --set records=$n
+      expect "chunks-$chunks-records-$n" 0 env LP_VECADD_CHUNKS=$chunks "$tuning" --set records=$n
     done
   done
+  # Out-of-range overrides are rejected, not ignored.
+  expect tuning-chunks-0 2 env LP_VECADD_CHUNKS=0 "$tuning" --set records=16
+  expect tuning-chunks-65 2 env LP_VECADD_CHUNKS=65 "$tuning" --set records=16
+  expect tuning-chunks-text 2 env LP_VECADD_CHUNKS=abc "$tuning" --set records=16
   # Mutants that drop a chunk's copy must fail, with one chunk and with many.
   for chunks in 1 4 64; do
     expect "mutant5-skip-upload-chunks-$chunks" 1 env LP_VECADD_CHUNKS=$chunks \
@@ -155,17 +165,21 @@ if [[ $variant == optimized ]]; then
   done
   expect mutant5-large 1 "$build/vecadd_product_mutant5$suffix"
   expect mutant6-large 1 "$build/vecadd_product_mutant6$suffix"
+  # Fork and join ordering. Without the join, the harness stream finishes
+  # before the chunks: Direct reads unfinished results and fails the check, and
+  # the Graph capture ends with unjoined work (CUDA error, exit 70).
+  expect mutant7-no-join-direct 1 "$build/vecadd_product_mutant7$suffix" --launch direct
+  expect mutant7-no-join-graph 70 "$build/vecadd_product_mutant7$suffix" --launch graph
   # The other mutants stay caught when the records are split into chunks
   # (the kernels keep absolute record indices).
-  expect mutant1-chunked 1 env LP_VECADD_CHUNKS=7 "$build/vecadd_product_mutant1$suffix" --set records=4097
-  expect mutant3-chunked 1 env LP_VECADD_CHUNKS=7 "$build/vecadd_product_mutant3$suffix" --set records=4097
-  expect mutant4-chunked 1 env LP_VECADD_CHUNKS=7 "$build/vecadd_product_mutant4$suffix" --set records=4097
-  expect mutant2-chunked 1 env LP_VECADD_CHUNKS=7 "$build/vecadd_product_mutant2$suffix" --set records=4097
+  for m in 1 2 3 4; do
+    expect "mutant$m-chunked" 1 env LP_VECADD_CHUNKS=7 "$build/vecadd_product_mutant$m$suffix" --set records=4097
+  done
   if [[ -n $sanitizer ]]; then
     expect memcheck-chunks-64 0 env LP_VECADD_CHUNKS=64 "$sanitizer" --error-exitcode 9 \
-      --tool memcheck "$bin" --set records=1000 --launch direct
+      --tool memcheck "$tuning" --set records=1000 --launch direct
     expect memcheck-chunks-3 0 env LP_VECADD_CHUNKS=3 "$sanitizer" --error-exitcode 9 \
-      --tool memcheck "$bin" --set records=65537 --launch direct
+      --tool memcheck "$tuning" --set records=65537 --launch direct
   fi
   if grep -q '"variant": "optimized"' "$scratch/bench-graph.log"; then
     echo "PASS bench-record-names-variant"

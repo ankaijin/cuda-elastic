@@ -23,25 +23,29 @@ constexpr long long kDefaultRecords = 1048576;
 constexpr long long kMaxRecords = 1ll << 24;
 constexpr int kBlock = 256;
 constexpr size_t kGuardBytes = 256; // canary bytes before and after the output
-constexpr int kMaxChunks = 64;
 
-// Chunks per invocation for each GPU, from measurements (see the README).
-// LP_VECADD_CHUNKS overrides the count for the tests and for tuning; the
-// result does not depend on it.
-int chunks_for(const cudaDeviceProp &properties) {
-  int chunks = 16;
-  switch (properties.major * 10 + properties.minor) {
-  case 86: chunks = 16; break;  // RTX 3090
-  case 89: chunks = 16; break;  // RTX 4090
-  case 120: chunks = 16; break; // RTX 5090
-  default: break;
-  }
-  if (const char *text = std::getenv("LP_VECADD_CHUNKS")) {
-    const int value = std::atoi(text);
-    if (value >= 1 && value <= kMaxChunks) chunks = value;
-  }
-  return chunks;
+// Chunks per invocation. The sweep on the RTX 3090, 4090 and 5090 put each on
+// the same plateau (see the README), so one count serves all three; to give a
+// GPU its own, select on `properties.major * 10 + properties.minor` here.
+constexpr int kChunks = 16;
+
+#ifdef LP_VECADD_TEST_TUNING
+// Test builds only (`make test`): LP_VECADD_CHUNKS (1 to 64) overrides the
+// count, so small problems cross chunk boundaries. The result does not depend
+// on it. A value out of range exits 2. The suite binary has none of this.
+int chunks_for() {
+  const char *text = std::getenv("LP_VECADD_CHUNKS");
+  if (!text) return kChunks;
+  char *end = nullptr;
+  const long value = std::strtol(text, &end, 10);
+  if (end == text || *end || value < 1 || value > 64)
+    lp::fail(lp::kExitUsage, "LP_VECADD_CHUNKS must be an integer from 1 to 64, got '%s'",
+             text);
+  return (int)value;
 }
+#else
+int chunks_for() { return kChunks; }
+#endif
 
 // Registered in applications/loom_private/assets.json; the sizes and hashes
 // below must match it.
@@ -59,6 +63,7 @@ constexpr const char *kReferenceSha256 =
 //   1 saturating byte add (no wraparound)   2 one word written past the output
 //   3 each record's sum lands in its neighbour's slot   4 some slots skipped
 //   5 the last chunk is never uploaded   6 the last chunk is never downloaded
+//   7 the harness stream never joins the chunks
 #ifndef LP_VECADD_MUTANT
 #define LP_VECADD_MUTANT 0
 #endif
@@ -183,11 +188,7 @@ public:
     LP_CUDA(cudaMalloc(&d_output_base_, kGuardBytes + output_bytes + kGuardBytes));
     d_output_ = d_output_base_ + kGuardBytes;
 
-    int device = 0;
-    cudaDeviceProp properties{};
-    LP_CUDA(cudaGetDevice(&device));
-    LP_CUDA(cudaGetDeviceProperties(&properties, device));
-    const uint64_t chunks = std::min<uint64_t>((uint64_t)chunks_for(properties), records_);
+    const uint64_t chunks = std::min<uint64_t>((uint64_t)chunks_for(), records_);
     // Chunk c holds records [begin_[c], begin_[c + 1]). One stream per chunk,
     // joined back through events, so Direct and the captured Graph both fork
     // and join the same pipeline.
@@ -228,8 +229,10 @@ public:
                                 count * 64, cudaMemcpyDeviceToHost, side));
       LP_CUDA(cudaEventRecord(joins_[c], side));
     }
+#if LP_VECADD_MUTANT != 7
     for (size_t c = 0; c < streams_.size(); ++c)
       LP_CUDA(cudaStreamWaitEvent(stream, joins_[c], 0));
+#endif
   }
 
   void enqueue_compute(cudaStream_t stream) override {
@@ -313,7 +316,7 @@ public:
 
 private:
   // The kernel for records [first, end).
-  void launch(uint64_t first, uint64_t end, cudaStream_t stream) {
+  void launch(uint64_t first, uint64_t end, cudaStream_t stream) const {
     const uint64_t words = (end - first) * 16;
     const uint64_t blocks = (words + kBlock - 1) / kBlock;
     add_records<<<(unsigned)blocks, kBlock, 0, stream>>>(

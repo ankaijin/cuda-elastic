@@ -165,17 +165,18 @@ make -C applications/loom_private/vecadd_product test VARIANT=optimized
 ### Why
 
 The application scope is dominated by PCIe: a 128 MiB upload and a 64 MiB
-download, against a kernel of 100 to 240 microseconds. The baseline issues
+download, while the kernel is a few percent of the scope. The baseline issues
 upload, kernel, and download in sequence on one stream, so the two copy
 directions never overlap. The kernel is already close to DRAM bandwidth (ncu
 on the 3090: 92 to 93% of peak sustained DRAM throughput; on the 5090: 89%), so
 there is nothing to gain there, and the variant keeps the baseline's kernel.
 
-A copy-only microbenchmark (128 MiB up and 64 MiB down, 16 chunks) shows what
-overlap can buy. On the 3090 and 4090 the concurrent transfer takes only a few
-percent longer than the upload alone, so the two directions are independent.
-On the 5090 it takes nearly the sum of the two directions, so uploads and
-downloads share a limit and the possible gain is a few percent.
+A copy-only measurement made outside this repository (128 MiB up and 64 MiB
+down in 16 chunks, with and without both directions at once) shows what overlap
+can buy. On the 3090 and 4090 the concurrent transfer takes only a few percent
+longer than the upload alone, so the two directions are independent. On the
+5090 it takes nearly the sum of the two directions, so uploads and downloads
+share a limit and the possible gain is a few percent.
 
 ### What changed
 
@@ -193,18 +194,21 @@ downloads share a limit and the possible gain is a few percent.
 
 ### GPU-specific choices
 
-The chunk count is chosen at setup from the compute capability (`chunks_for`).
-Measured at 2 to 32 chunks on all three GPUs.
+The chunk count (`kChunks`) was measured at 1 to 32 chunks on all three GPUs.
+All three landed on the same plateau, so one count serves them. A GPU that
+needed its own would be selected on its compute capability next to `kChunks`.
 
-| GPU | Chunks | Reason |
+| GPU | Chunks | Measured behaviour |
 |---|--:|---|
 | RTX 3090 (sm_86) | 16 | The time falls steeply up to 8 chunks and is flat from 16 to 32; 16 is the smallest count on the plateau. A smaller last chunk (halving the final chunk) made no measurable difference. |
 | RTX 4090 (sm_89) | 16 | Same plateau as the 3090. |
 | RTX 5090 (sm_120) | 16 | The uploads and downloads share a limit, so every count from 1 to 32 is within a few percent of the baseline; 16 is at or near the best in Graph and Direct. |
 
-`LP_VECADD_CHUNKS` (1 to 64) overrides the choice. The tests use it to run many
-chunk counts; it never changes the result. The count is capped at the number of
-records, so every chunk holds at least one record.
+The suite binary reads no environment variable and has no override. The test
+builds (`-DLP_VECADD_TEST_TUNING`, made by `make test VARIANT=optimized`) read
+`LP_VECADD_CHUNKS` (1 to 64), so the tests can run many chunk counts; a value
+out of range exits 2, and it never changes the result. The count is capped at
+the number of records, so every chunk holds at least one record.
 
 ### Numerics
 
@@ -219,11 +223,16 @@ Everything the baseline's `make test` runs, against the optimized binary
 (mutants, memcheck, assets, invalid input, the bench path, and the warmup
 exclusion test), plus:
 
+- the suite binary ignores `LP_VECADD_CHUNKS`; the tuning binary and the
+  mutants of the optimized variant are test builds (`-DLP_VECADD_TEST_TUNING`);
 - chunk counts 1, 2, 3, 5, 16, and 64 at record counts 1, 2, 3, 7, 255, 257,
   1,000, 65,537, and 1,000,003 (more chunks than records, uneven chunks, and
   chunk starts off the 256-record period included), in Direct and Graph;
+  out-of-range overrides exit 2;
 - mutants 5 and 6, which skip the last chunk's upload or download, at 1, 4, and
   64 chunks and at the large size; each must fail the check;
+- mutant 7, which drops the harness stream's join of the chunks: Direct must
+  fail the check, and the Graph capture must fail with unjoined work (exit 70);
 - mutants 1 to 4 again with the records split into chunks, which must still
   fail (the kernel keeps absolute record indices);
 - `compute-sanitizer --tool memcheck` with 3 and 64 chunks;
