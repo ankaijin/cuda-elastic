@@ -4,11 +4,17 @@
 # an upstream smoke or validation configuration (4096/2/0, 65536/3/1,
 # 131072/5/7).
 #   run_gpu_tests.sh <vecadd_memory binary> <drop-last mutant binary> <scratch dir>
+#                    [optimized <skip-upload mutant> <skip-download mutant>]
+# The optional arguments add the optimized variant's chunking, kernel-shape,
+# and chunk-copy tests.
 set -uo pipefail
 
 bin=$1
 mutant=$2
 scratch=$3
+variant=${4:-baseline}
+skip_upload_mutant=${5:-}
+skip_download_mutant=${6:-}
 mkdir -p "$scratch"
 failures=0
 
@@ -93,6 +99,59 @@ if grep -q 'length must be at least 1' "$scratch/zero-length.log" &&
   echo "PASS validation-messages"
 else
   echo "FAIL validation-messages"; failures=$((failures + 1))
+fi
+
+if [[ $variant == optimized ]]; then
+  # Chunking: LP_VECADD_CHUNKS forces the chunk count, so small lengths cross
+  # chunk boundaries, including more chunks than vectors, chunk starts that
+  # are not multiples of 256 elements, and a last chunk with a scalar tail.
+  # LP_VECADD_KERNEL forces each per-GPU kernel shape (1, 4 and 2 vectors per
+  # thread, streaming hints or not) on this GPU. Every combination runs
+  # Direct and Graph.
+  for kernel in 0 1 2; do
+    for chunks in 1 3 8 64; do
+      for length in 1 5 257 5000 1000003 1000004; do
+        expect "chunks-$chunks-kernel-$kernel-length-$length" 0 \
+          env LP_VECADD_CHUNKS=$chunks LP_VECADD_KERNEL=$kernel "$bin" --set length=$length
+      done
+    done
+    expect "kernel-$kernel-large-default-chunks" 0 env LP_VECADD_KERNEL=$kernel "$bin"
+    expect "kernel-$kernel-mult-2047" 0 env LP_VECADD_KERNEL=$kernel "$bin" --set multiplier=2047
+  done
+  # The drop-last mutant fails in every kernel shape, at a length whose last
+  # element is in the 16-byte path and at one whose last element is in the tail.
+  for kernel in 0 1 2; do
+    expect "drop-last-mutant-kernel-$kernel-1000000" 1 env LP_VECADD_KERNEL=$kernel "$mutant" --set length=1000000
+    expect "drop-last-mutant-kernel-$kernel-1000003" 1 env LP_VECADD_KERNEL=$kernel "$mutant" --set length=1000003
+  done
+  # A last chunk whose upload or download is skipped must fail the oracle, with
+  # one chunk and with many (the poisoned device inputs and host outputs show).
+  for chunks in 1 4 64; do
+    expect "skip-upload-mutant-chunks-$chunks" 1 env LP_VECADD_CHUNKS=$chunks "$skip_upload_mutant" --set length=100003
+    expect "skip-download-mutant-chunks-$chunks" 1 env LP_VECADD_CHUNKS=$chunks "$skip_download_mutant" --set length=100003
+  done
+  expect skip-upload-mutant-large 1 "$skip_upload_mutant"
+  expect skip-download-mutant-large 1 "$skip_download_mutant"
+  # Out-of-bounds accesses and stream-ordering misuse, under compute-sanitizer.
+  sanitizer=$(command -v compute-sanitizer || true)
+  if [[ -n $sanitizer ]]; then
+    for chunks in 1 3 64; do
+      expect "memcheck-chunks-$chunks" 0 env LP_VECADD_CHUNKS=$chunks "$sanitizer" \
+        --error-exitcode 9 --tool memcheck "$bin" --set length=100003 --launch direct
+    done
+    expect memcheck-length-5 0 "$sanitizer" --error-exitcode 9 --tool memcheck "$bin" \
+      --set length=5 --launch direct
+  else
+    echo "SKIP memcheck (compute-sanitizer not found)"
+  fi
+  # Bench path works at the large size (it does not run the oracle).
+  expect bench-direct 0 "$bin" --action bench --launch direct --iterations 2 --warmup 1
+  expect bench-graph 0 "$bin" --action bench --launch graph --iterations 2 --warmup 1
+  if grep -q '"variant": "optimized"' "$scratch/bench-graph.log"; then
+    echo "PASS bench-record-names-variant"
+  else
+    echo "FAIL bench-record-names-variant"; failures=$((failures + 1))
+  fi
 fi
 
 if [[ $failures -ne 0 ]]; then
