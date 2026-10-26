@@ -1,0 +1,167 @@
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/pagerank/build/pagerank --action profile --launch direct
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.06 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/pagerank/build/pagerank --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.06 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/pagerank/build/pagerank_optimized --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels; sm_89 tuning: 384 blocks x 512 threads
+pagerank: setup 0.09 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/attention/build/attention --action profile --launch direct
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/attention/build/attention --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/attention/build/attention_optimized --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+attention: optimized shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.01 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/decoder/build/decoder --action profile --launch direct
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+decoder: setup 0.25 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/decoder/build/decoder --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+decoder: setup 0.24 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/decoder/build/decoder_optimized --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+decoder: setup 0.25 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/anomaly/build/anomaly --action profile --launch direct
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+anomaly: setup 0.29 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/anomaly/build/anomaly --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+anomaly: setup 0.29 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/anomaly/build/anomaly_optimized --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+anomaly: optimized configuration for NVIDIA GeForce RTX 4090 (cc 8.9): 16 samples per block, 32 pipeline chunks
+anomaly: setup 0.26 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/build/vecadd_memory --action profile --launch direct
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+vecadd_memory: setup 0.01 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/build/vecadd_memory --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+vecadd_memory: setup 0.01 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/build/vecadd_memory_optimized --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+vecadd_memory: setup 0.01 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/build/vecadd_product --action profile --launch direct
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+vecadd_product: setup 0.18 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-baseline-direct /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/build/vecadd_product --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+vecadd_product: setup 0.18 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-baseline-graph /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/build/vecadd_product_optimized --action profile --launch graph
+WARNING: CPU IP/backtrace sampling not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+WARNING: CPU context switch tracing not supported, disabling.
+Try the 'nsys status --environment' command to learn more.
+
+vecadd_product: setup 0.18 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-optimized-graph /home/ankai/lp-record/rtx4090/loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep

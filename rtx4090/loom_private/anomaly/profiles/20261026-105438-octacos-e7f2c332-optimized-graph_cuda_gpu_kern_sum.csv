@@ -1,0 +1,2 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+100.0,1024900,32,32028.1,32064.0,31168,33024,441.8,"void <unnamed>::tiled_inference_kernel<(int)16>(const float *, int, int, int, const signed char *, const <unnamed>::Epilogue *, const int *, <unnamed>::ModelParams, <unnamed>::GemmParams, signed char *)"
