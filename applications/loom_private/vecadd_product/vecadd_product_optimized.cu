@@ -102,6 +102,18 @@ __global__ void add_records(const uint32_t *input, uint32_t *output,
 #endif
 }
 
+#if LP_VECADD_MUTANT == 7
+// Test-only (no-join mutant): hold the last chunk for 20 ms, so that without
+// the join the harness stream is certain to finish first.
+__global__ void spin_20ms() {
+  unsigned long long start, now;
+  asm volatile("mov.u64 %0, %%globaltimer;" : "=l"(start));
+  do {
+    asm volatile("mov.u64 %0, %%globaltimer;" : "=l"(now));
+  } while (now - start < 20000000ull);
+}
+#endif
+
 #ifdef LP_VECADD_TEST_SLOW_WARMUP
 // Test-only: the first three application invocations (the default bench
 // warmups) also spin the GPU for 300 ms, so the bench batch time shows whether
@@ -222,6 +234,12 @@ public:
         LP_CUDA(cudaMemcpyAsync(d_input_ + first * 128, h_input_ + first * 128,
                                 count * 128, cudaMemcpyHostToDevice, side));
       launch(first, first + count, side);
+#if LP_VECADD_MUTANT == 7
+      if (c + 1 == streams_.size()) {
+        spin_20ms<<<1, 1, 0, side>>>();
+        LP_CUDA_LAUNCH();
+      }
+#endif
 #if LP_VECADD_MUTANT == 6
       if (c + 1 < streams_.size())
 #endif

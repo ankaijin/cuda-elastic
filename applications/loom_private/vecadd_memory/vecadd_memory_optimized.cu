@@ -91,6 +91,18 @@ Tuning tuning_for(const cudaDeviceProp &properties) {
   return tuning;
 }
 
+#ifdef LP_VECADD_MUTANT_NO_JOIN
+// Test-only (no-join mutant): hold the last chunk for 20 ms, so that without
+// the join the harness stream is certain to finish first.
+__global__ void spin_20ms() {
+  unsigned long long start, now;
+  asm volatile("mov.u64 %0, %%globaltimer;" : "=l"(start));
+  do {
+    asm volatile("mov.u64 %0, %%globaltimer;" : "=l"(now));
+  } while (now - start < 20000000ull);
+}
+#endif
+
 class VecaddMemory final : public lp::Workload {
 public:
   VecaddMemory(long long length, long long multiplier, long long bias)
@@ -181,6 +193,12 @@ public:
                                   bytes, 2, cudaMemcpyHostToDevice, side));
       launch(d_lhs_ + begin, d_rhs_ + begin, d_result_ + begin, count,
              c + 1 == chunks_, side);
+#ifdef LP_VECADD_MUTANT_NO_JOIN
+      if (c + 1 == chunks_) {
+        spin_20ms<<<1, 1, 0, side>>>();
+        LP_CUDA_LAUNCH();
+      }
+#endif
 #ifdef LP_VECADD_MUTANT_SKIP_DOWNLOAD
       // Test-only mutant: the last chunk is never downloaded.
       if (c + 1 < chunks_)
