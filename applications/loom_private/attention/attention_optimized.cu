@@ -21,8 +21,8 @@
 // cp.async double buffering, so each tile is read from L2 once per block, and
 // each key read from shared memory serves kRows rows held in registers. The
 // kernel is then bound by instruction issue and the exponential unit; the
-// score, shift and exponential arithmetic below keep that at about eight
-// instructions per score pair.
+// score, shift and exponential arithmetic below keep that at about 8.5
+// instructions per score pair (Nsight Compute).
 //
 // Every reduction has a fixed shape (per-lane key order, xor butterfly, split
 // order, the baseline's statistics tree), and the only atomics are integer
@@ -132,8 +132,9 @@ template <int kPending> __device__ __forceinline__ void wait_async() {
   asm volatile("cp.async.wait_group %0;" ::"n"(kPending));
 }
 
-// h . (k.x, k.y, k.z) + bias. With the three-lane score weights below and
-// bias 0 this is the exact score.
+// h . (k.x, k.y, k.z) + bias. With the exact three-lane score weights below
+// and bias 0 (the exact-maximum pass) this is the exact score; the
+// exponential pass calls it with log2(e)-scaled, rounded weights and bias.
 __device__ __forceinline__ float score3(const float3 h, const float4 k, float bias) {
   return fmaf(h.x, k.x, fmaf(h.y, k.y, fmaf(h.z, k.z, bias)));
 }
@@ -200,8 +201,10 @@ constexpr float kMaxBoundShift = 20.0f;
 // Score. With q = (x, y, z, x + y) and k = (a, b, c, a - b) from the
 // projections, 0.5 q.k = (x + 0.5 y) a - 0.5 x b + 0.5 z c. The weights
 // h = (x + 0.5 y, -0.5 x, 0.5 z) are exact, and so is every product and sum
-// for the contract's inputs (contract.json "exactness"), so this three-lane
-// form gives the baseline's score bit for bit with one product fewer.
+// for the contract's inputs (contract.json "exactness"), so with these
+// weights the exact-maximum pass forms the baseline's score bit for bit with
+// one product fewer. The exponential pass uses the weights times log2(e),
+// rounded, so its exponents are not exact (see Exponential).
 //
 // Shift. The softmax is invariant to the shift; it only has to keep the
 // exponentials in range. The shift is an upper bound of the row's scores in
@@ -415,15 +418,35 @@ constexpr int kShapeCount = sizeof(kShapes) / sizeof(kShapes[0]);
 // Per-GPU kernel shape and number of context splits at the large preset
 // (README "Optimized variant" gives the measurements behind each choice).
 // Every GPU runs two 256-thread blocks per SM with the chosen shape, so the
-// large preset has 391 row groups x splits blocks: 8 splits give the RTX 3090
-// (82 SMs) 19 waves, 12 splits give the RTX 4090 (128 SMs) 18 waves and the
-// RTX 5090 (170 SMs) 14 waves, which keeps the last partial wave small.
+// large preset has 391 row groups x splits blocks. 8 splits give the RTX 3090
+// (82 SMs, 164 resident blocks) about 19.1 waves; 12 splits give the RTX 4090
+// (128 SMs, 256 resident) about 18.3 and the RTX 5090 (170 SMs, 340 resident)
+// about 13.8 waves, which keeps the last partial wave small.
 struct Tuning {
   int shape;
   int splits;
   bool force_exact_maximum;
   bool check_compute;
 };
+
+// Largest split count a tuning hook may force (the grid's y extent).
+constexpr int kMaxSplits = 1024;
+
+#ifdef LP_ATTENTION_TUNING_HOOKS
+// An integer hook value in [minimum, maximum] from the environment, or
+// fallback when unset; anything else is a usage error (exit 2).
+int hook_value(const char *name, int minimum, int maximum, int fallback) {
+  const char *text = std::getenv(name);
+  if (!text) return fallback;
+  char *end = nullptr;
+  errno = 0;
+  const long value = std::strtol(text, &end, 10);
+  if (errno || end == text || *end || value < minimum || value > maximum)
+    lp::fail(lp::kExitUsage, "%s must be an integer in [%d, %d], got '%s'", name,
+             minimum, maximum, text);
+  return (int)value;
+}
+#endif
 
 Tuning tuning(const cudaDeviceProp &properties) {
   Tuning chosen{0, 12, false, false};
@@ -432,14 +455,10 @@ Tuning tuning(const cudaDeviceProp &properties) {
   // Test and tuning builds only: force a shape, a split count, or the exact
   // row maxima, or make the checked invocation run enqueue_compute between
   // whole uploads and downloads (so the check covers the compute path too).
-  if (const char *text = std::getenv("LP_ATTENTION_SHAPE"))
-    chosen.shape = std::atoi(text);
-  if (const char *text = std::getenv("LP_ATTENTION_SPLITS"))
-    chosen.splits = std::atoi(text);
-  if (const char *text = std::getenv("LP_ATTENTION_EXACT_MAXIMUM"))
-    chosen.force_exact_maximum = std::atoi(text) != 0;
-  if (const char *text = std::getenv("LP_ATTENTION_CHECK_COMPUTE"))
-    chosen.check_compute = std::atoi(text) != 0;
+  chosen.shape = hook_value("LP_ATTENTION_SHAPE", 0, kShapeCount - 1, chosen.shape);
+  chosen.splits = hook_value("LP_ATTENTION_SPLITS", 1, kMaxSplits, chosen.splits);
+  chosen.force_exact_maximum = hook_value("LP_ATTENTION_EXACT_MAXIMUM", 0, 1, 0) != 0;
+  chosen.check_compute = hook_value("LP_ATTENTION_CHECK_COMPUTE", 0, 1, 0) != 0;
 #endif
   return chosen;
 }
@@ -510,7 +529,8 @@ public:
     LP_CUDA(cudaGetDevice(&device));
     LP_CUDA(cudaGetDeviceProperties(&properties, device));
     const Tuning chosen = tuning(properties);
-    if (chosen.shape < 0 || chosen.shape >= kShapeCount || chosen.splits < 1)
+    if (chosen.shape < 0 || chosen.shape >= kShapeCount || chosen.splits < 1 ||
+        chosen.splits > kMaxSplits)
       lp::fail(lp::kExitUsage, "invalid attention tuning");
     shape_ = chosen.shape;
     force_exact_maximum_ = chosen.force_exact_maximum ? 1 : 0;

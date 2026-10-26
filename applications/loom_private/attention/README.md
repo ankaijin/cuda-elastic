@@ -172,14 +172,15 @@ is only 43% and 19%. The kernel is limited by L2 bandwidth.
   $e^{\text{shift}_s - \max \text{shift}}$. The merge kernel also writes the
   residual output, using the baseline's expression. The statistics kernel is
   the baseline's, minus the residual, and keeps the same reduction order.
-- **About 8 instructions per score pair.** In the baseline, the two passes
-  cost about 25 instructions per pair under `--fmad=false`.
+- **About 8.5 instructions per score pair** (Nsight Compute; see below).
   - Because $q_w = x + y$ and $k_w = a - b$, the score is
-    $(x + \tfrac12 y)a - \tfrac12 x b + \tfrac12 z c$. Its weights are
-    exact, so the score is bit for bit the baseline's, from three fused
-    multiply-adds.
-  - $\log_2 e$ and the shift are folded into the weights and the bias, and
-    the exponential is the hardware `ex2.approx`.
+    $(x + \tfrac12 y)a - \tfrac12 x b + \tfrac12 z c$, three fused
+    multiply-adds. Its weights are exact, so in the exact-maximum fallback
+    pass this gives the baseline's score bit for bit.
+  - The main pass does not form that exact score. It multiplies the weights
+    and the shift by $\log_2 e$ (each rounded to float) and evaluates
+    $t = \log_2 e\,(s - \text{shift})$ as one fused chain, so $t$ carries
+    rounding error. The exponential is the hardware `ex2.approx` of $t$.
   - The weighted sums use fused multiply-adds, and the fourth value lane is
     $\sum p a - \sum p b$.
 - **Application scope.** The IMU upload is chunked by context split. Each
@@ -197,13 +198,20 @@ integer maxima. Direct and Graph outputs are therefore bitwise identical.
 
 ### Numerics
 
-Three things now differ from the baseline:
+Four things now differ from the baseline:
 
 - the shift is a bound rather than the row maximum;
-- the exponential is `ex2.approx` with a $\log_2 e$-scaled argument;
-- the value sums are fused, and the fourth lane is a difference of sums.
+- the exponent is computed from rounded $\log_2 e$-scaled weights, and the
+  exponential is `ex2.approx`;
+- the value sums are fused, and the fourth lane is a difference of sums;
+- the summation order: each of 32 lanes sums its keys of a split in
+  increasing order, the lanes combine through an xor butterfly, and the
+  splits are then merged in split order with their rescaling factors. The
+  baseline sums 256 strided partials per row through a binary tree, with no
+  splits.
 
-The check is unchanged. Worst |error|/tolerance at the large preset:
+The check is unchanged. Worst |error|/tolerance at the large preset, input
+variant 0:
 
 | Quantity | Baseline | RTX 3090 | RTX 4090 | RTX 5090 |
 |---|--:|--:|--:|--:|
@@ -216,6 +224,20 @@ The check is unchanged. Worst |error|/tolerance at the large preset:
 Projection energy is exact on all three, as in the baseline. The RTX 4090
 and RTX 5090 columns are identical because they use the same split count.
 
+Input variants 1 (scale 0.5) and 2 (scale 1.5) at the large preset, on the
+RTX 3090:
+
+| Quantity | Variant 1 baseline | Variant 1 optimized | Variant 2 baseline | Variant 2 optimized |
+|---|--:|--:|--:|--:|
+| output elements | 0.0007 | 0.0006 | 0.0106 | 0.0115 |
+| attention sum | 0.0028 | 0.0127 | 0.0060 | 0.0014 |
+| weighted sum | 0.0057 | 0.0095 | 0.0017 | 0.0003 |
+| max \|attention\| | 0.0001 | 0.0001 | 0.0010 | 0.0027 |
+| combined checksum | 0.0057 | 0.0091 | 0.0028 | 0.0008 |
+
+The largest value in any of these runs is 0.0127, for variant 1's attention
+sum, which leaves a margin of about 79x.
+
 ### GPU-specific choices
 
 All three GPUs use the same kernel shape: 8 rows per warp, 8 warps,
@@ -227,10 +249,11 @@ All three GPUs use the same kernel shape: 8 rows per warp, 8 warps,
   some exponentials to the FMA pipe as a polynomial was also slower.
 - **Split count.** This is the only per-GPU choice, read from the compute
   capability at setup. The grid is 391 row groups × splits blocks.
-  - RTX 3090 (82 SMs) uses 8 splits, which gives 19 waves; more splits
-    measured slightly slower.
-  - RTX 4090 (128 SMs) and RTX 5090 (170 SMs) use 12 splits, which gives 18
-    and 14 waves. On the RTX 5090, 8 splits (9 waves) measured slower.
+  - RTX 3090 (82 SMs) uses 8 splits: 3,128 blocks over 164 resident slots,
+    about 19.1 waves. More splits measured slightly slower.
+  - RTX 4090 (128 SMs) and RTX 5090 (170 SMs) use 12 splits: 4,692 blocks
+    over 256 and 340 resident slots, about 18.3 and 13.8 waves. On the
+    RTX 5090, 8 splits (about 9.2 waves) measured slower.
 
 ### What limits it now
 
@@ -245,8 +268,9 @@ Nsight Compute on the RTX 3090 and RTX 5090:
 The kernel is bound by instruction issue and the exponential unit together.
 The main stall reasons are MIO throttle (MUFU and shared loads share the MIO
 queue), dispatch stalls, and waits on MUFU results. Each score pair needs one
-exponential, and that bounds the time from below at about 8 issue slots per
-pair.
+exponential. The MUFU pipe completes one warp-wide `ex2` per eight cycles per
+scheduler, so at 8.5 instructions per pair the issue and MUFU limits are
+close together.
 
 ### Tests
 
@@ -259,8 +283,12 @@ pair.
 - running the compute path inside the checked invocation
   (`LP_ATTENTION_CHECK_COMPUTE`).
 
+Hook values outside their ranges exit 2. The setup line on stderr names the
+shape, split count, and forced paths, and the tests check it so that every
+hook is known to have applied.
+
 It checks every compiled shape with 1, 3, and many splits (partial tiles,
 chunks, and row groups). It also checks the fallback in both launch paths,
 the compute path, and the largest query extent, where the cap on partial
-buffers allows two splits. An out-of-range hook must exit 2. A mutant that
+buffers allows two splits. Invalid hook values must exit 2. A mutant that
 skips the last key of every tile must fail the check with exit 1.
