@@ -7,33 +7,141 @@
   "applications": {
     "pagerank": {
       "check": "loom_private/pagerank/results/20261025-235201-kilia-b66c6f3a-check.json",
-      "bench_direct": "loom_private/pagerank/results/20261025-235302-kilia-84e59307-bench-direct.json",
-      "bench_graph": "loom_private/pagerank/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      "check_optimized": null,
+      "bench_direct": [
+        "loom_private/pagerank/results/20261025-235302-kilia-84e59307-bench-direct.json"
+      ],
+      "bench_graph": [
+        "loom_private/pagerank/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      ],
+      "bench_optimized": null,
+      "profiles": {
+        "nsys": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        },
+        "ncu": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        }
+      }
     },
     "attention": {
       "check": "loom_private/attention/results/20261025-235201-kilia-b66c6f3a-check.json",
-      "bench_direct": "loom_private/attention/results/20261025-235302-kilia-84e59307-bench-direct.json",
-      "bench_graph": "loom_private/attention/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      "check_optimized": null,
+      "bench_direct": [
+        "loom_private/attention/results/20261025-235302-kilia-84e59307-bench-direct.json"
+      ],
+      "bench_graph": [
+        "loom_private/attention/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      ],
+      "bench_optimized": null,
+      "profiles": {
+        "nsys": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        },
+        "ncu": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        }
+      }
     },
     "decoder": {
       "check": "loom_private/decoder/results/20261025-235201-kilia-b66c6f3a-check.json",
-      "bench_direct": "loom_private/decoder/results/20261025-235302-kilia-84e59307-bench-direct.json",
-      "bench_graph": "loom_private/decoder/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      "check_optimized": null,
+      "bench_direct": [
+        "loom_private/decoder/results/20261025-235302-kilia-84e59307-bench-direct.json"
+      ],
+      "bench_graph": [
+        "loom_private/decoder/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      ],
+      "bench_optimized": null,
+      "profiles": {
+        "nsys": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        },
+        "ncu": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        }
+      }
     },
     "anomaly": {
       "check": "loom_private/anomaly/results/20261025-235201-kilia-b66c6f3a-check.json",
-      "bench_direct": "loom_private/anomaly/results/20261025-235302-kilia-84e59307-bench-direct.json",
-      "bench_graph": "loom_private/anomaly/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      "check_optimized": null,
+      "bench_direct": [
+        "loom_private/anomaly/results/20261025-235302-kilia-84e59307-bench-direct.json"
+      ],
+      "bench_graph": [
+        "loom_private/anomaly/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      ],
+      "bench_optimized": null,
+      "profiles": {
+        "nsys": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        },
+        "ncu": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        }
+      }
     },
     "vecadd_memory": {
       "check": "loom_private/vecadd_memory/results/20261025-235201-kilia-b66c6f3a-check.json",
-      "bench_direct": "loom_private/vecadd_memory/results/20261025-235302-kilia-84e59307-bench-direct.json",
-      "bench_graph": "loom_private/vecadd_memory/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      "check_optimized": null,
+      "bench_direct": [
+        "loom_private/vecadd_memory/results/20261025-235302-kilia-84e59307-bench-direct.json"
+      ],
+      "bench_graph": [
+        "loom_private/vecadd_memory/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      ],
+      "bench_optimized": null,
+      "profiles": {
+        "nsys": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        },
+        "ncu": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        }
+      }
     },
     "vecadd_product": {
       "check": "loom_private/vecadd_product/results/20261025-235201-kilia-b66c6f3a-check.json",
-      "bench_direct": "loom_private/vecadd_product/results/20261025-235302-kilia-84e59307-bench-direct.json",
-      "bench_graph": "loom_private/vecadd_product/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      "check_optimized": null,
+      "bench_direct": [
+        "loom_private/vecadd_product/results/20261025-235302-kilia-84e59307-bench-direct.json"
+      ],
+      "bench_graph": [
+        "loom_private/vecadd_product/results/20261025-235338-kilia-a3d8f65a-bench-graph.json"
+      ],
+      "bench_optimized": null,
+      "profiles": {
+        "nsys": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        },
+        "ncu": {
+          "direct": null,
+          "graph": null,
+          "optimized": null
+        }
+      }
     }
   }
 }
