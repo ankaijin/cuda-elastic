@@ -1,0 +1,4 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+98.7,50174288,4,12543572.0,12538524.0,12512108,12585132,30541.9,"<unnamed>::classifier_kernel(float *, const float *, const float *, int, int, int)"
+0.9,470112,4,117528.0,117072.0,116704,119264,1173.8,"<unnamed>::rmsnorm_kernel(float *, const int *, const float *, const float *, int, int)"
+0.4,202048,4,50512.0,50192.0,49408,52256,1225.6,"<unnamed>::softmax_argmax_kernel(float *, const float *, int *, int *, int, int, int)"
