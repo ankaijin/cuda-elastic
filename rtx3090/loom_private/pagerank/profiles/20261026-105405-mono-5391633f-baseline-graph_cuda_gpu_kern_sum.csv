@@ -1,0 +1,3 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+99.6,3984883,320,12452.8,6016.0,1984,34944,10814.2,"<unnamed>::update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)"
+0.4,15872,1,15872.0,15872.0,15872,15872,0.0,"<unnamed>::initialize(const int *, float *, float *, int, float)"
