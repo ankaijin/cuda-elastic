@@ -216,6 +216,10 @@ def load_profile(folder, app, kind, version, value):
                             else f"{stem}-ncu-raw.csv")
     if not export.is_file():
         raise ValueError(f"{folder}/{value}: its export {export.name} is missing")
+    with open(export, newline="") as stream:
+        # nsys: a header and a row per kernel; ncu raw: a header, units, a row per launch.
+        if sum(1 for _ in csv.reader(stream)) < (2 if kind == "nsys" else 3):
+            raise ValueError(f"{folder}/{value}: its export {export.name} lists no kernels")
     meta = run_metadata(f"{folder}/{value}")
     gpu = ((meta or {}).get("gpu") or {}).get("name")
     if meta and not device_matches(folder, gpu):

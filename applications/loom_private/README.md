@@ -79,8 +79,8 @@ never timed. Each `contract.json` defines the scopes exactly.
 
 | Option | Meaning |
 |---|---|
-| `--action check\|bench` | Check (the default) or time. |
-| `--launch direct\|graph\|both` | A check runs both by default. A bench needs `direct` or `graph`. |
+| `--action check\|bench\|profile` | Check (the default), time, or run one end-to-end invocation for a profiler (`tools/profile.py`). |
+| `--launch direct\|graph\|both` | A check runs both by default. A bench or profile needs `direct` or `graph`. |
 | `--preset large` | The only preset. Upstream smoke sizes are documented, never run. |
 | `--iterations N`, `--warmup N` | Bench batch length and warmups (defaults 20 and 3). |
 | `--set key=value` | Change a dimension. Checks only; tests use it. |

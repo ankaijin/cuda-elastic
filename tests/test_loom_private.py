@@ -359,6 +359,11 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(self.m.short_kernel("void <unnamed>::partial<(int)8, (int)4>(int)"),
                          "partial<(int)8, (int)4>")
 
+    def test_profile_without_kernels_is_rejected(self):
+        path = self.write_profile("run-baseline-graph", kernels=[])
+        with self.assertRaisesRegex(ValueError, "lists no kernels"):
+            self.select_profile("nsys", "graph", path)
+
     def test_profile_from_another_gpu_is_rejected(self):
         run = "20261026-000000-kilia-1234abcd"
         meta = self.m.REPO / "rtx3090/runs" / run / "metadata.json"

@@ -2,144 +2,192 @@
   "folder": "rtx3090",
   "label": "RTX 3090 (sm_86, 24 GB)",
   "toolkit": "CUDA 13.3",
-  "source_revision": "296aa928542ce31d456c1b37ec473064f8bdc545",
+  "source_revision": "b17b3412e7698390707049f45667b3232c14be39",
   "suite_version": "v1",
   "applications": {
     "pagerank": {
-      "check": "loom_private/pagerank/results/20261025-234934-mono-39816759-check.json",
-      "check_optimized": null,
+      "check": "loom_private/pagerank/results/20261026-104210-mono-87ab43c6-check.json",
+      "check_optimized": "loom_private/pagerank/results/20261026-104210-mono-87ab43c6-check-optimized.json",
       "bench_direct": [
-        "loom_private/pagerank/results/20261025-235210-mono-afce3380-bench-direct.json"
+        "loom_private/pagerank/results/20261026-104654-mono-d35b2198-bench-direct-r1.json",
+        "loom_private/pagerank/results/20261026-104654-mono-d35b2198-bench-direct-r2.json",
+        "loom_private/pagerank/results/20261026-104654-mono-d35b2198-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/pagerank/results/20261025-235325-mono-34308366-bench-graph.json"
+        "loom_private/pagerank/results/20261026-104654-mono-d35b2198-bench-graph-r1.json",
+        "loom_private/pagerank/results/20261026-104654-mono-d35b2198-bench-graph-r2.json",
+        "loom_private/pagerank/results/20261026-104654-mono-d35b2198-bench-graph-r3.json"
       ],
-      "bench_optimized": null,
+      "bench_optimized": [
+        "loom_private/pagerank/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r1.json",
+        "loom_private/pagerank/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r2.json",
+        "loom_private/pagerank/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r3.json"
+      ],
       "profiles": {
         "nsys": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/pagerank/profiles/20261026-105405-mono-5391633f-baseline-direct.nsys-rep",
+          "graph": "loom_private/pagerank/profiles/20261026-105405-mono-5391633f-baseline-graph.nsys-rep",
+          "optimized": "loom_private/pagerank/profiles/20261026-105405-mono-5391633f-optimized-graph.nsys-rep"
         },
         "ncu": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/pagerank/profiles/20261026-105405-mono-5391633f-baseline-direct.ncu-rep",
+          "graph": "loom_private/pagerank/profiles/20261026-105405-mono-5391633f-baseline-graph.ncu-rep",
+          "optimized": "loom_private/pagerank/profiles/20261026-105405-mono-5391633f-optimized-graph.ncu-rep"
         }
       }
     },
     "attention": {
-      "check": "loom_private/attention/results/20261025-234934-mono-39816759-check.json",
-      "check_optimized": null,
+      "check": "loom_private/attention/results/20261026-104210-mono-87ab43c6-check.json",
+      "check_optimized": "loom_private/attention/results/20261026-104210-mono-87ab43c6-check-optimized.json",
       "bench_direct": [
-        "loom_private/attention/results/20261025-235210-mono-afce3380-bench-direct.json"
+        "loom_private/attention/results/20261026-104654-mono-d35b2198-bench-direct-r1.json",
+        "loom_private/attention/results/20261026-104654-mono-d35b2198-bench-direct-r2.json",
+        "loom_private/attention/results/20261026-104654-mono-d35b2198-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/attention/results/20261025-235325-mono-34308366-bench-graph.json"
+        "loom_private/attention/results/20261026-104654-mono-d35b2198-bench-graph-r1.json",
+        "loom_private/attention/results/20261026-104654-mono-d35b2198-bench-graph-r2.json",
+        "loom_private/attention/results/20261026-104654-mono-d35b2198-bench-graph-r3.json"
       ],
-      "bench_optimized": null,
+      "bench_optimized": [
+        "loom_private/attention/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r1.json",
+        "loom_private/attention/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r2.json",
+        "loom_private/attention/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r3.json"
+      ],
       "profiles": {
         "nsys": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/attention/profiles/20261026-105405-mono-5391633f-baseline-direct.nsys-rep",
+          "graph": "loom_private/attention/profiles/20261026-105405-mono-5391633f-baseline-graph.nsys-rep",
+          "optimized": "loom_private/attention/profiles/20261026-105405-mono-5391633f-optimized-graph.nsys-rep"
         },
         "ncu": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/attention/profiles/20261026-105405-mono-5391633f-baseline-direct.ncu-rep",
+          "graph": "loom_private/attention/profiles/20261026-105405-mono-5391633f-baseline-graph.ncu-rep",
+          "optimized": "loom_private/attention/profiles/20261026-105405-mono-5391633f-optimized-graph.ncu-rep"
         }
       }
     },
     "decoder": {
-      "check": "loom_private/decoder/results/20261025-234934-mono-39816759-check.json",
-      "check_optimized": null,
+      "check": "loom_private/decoder/results/20261026-104210-mono-87ab43c6-check.json",
+      "check_optimized": "loom_private/decoder/results/20261026-104210-mono-87ab43c6-check-optimized.json",
       "bench_direct": [
-        "loom_private/decoder/results/20261025-235210-mono-afce3380-bench-direct.json"
+        "loom_private/decoder/results/20261026-104654-mono-d35b2198-bench-direct-r1.json",
+        "loom_private/decoder/results/20261026-104654-mono-d35b2198-bench-direct-r2.json",
+        "loom_private/decoder/results/20261026-104654-mono-d35b2198-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/decoder/results/20261025-235325-mono-34308366-bench-graph.json"
+        "loom_private/decoder/results/20261026-104654-mono-d35b2198-bench-graph-r1.json",
+        "loom_private/decoder/results/20261026-104654-mono-d35b2198-bench-graph-r2.json",
+        "loom_private/decoder/results/20261026-104654-mono-d35b2198-bench-graph-r3.json"
       ],
-      "bench_optimized": null,
+      "bench_optimized": [
+        "loom_private/decoder/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r1.json",
+        "loom_private/decoder/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r2.json",
+        "loom_private/decoder/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r3.json"
+      ],
       "profiles": {
         "nsys": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/decoder/profiles/20261026-105405-mono-5391633f-baseline-direct.nsys-rep",
+          "graph": "loom_private/decoder/profiles/20261026-105405-mono-5391633f-baseline-graph.nsys-rep",
+          "optimized": "loom_private/decoder/profiles/20261026-105405-mono-5391633f-optimized-graph.nsys-rep"
         },
         "ncu": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/decoder/profiles/20261026-105405-mono-5391633f-baseline-direct.ncu-rep",
+          "graph": "loom_private/decoder/profiles/20261026-105405-mono-5391633f-baseline-graph.ncu-rep",
+          "optimized": "loom_private/decoder/profiles/20261026-105405-mono-5391633f-optimized-graph.ncu-rep"
         }
       }
     },
     "anomaly": {
-      "check": "loom_private/anomaly/results/20261025-234934-mono-39816759-check.json",
-      "check_optimized": null,
+      "check": "loom_private/anomaly/results/20261026-104210-mono-87ab43c6-check.json",
+      "check_optimized": "loom_private/anomaly/results/20261026-104210-mono-87ab43c6-check-optimized.json",
       "bench_direct": [
-        "loom_private/anomaly/results/20261025-235210-mono-afce3380-bench-direct.json"
+        "loom_private/anomaly/results/20261026-104654-mono-d35b2198-bench-direct-r1.json",
+        "loom_private/anomaly/results/20261026-104654-mono-d35b2198-bench-direct-r2.json",
+        "loom_private/anomaly/results/20261026-104654-mono-d35b2198-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/anomaly/results/20261025-235325-mono-34308366-bench-graph.json"
+        "loom_private/anomaly/results/20261026-104654-mono-d35b2198-bench-graph-r1.json",
+        "loom_private/anomaly/results/20261026-104654-mono-d35b2198-bench-graph-r2.json",
+        "loom_private/anomaly/results/20261026-104654-mono-d35b2198-bench-graph-r3.json"
       ],
-      "bench_optimized": null,
+      "bench_optimized": [
+        "loom_private/anomaly/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r1.json",
+        "loom_private/anomaly/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r2.json",
+        "loom_private/anomaly/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r3.json"
+      ],
       "profiles": {
         "nsys": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/anomaly/profiles/20261026-105405-mono-5391633f-baseline-direct.nsys-rep",
+          "graph": "loom_private/anomaly/profiles/20261026-105405-mono-5391633f-baseline-graph.nsys-rep",
+          "optimized": "loom_private/anomaly/profiles/20261026-105405-mono-5391633f-optimized-graph.nsys-rep"
         },
         "ncu": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/anomaly/profiles/20261026-105405-mono-5391633f-baseline-direct.ncu-rep",
+          "graph": "loom_private/anomaly/profiles/20261026-105405-mono-5391633f-baseline-graph.ncu-rep",
+          "optimized": "loom_private/anomaly/profiles/20261026-105405-mono-5391633f-optimized-graph.ncu-rep"
         }
       }
     },
     "vecadd_memory": {
-      "check": "loom_private/vecadd_memory/results/20261025-234934-mono-39816759-check.json",
-      "check_optimized": null,
+      "check": "loom_private/vecadd_memory/results/20261026-104210-mono-87ab43c6-check.json",
+      "check_optimized": "loom_private/vecadd_memory/results/20261026-104210-mono-87ab43c6-check-optimized.json",
       "bench_direct": [
-        "loom_private/vecadd_memory/results/20261025-235210-mono-afce3380-bench-direct.json"
+        "loom_private/vecadd_memory/results/20261026-104654-mono-d35b2198-bench-direct-r1.json",
+        "loom_private/vecadd_memory/results/20261026-104654-mono-d35b2198-bench-direct-r2.json",
+        "loom_private/vecadd_memory/results/20261026-104654-mono-d35b2198-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/vecadd_memory/results/20261025-235325-mono-34308366-bench-graph.json"
+        "loom_private/vecadd_memory/results/20261026-104654-mono-d35b2198-bench-graph-r1.json",
+        "loom_private/vecadd_memory/results/20261026-104654-mono-d35b2198-bench-graph-r2.json",
+        "loom_private/vecadd_memory/results/20261026-104654-mono-d35b2198-bench-graph-r3.json"
       ],
-      "bench_optimized": null,
+      "bench_optimized": [
+        "loom_private/vecadd_memory/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r1.json",
+        "loom_private/vecadd_memory/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r2.json",
+        "loom_private/vecadd_memory/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r3.json"
+      ],
       "profiles": {
         "nsys": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/vecadd_memory/profiles/20261026-105405-mono-5391633f-baseline-direct.nsys-rep",
+          "graph": "loom_private/vecadd_memory/profiles/20261026-105405-mono-5391633f-baseline-graph.nsys-rep",
+          "optimized": "loom_private/vecadd_memory/profiles/20261026-105405-mono-5391633f-optimized-graph.nsys-rep"
         },
         "ncu": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/vecadd_memory/profiles/20261026-105405-mono-5391633f-baseline-direct.ncu-rep",
+          "graph": "loom_private/vecadd_memory/profiles/20261026-105405-mono-5391633f-baseline-graph.ncu-rep",
+          "optimized": "loom_private/vecadd_memory/profiles/20261026-105405-mono-5391633f-optimized-graph.ncu-rep"
         }
       }
     },
     "vecadd_product": {
-      "check": "loom_private/vecadd_product/results/20261025-234934-mono-39816759-check.json",
-      "check_optimized": null,
+      "check": "loom_private/vecadd_product/results/20261026-104210-mono-87ab43c6-check.json",
+      "check_optimized": "loom_private/vecadd_product/results/20261026-104210-mono-87ab43c6-check-optimized.json",
       "bench_direct": [
-        "loom_private/vecadd_product/results/20261025-235210-mono-afce3380-bench-direct.json"
+        "loom_private/vecadd_product/results/20261026-104654-mono-d35b2198-bench-direct-r1.json",
+        "loom_private/vecadd_product/results/20261026-104654-mono-d35b2198-bench-direct-r2.json",
+        "loom_private/vecadd_product/results/20261026-104654-mono-d35b2198-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/vecadd_product/results/20261025-235325-mono-34308366-bench-graph.json"
+        "loom_private/vecadd_product/results/20261026-104654-mono-d35b2198-bench-graph-r1.json",
+        "loom_private/vecadd_product/results/20261026-104654-mono-d35b2198-bench-graph-r2.json",
+        "loom_private/vecadd_product/results/20261026-104654-mono-d35b2198-bench-graph-r3.json"
       ],
-      "bench_optimized": null,
+      "bench_optimized": [
+        "loom_private/vecadd_product/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r1.json",
+        "loom_private/vecadd_product/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r2.json",
+        "loom_private/vecadd_product/results/20261026-104654-mono-d35b2198-bench-graph-optimized-r3.json"
+      ],
       "profiles": {
         "nsys": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/vecadd_product/profiles/20261026-105405-mono-5391633f-baseline-direct.nsys-rep",
+          "graph": "loom_private/vecadd_product/profiles/20261026-105405-mono-5391633f-baseline-graph.nsys-rep",
+          "optimized": "loom_private/vecadd_product/profiles/20261026-105405-mono-5391633f-optimized-graph.nsys-rep"
         },
         "ncu": {
-          "direct": null,
-          "graph": null,
-          "optimized": null
+          "direct": "loom_private/vecadd_product/profiles/20261026-105405-mono-5391633f-baseline-direct.ncu-rep",
+          "graph": "loom_private/vecadd_product/profiles/20261026-105405-mono-5391633f-baseline-graph.ncu-rep",
+          "optimized": "loom_private/vecadd_product/profiles/20261026-105405-mono-5391633f-optimized-graph.ncu-rep"
         }
       }
     }
