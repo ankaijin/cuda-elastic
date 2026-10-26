@@ -120,3 +120,114 @@ invocation like every other output. No performance numbers are claimed.
 - Real llama2.c weights would make the rmsnorm tree reduction differ from
   the sequential sum by rounding. The bitwise argument above holds only for
   this synthetic model.
+
+## Optimized variant
+
+`make … VARIANT=optimized` builds [`decoder_optimized.cu`](decoder_optimized.cu)
+as `decoder_optimized`. It implements the same contract, with the same
+dimensions, scopes, inputs, oracle, and check. It reuses the baseline's
+rmsnorm and softmax+argmax kernels and replaces only the classifier matmul.
+
+```bash
+make -C applications/loom_private/decoder check-large VARIANT=optimized
+make -C applications/loom_private/decoder bench VARIANT=optimized LAUNCH=direct
+make -C applications/loom_private/decoder test VARIANT=optimized
+```
+
+**Why the classifier.** Profiling the baseline (nsys) puts the classifier at
+98.7% of GPU time on all three GPUs. Its 64×64 shared-memory tile reaches
+about 42% of the FP32 ceiling on the RTX 3090. `--fmad=false` makes every
+multiply-add a separate FMUL and FADD, so the ceiling is one multiply-add per
+two FP32 lane-cycles.
+
+**Classifier kernel.** It is a register-tiled SGEMM. Both operands are
+K-contiguous. 4-byte `cp.async` copies transpose each stage of 8 or 16
+columns into k-major shared arrays. Each array is padded by 4 floats, and
+each warp copies four 32-byte runs per instruction, so the copies are
+coalesced and conflict-free. The copies run 3–4 stages ahead of the
+arithmetic. Each thread owns 16 sequences × 8 classifier rows and reads one
+column of them with six float4 shared loads. These fragments are
+double-buffered in registers, so column k + 1 loads while column k is
+multiplied. A block is 8 warps computing a 128 × 256 tile.
+
+Stream-K hybrid schedule:
+
+- The host sizes a persistent grid to the number of resident blocks (the
+  occupancy API times the SM count).
+- Whole waves of tiles are computed data-parallel.
+- The k-stages of the last one to two waves' tiles are split into equal
+  contiguous ranges, one per block.
+- A tile split between two blocks keeps its exact sequential sum. The block
+  whose range ends inside the tile computes that tile's first stages before
+  anything else, then publishes the running sums with a flag. The next block
+  finishes its own whole tiles, then waits for the flag and continues the
+  same sums at the next stage.
+- The flags are reset by a memset before every launch, and the hand-off
+  buffer is poisoned with the outputs.
+
+**Numerics.** Each logit is still accumulated by one thread, starting at
+`0.0f`, in increasing column order, with a separate multiply and add. This is
+the baseline's and llama2.c's order, also across a stream-K hand-off. Every
+output is therefore bitwise identical to the baseline's. The large digest is
+the baseline's `4fcc3e102976547b` on all three GPUs, and the tests compare
+digests with the baseline binary.
+
+At the edges:
+
+- Columns past `width` are copied as zeros. Adding `+0` to an accumulator
+  that started at `+0.0f` never changes it.
+- Lines past `batch` or `vocab` are clamped. They only feed outputs that are
+  never stored.
+
+The worst relative errors at the large shape are the baseline's: normalized
+values and logits at 3.0e-8 against the 2e-6 tolerance (0.015 of it), and
+probabilities at 2.1e-7 against 2e-5 (0.010 of it).
+
+**Per-GPU choices.** The tile is selected at setup from `cudaDeviceProp`.
+
+| GPU | Tile (sequences × rows × columns per stage) | Stages | Schedule |
+|---|---|--:|---|
+| RTX 3090 (sm_86, 82 SMs) | 128 × 256 × 16 | 3 | stream-K hybrid: 256 tiles on 82 resident blocks would leave a 12% last wave |
+| RTX 4090 (sm_89, 128 SMs) | 128 × 256 × 16 | 3 | data parallel: 256 tiles are exactly two waves, so stream-K splits nothing |
+| RTX 5090 (sm_120, 170 SMs) | 128 × 256 × 8 | 4 | stream-K hybrid: 256 tiles on 170 blocks would leave a half-empty second wave |
+
+Tile notes:
+
+- 16 × 8 outputs per thread (255 registers, one block per SM) beat
+  8 × 8 per thread at two blocks per SM on every GPU. The extra arithmetic
+  per shared load and per barrier outweighs the lower warp count.
+- On the RTX 5090, 8-column stages measured slightly ahead of 16-column
+  stages. On the 3090 and 4090, 16-column stages won because they halve the
+  barriers.
+- With the chosen tiles, ncu reports the FP32 (FMA) pipe at 81% of peak and
+  issue slots at 86% busy on the RTX 3090. On the RTX 5090 the figures are
+  80% and 84%. FMUL and FADD counts equal the multiply-adds exactly.
+- The packed `f32x2` instructions compile to scalar FMUL/FADD on sm_120 and
+  were not used.
+- The remaining stalls are spread over register-bank dispatch conflicts,
+  instruction-cache misses, and copy-queue throttling.
+
+**Tests** ([`tests/run_optimized_tests.sh`](tests/run_optimized_tests.sh)):
+
+- All baseline cases, run on the optimized binary.
+- Five shapes with tails in every dimension (odd width, ragged tiles,
+  wraparound, the minimum model). Each runs on every tile configuration,
+  with both schedules and with forced stream-K grids of 1, 5, 7, and 11
+  blocks. Each run must pass the check and match the baseline binary's
+  digest.
+- Checks that the forced grids really split tiles.
+- Invalid overrides, which must exit 2.
+- Two kernel mutants, which the check must reject with exit 1. Mutant 1
+  drops the stream-K hand-off; mutant 2 drops the last stage of every tile.
+
+These environment variables are test overrides only:
+
+- `DECODER_OPT_TILE=128x256x16|128x256x8|128x128x8` selects a tile.
+- `DECODER_OPT_SCHEDULE=dp|streamk` selects the schedule.
+- `DECODER_OPT_CTAS=n` sets the persistent grid, at most the resident
+  blocks.
+- `DECODER_OPT_VERBOSE=1` prints the plan.
+
+**Not changed.** rmsnorm and softmax+argmax are the baseline kernels. Together
+they are about 2–3% of the optimized time, and changing their reduction trees
+would change the probabilities' bits.
