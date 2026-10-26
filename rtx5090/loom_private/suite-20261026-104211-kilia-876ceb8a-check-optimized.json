@@ -1,0 +1,74 @@
+{
+ "schema": "loom_private.suite/1",
+ "suite_version": "v1",
+ "stamp": "20261026-104211-kilia-876ceb8a",
+ "source_commit": "b17b3412e7698390707049f45667b3232c14be39",
+ "gpu_folder": "rtx5090",
+ "action": "check",
+ "launch": "both",
+ "variant": "optimized",
+ "repeat": 1,
+ "preset": "large",
+ "applications": [
+  {
+   "application": "pagerank",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/pagerank/results/20261026-104211-kilia-876ceb8a-check-optimized.log",
+   "log_sha256": "82b8f94f9c6b9a998c5e1a7018392c28340086498b230b9638633f23ffa32138",
+   "record": "rtx5090/loom_private/pagerank/results/20261026-104211-kilia-876ceb8a-check-optimized.json",
+   "record_sha256": "c73e2e76bc9b1f3f8354f6c2036703bd5c556a6f325a823b0babf64383781e15",
+   "status": "pass"
+  },
+  {
+   "application": "attention",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/attention/results/20261026-104211-kilia-876ceb8a-check-optimized.log",
+   "log_sha256": "b7299c4717357b45ca58755073519680fad740a439f9930acf6d28d672c34d78",
+   "record": "rtx5090/loom_private/attention/results/20261026-104211-kilia-876ceb8a-check-optimized.json",
+   "record_sha256": "ea38af756ec2269a067060545df0e04a13b59fd6a5084efc3626c6f27d20d896",
+   "status": "pass"
+  },
+  {
+   "application": "decoder",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/decoder/results/20261026-104211-kilia-876ceb8a-check-optimized.log",
+   "log_sha256": "3903b8bda6fcdc7321d3919c0dc49ee3bd9c634f54851646be0eba04f8bfa363",
+   "record": "rtx5090/loom_private/decoder/results/20261026-104211-kilia-876ceb8a-check-optimized.json",
+   "record_sha256": "d14f8d88f943705c9ebf9187a2e70913fde4c0df084a79a4345ea3be477f8c7d",
+   "status": "pass"
+  },
+  {
+   "application": "anomaly",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/anomaly/results/20261026-104211-kilia-876ceb8a-check-optimized.log",
+   "log_sha256": "0c617704787a30f9ac5fa3cfba8b26aaf420c013b36a7c8e4c28c0d353757193",
+   "record": "rtx5090/loom_private/anomaly/results/20261026-104211-kilia-876ceb8a-check-optimized.json",
+   "record_sha256": "8bc9210ea7b6eee0046ea676c938713cbd556146df23e07789fed54799b5904d",
+   "status": "pass"
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/vecadd_memory/results/20261026-104211-kilia-876ceb8a-check-optimized.log",
+   "log_sha256": "184a61318dc88ef47d04962147dab30a35aa84e30d913ff10c4ce916b70c278e",
+   "record": "rtx5090/loom_private/vecadd_memory/results/20261026-104211-kilia-876ceb8a-check-optimized.json",
+   "record_sha256": "6a784426797e7954afa217a7f0ecbfc126aae719b581b7e6fc4df2655a1d97ab",
+   "status": "pass"
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/vecadd_product/results/20261026-104211-kilia-876ceb8a-check-optimized.log",
+   "log_sha256": "fd8d2a57356484fbb6c46839d7f05cf3e84aa773d4b92af23036ce16944f9cb0",
+   "record": "rtx5090/loom_private/vecadd_product/results/20261026-104211-kilia-876ceb8a-check-optimized.json",
+   "record_sha256": "e21e89c0edc50e6ec8817f4d8151fd6c07e3d472eee577e3438697090debd5a2",
+   "status": "pass"
+  }
+ ]
+}
