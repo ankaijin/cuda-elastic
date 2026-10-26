@@ -92,9 +92,9 @@ rmsnorm_kernel(float *normalized, const int *tokens, const float *embedding,
 //
 // Edges: columns past width are copied as zeros. A padded column adds the
 // product +0 * +0 = +0 to an accumulator, which leaves it unchanged (an
-// accumulator that starts at +0.0f and only receives round-to-nearest
-// additions is never -0), so the result is bitwise the same as stopping at
-// width. Lines past batch or vocab only feed outputs that are never stored.
+// accumulator that starts at +0.0f and only receives IEEE round-to-nearest
+// additions without flush-to-zero is never -0; the build flags do not enable
+// FTZ), so the result is bitwise the same as stopping at width. Lines past batch or vocab only feed outputs that are never stored.
 template <int WarpsM, int WarpsN, int TM, int BK, int Stages, int MinBlocks>
 struct TileConfig {
   static constexpr int kThreads = 32 * WarpsM * WarpsN;
@@ -135,6 +135,19 @@ __device__ __forceinline__ void cp_async_commit() {
 }
 template <int N> __device__ __forceinline__ void cp_async_wait() {
   asm volatile("cp.async.wait_group %0;\n" ::"n"(N));
+}
+// Device-scope release store and acquire load of a stream-K ready flag.
+__device__ __forceinline__ void store_release(int *flag, int value) {
+  asm volatile("st.release.gpu.global.s32 [%0], %1;\n" ::"l"(flag), "r"(value)
+               : "memory");
+}
+__device__ __forceinline__ int load_acquire(const int *flag) {
+  int value;
+  asm volatile("ld.acquire.gpu.global.s32 %0, [%1];\n"
+               : "=r"(value)
+               : "l"(flag)
+               : "memory");
+  return value;
 }
 
 // One column of the thread's operands: sequences am + {0..3} + 16 q and rows
@@ -319,9 +332,14 @@ __device__ __forceinline__ void accumulate_tile(
 //   3. the whole tiles of its range;
 //   4. if its range starts inside a tile, that tile's remaining stages,
 //      started from partial[block - 1] once ready[block - 1] is set (the tail).
-// Each split output's sum thus runs in exactly the order one block would use,
-// and the previous block published its head before its other work, so the
-// wait is short. The host sizes the grid so that every block is resident.
+// Each split output's sum thus runs in exactly the order one block would use.
+// Progress: block b waits only on block b - 1, and every block publishes its
+// head before any of its own work and before its own wait, so the waits form
+// a chain that completes as long as blocks are dispatched in index order (as
+// the hardware does for a 1-D grid), even if only one block is resident at a
+// time. Sizing the grid to the resident blocks only keeps the waits short.
+// The flag is set with a release store after the block's barrier and read
+// with an acquire load before the consumer's barrier.
 template <class C>
 __global__ void __launch_bounds__(C::kThreads, C::kMinBlocks)
 classifier_kernel(float *logits, const float *normalized,
@@ -371,11 +389,8 @@ classifier_kernel(float *logits, const float *normalized,
     }
 
     if (resume) {
-      if (threadIdx.x == 0) {
-        volatile int *flag = ready + block - 1;
-        while (*flag == 0) __nanosleep(256);
-        __threadfence();
-      }
+      if (threadIdx.x == 0)
+        while (load_acquire(ready + block - 1) == 0) __nanosleep(256);
       __syncthreads();
       const float *previous = partial + (size_t)(block - 1) * kSlice + threadIdx.x;
 #pragma unroll
@@ -403,9 +418,8 @@ classifier_kernel(float *logits, const float *normalized,
       for (int i = 0; i < C::kTM; ++i)
 #pragma unroll
         for (int j = 0; j < 8; ++j) __stcg(mine + (i * 8 + j) * C::kThreads, acc[i][j]);
-      __threadfence();
       __syncthreads();
-      if (threadIdx.x == 0) atomicExch(ready + block, 1);
+      if (threadIdx.x == 0) store_release(ready + block, 1);
       continue;
     }
     const int m = (int)(tile % plan.tiles_m) * C::kBM + am;
@@ -526,19 +540,21 @@ softmax_argmax_kernel(float *probabilities, const float *logits, int *tokens,
   }
 }
 
-// Reads an optional integer environment override (tests only); exits 2 on a
-// malformed or out-of-range value.
-long long env_int(const char *name, long long fallback, long long lo, long long hi) {
+#ifdef LP_DECODER_TEST_TUNING
+// Test-only tuning hooks, compiled only into the test binary that
+// `make test VARIANT=optimized` builds (decoder_optimized_tuning and the
+// mutants); the production binary never reads the environment. Each hook is
+// validated strictly (exit 2) and the applied plan is printed to stderr so
+// the tests can confirm it:
+//   DECODER_OPT_TILE=<name>          a tile configuration from tile_variants()
+//   DECODER_OPT_SCHEDULE=dp|streamk  the schedule
+//   DECODER_OPT_CTAS=<n>             the persistent grid, 1..resident blocks
+const char *tuning_hook(const char *name) {
   const char *text = std::getenv(name);
-  if (!text || !*text) return fallback;
-  char *end = nullptr;
-  errno = 0;
-  const long long value = std::strtoll(text, &end, 10);
-  if (errno || *end || value < lo || value > hi)
-    lp::fail(lp::kExitUsage, "%s must be an integer in [%lld, %lld] (got '%s')",
-             name, lo, hi, text);
-  return value;
+  if (text && !*text) lp::fail(lp::kExitUsage, "%s is set but empty", name);
+  return text;
 }
+#endif
 
 class Decoder final : public lp::Workload {
 public:
@@ -646,15 +662,19 @@ public:
     // 0xFF bytes: int32 -1 (an invalid token) and float NaN. The prompts are
     // an input, poisoned too, so an invocation that skips their upload
     // starts from invalid tokens and fails the check. The stream-K partial
-    // sums are intermediates and are poisoned as well.
+    // sums and ready flags are intermediates and are poisoned as well: 0xFF
+    // flags read as ready, so a launch that skipped the per-launch flag reset
+    // would resume from NaN partial sums and fail the check.
     LP_CUDA(cudaMemsetAsync(d_prompts_, 0xFF, (size_t)B_ * sizeof(int), stream));
     LP_CUDA(cudaMemsetAsync(d_tokens_, 0xFF, (size_t)B_ * sizeof(int), stream));
     LP_CUDA(cudaMemsetAsync(d_generated_, 0xFF, generated_count() * sizeof(int), stream));
     LP_CUDA(cudaMemsetAsync(d_normalized_, 0xFF, normalized_count() * sizeof(float), stream));
     LP_CUDA(cudaMemsetAsync(d_logits_, 0xFF, row_count() * sizeof(float), stream));
     LP_CUDA(cudaMemsetAsync(d_probabilities_, 0xFF, row_count() * sizeof(float), stream));
-    if (d_partial_)
+    if (d_partial_) {
       LP_CUDA(cudaMemsetAsync(d_partial_, 0xFF, partial_count_ * sizeof(float), stream));
+      LP_CUDA(cudaMemsetAsync(d_ready_, 0xFF, (size_t)grid_ * sizeof(int), stream));
+    }
     std::memset(h_generated_, 0xFF, generated_count() * sizeof(int));
     std::memset(h_normalized_.data(), 0xFF, normalized_count() * sizeof(float));
     std::memset(h_logits_.data(), 0xFF, row_count() * sizeof(float));
@@ -694,8 +714,6 @@ private:
   decoder_oracle::Shape shape() const { return {B_, W_, V_, S_}; }
 
   // Per-GPU tile configuration and schedule (README "Optimized variant").
-  // DECODER_OPT_TILE (a configuration name), DECODER_OPT_SCHEDULE (dp or
-  // streamk) and DECODER_OPT_CTAS (the stream-K grid) are test overrides.
   void plan_classifier() {
     int device = 0;
     LP_CUDA(cudaGetDevice(&device));
@@ -707,13 +725,14 @@ private:
     // them in flight), the RTX 3090 and 4090 16-column stages (three).
     std::string name = arch == 120 ? "128x256x8" : "128x256x16";
     bool streamk = true;
-    if (const char *forced = std::getenv("DECODER_OPT_TILE"); forced && *forced)
-      name = forced;
-    if (const char *forced = std::getenv("DECODER_OPT_SCHEDULE"); forced && *forced) {
+#ifdef LP_DECODER_TEST_TUNING
+    if (const char *forced = tuning_hook("DECODER_OPT_TILE")) name = forced;
+    if (const char *forced = tuning_hook("DECODER_OPT_SCHEDULE")) {
       if (std::strcmp(forced, "dp") && std::strcmp(forced, "streamk"))
         lp::fail(lp::kExitUsage, "DECODER_OPT_SCHEDULE must be dp or streamk (got '%s')", forced);
       streamk = std::strcmp(forced, "streamk") == 0;
     }
+#endif
     for (const TileVariant &v : tile_variants())
       if (name == v.name) tile_ = &v;
     if (!tile_)
@@ -728,7 +747,17 @@ private:
     if (per_sm < 1)
       lp::fail(lp::kExitUsage, "tile configuration %s does not fit on this GPU", tile_->name);
     const long long resident = (long long)per_sm * prop.multiProcessorCount;
-    const long long ctas = env_int("DECODER_OPT_CTAS", resident, 1, resident);
+    long long ctas = resident;
+#ifdef LP_DECODER_TEST_TUNING
+    if (const char *forced = tuning_hook("DECODER_OPT_CTAS")) {
+      char *end = nullptr;
+      errno = 0;
+      ctas = std::strtoll(forced, &end, 10);
+      if (errno || *end || ctas < 1 || ctas > resident)
+        lp::fail(lp::kExitUsage, "DECODER_OPT_CTAS must be an integer in [1, %lld] (got '%s')",
+                 resident, forced);
+    }
+#endif
 
     const long long tiles_m = (B_ + tile_->bm - 1) / tile_->bm;
     const long long tiles_n = (V_ + tile_->bn - 1) / tile_->bn;
@@ -751,14 +780,19 @@ private:
       LP_CUDA(cudaMalloc(&d_partial_, partial_count_ * sizeof(float)));
       LP_CUDA(cudaMalloc(&d_ready_, (size_t)grid_ * sizeof(int)));
     }
-    if (std::getenv("DECODER_OPT_VERBOSE"))
-      std::fprintf(stderr,
-                   "decoder optimized: sm_%d, %d SMs, tile %s, %d blocks/SM, "
-                   "%lld tiles x %lld stages, grid %lld, %d data-parallel "
-                   "waves, stream-K tiles %lld\n",
-                   arch, prop.multiProcessorCount, tile_->name, per_sm, tiles,
-                   k_tiles, grid_,
-                   plan_.dp_waves, plan_.sk_iterations / k_tiles);
+#ifdef LP_DECODER_TEST_TUNING
+    long long split = 0; // tiles shared by two blocks (= hand-offs)
+    for (long long c = 1; c < grid_ && plan_.sk_iterations > 0; ++c)
+      split += plan_.sk_iterations * c / grid_ % k_tiles != 0;
+    std::fprintf(stderr,
+                 "decoder test tuning: sm_%d, %d SMs, tile %s, schedule %s, "
+                 "ctas %lld, %d blocks/SM, %lld tiles x %lld stages, grid "
+                 "%lld, %d data-parallel waves, stream-K tiles %lld, split "
+                 "tiles %lld\n",
+                 arch, prop.multiProcessorCount, tile_->name,
+                 streamk ? "streamk" : "dp", ctas, per_sm, tiles, k_tiles,
+                 grid_, plan_.dp_waves, plan_.sk_iterations / k_tiles, split);
+#endif
   }
 
   // Test hook (--set fault=N, check only): corrupts one host output after the

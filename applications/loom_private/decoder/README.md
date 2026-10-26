@@ -153,7 +153,8 @@ multiplied. A block is 8 warps computing a 128 × 256 tile.
 Stream-K hybrid schedule:
 
 - The host sizes a persistent grid to the number of resident blocks (the
-  occupancy API times the SM count).
+  occupancy API times the SM count). This keeps waits short but is not needed
+  for progress (see below).
 - Whole waves of tiles are computed data-parallel.
 - The k-stages of the last one to two waves' tiles are split into equal
   contiguous ranges, one per block.
@@ -162,8 +163,19 @@ Stream-K hybrid schedule:
   anything else, then publishes the running sums with a flag. The next block
   finishes its own whole tiles, then waits for the flag and continues the
   same sums at the next stage.
-- The flags are reset by a memset before every launch, and the hand-off
-  buffer is poisoned with the outputs.
+- The flag is set with a release store after the block's barrier, and read
+  with an acquire load.
+- The flags are reset by a memset before every launch. The hand-off buffer
+  and the flags are poisoned with the outputs. Poisoned flags read as ready,
+  so a launch that skipped the reset would let a consumer that reaches its
+  wait early resume from NaN sums. Because heads are published first, that
+  rarely happens, so this guards the reset rather than being a reliable test
+  of it.
+- Progress does not need the whole grid resident. Block b waits only on
+  block b − 1, and every block publishes its head before any of its own
+  work and before its own wait. So the waits complete whenever blocks are
+  dispatched in index order, as the hardware does for a 1-D grid, even with
+  one block resident at a time.
 
 **Numerics.** Each logit is still accumulated by one thread, starting at
 `0.0f`, in increasing column order, with a separate multiply and add. This is
@@ -175,9 +187,16 @@ digests with the baseline binary.
 At the edges:
 
 - Columns past `width` are copied as zeros. Adding `+0` to an accumulator
-  that started at `+0.0f` never changes it.
+  that started at `+0.0f` never changes it under IEEE round-to-nearest
+  without flush-to-zero, which the build flags do not enable.
 - Lines past `batch` or `vocab` are clamped. They only feed outputs that are
   never stored.
+
+The bitwise claim for general weights rests on this sequential-order design,
+not on the tests. The synthetic model gives each logit exactly one nonzero
+product, so any summation order (even `fmaf`) yields the same bits there.
+The digest tests prove that every split and stage boundary covers each
+column exactly once, but they cannot detect a reordered sum.
 
 The worst relative errors at the large shape are the baseline's: normalized
 values and logits at 3.0e-8 against the 2e-6 tolerance (0.015 of it), and
@@ -207,26 +226,32 @@ Tile notes:
 - The remaining stalls are spread over register-bank dispatch conflicts,
   instruction-cache misses, and copy-queue throttling.
 
-**Tests** ([`tests/run_optimized_tests.sh`](tests/run_optimized_tests.sh)):
-
-- All baseline cases, run on the optimized binary.
-- Five shapes with tails in every dimension (odd width, ragged tiles,
-  wraparound, the minimum model). Each runs on every tile configuration,
-  with both schedules and with forced stream-K grids of 1, 5, 7, and 11
-  blocks. Each run must pass the check and match the baseline binary's
-  digest.
-- Checks that the forced grids really split tiles.
-- Invalid overrides, which must exit 2.
-- Two kernel mutants, which the check must reject with exit 1. Mutant 1
-  drops the stream-K hand-off; mutant 2 drops the last stage of every tile.
-
-These environment variables are test overrides only:
+**Tests** ([`tests/run_optimized_tests.sh`](tests/run_optimized_tests.sh)).
+`make test VARIANT=optimized` builds a test-only binary, `decoder_optimized_tuning`,
+with `-DLP_DECODER_TEST_TUNING`. That binary honours three environment hooks;
+the production `decoder_optimized` never reads the environment.
 
 - `DECODER_OPT_TILE=128x256x16|128x256x8|128x128x8` selects a tile.
 - `DECODER_OPT_SCHEDULE=dp|streamk` selects the schedule.
-- `DECODER_OPT_CTAS=n` sets the persistent grid, at most the resident
-  blocks.
-- `DECODER_OPT_VERBOSE=1` prints the plan.
+- `DECODER_OPT_CTAS=n` sets the persistent grid, at most the resident blocks.
+
+Bad hook values exit 2. The test binary prints the plan it applied, and the
+tests check it. The tests cover:
+
+- All baseline cases, run on the production binary, and a check that the
+  production binary ignores the hooks.
+- Five shapes with tails in every dimension (odd width, ragged tiles,
+  wraparound, and two single-tile shapes). Each runs on every tile
+  configuration with both schedules and with forced persistent grids of 1,
+  5, 7, and 11 blocks. A grid of 1 and the single-tile shapes run purely
+  data-parallel; 5, 7, and 11 blocks split tiles on the multi-tile shapes.
+  Each run must apply the forced plan, pass the check, and match the
+  baseline binary's digest.
+- Checks that grids of 5, 7, and 11 blocks really split tiles.
+- Invalid hook values, which must exit 2.
+- Two kernel mutants, built from the test binary, which the check must
+  reject with exit 1. Mutant 1 drops the stream-K hand-off; mutant 2 drops
+  the last stage of every tile.
 
 **Not changed.** rmsnorm and softmax+argmax are the baseline kernels. Together
 they are about 2–3% of the optimized time, and changing their reduction trees
