@@ -60,12 +60,12 @@ Graph time divided by Optimized time, so both replay a CUDA Graph and only the i
 
 Each workload's README explains its optimized version and the parameters chosen for each GPU.
 
-- **PageRank** ([details](../../applications/loom_private/pagerank/README.md#optimized-variant)): Not optimized yet.
-- **Multisensor attention** ([details](../../applications/loom_private/attention/README.md#optimized-variant)): Not optimized yet.
-- **llama2c decoder** ([details](../../applications/loom_private/decoder/README.md#optimized-variant)): Not optimized yet.
-- **Anomaly detection** ([details](../../applications/loom_private/anomaly/README.md#optimized-variant)): Not optimized yet.
-- **Vecadd memory** ([details](../../applications/loom_private/vecadd_memory/README.md#optimized-variant)): Not optimized yet.
-- **Vecadd product** ([details](../../applications/loom_private/vecadd_product/README.md#optimized-variant)): Not optimized yet.
+- **PageRank** ([details](../../applications/loom_private/pagerank/README.md#optimized-variant)): One persistent cooperative kernel runs all sweeps. Per-node sweep tags replace the per-level launches, and the ordered Gauss–Seidel updates stay bit for bit the same, over a level-ordered layout of the same graph.
+- **Multisensor attention** ([details](../../applications/loom_private/attention/README.md#optimized-variant)): Blocks of 64 queries share key tiles staged in shared memory, which removes the L2 bottleneck behind the baseline's slow RTX 5090 time. A bound replaces the row-maximum pass, and the context upload overlaps the computation.
+- **llama2c decoder** ([details](../../applications/loom_private/decoder/README.md#optimized-variant)): A register-tiled classifier with a stream-K tail keeps each logit's sequential sum, so its output matches the baseline bit for bit.
+- **Anomaly detection** ([details](../../applications/loom_private/anomaly/README.md#optimized-variant)): Int8 tensor-core tiles of 16 samples run all ten layers on chip. Requantization uses binary32 paths proven equal to the baseline's, and chunked uploads overlap inference and downloads.
+- **Vecadd memory** ([details](../../applications/loom_private/vecadd_memory/README.md#optimized-variant)): Chunked uploads, kernels, and downloads on several streams overlap the two copy directions, with chunk counts and vector widths chosen per GPU.
+- **Vecadd product** ([details](../../applications/loom_private/vecadd_product/README.md#optimized-variant)): The same chunked multi-stream pipeline around the baseline kernel, which already runs near DRAM bandwidth.
 
 ## Correctness
 

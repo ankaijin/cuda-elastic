@@ -44,6 +44,13 @@ You can also run one application's targets directly:
 `make -C applications/loom_private/<app> build`, `check-large`, `test`, or
 `bench LAUNCH=graph`.
 
+Every workload also has an optimized version of the same contract. Add
+`--variant optimized` to `run_suite.py`, or `VARIANT=optimized` to a `make`
+target; the binary is `<app>_optimized`. It passes the same check, and each
+application's README explains its design and the parameters chosen for each
+GPU. `tools/profile.py` profiles the baseline and the optimized version with
+Nsight Systems and Nsight Compute.
+
 Results are written to `<gpu>/loom_private/<app>/results/`. To record a run
 with provenance, run it under `results/record_run.py`. See
 [docs/concurrent-development.md](../../docs/concurrent-development.md).

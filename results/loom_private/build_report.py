@@ -85,7 +85,23 @@ PROBLEMS = {
 }
 # What each optimized variant changes, in one sentence; its README section has
 # the design and the reasons for each GPU's parameters.
-OPTIMIZATIONS = {app: "Not optimized yet." for app in APPS}
+OPTIMIZATIONS = {
+    "pagerank": "One persistent cooperative kernel runs all sweeps. Per-node sweep tags replace "
+                "the per-level launches, and the ordered Gauss–Seidel updates stay bit for bit "
+                "the same, over a level-ordered layout of the same graph.",
+    "attention": "Blocks of 64 queries share key tiles staged in shared memory, which removes "
+                 "the L2 bottleneck behind the baseline's slow RTX 5090 time. A bound replaces "
+                 "the row-maximum pass, and the context upload overlaps the computation.",
+    "decoder": "A register-tiled classifier with a stream-K tail keeps each logit's sequential "
+               "sum, so its output matches the baseline bit for bit.",
+    "anomaly": "Int8 tensor-core tiles of 16 samples run all ten layers on chip. Requantization "
+               "uses binary32 paths proven equal to the baseline's, and chunked uploads overlap "
+               "inference and downloads.",
+    "vecadd_memory": "Chunked uploads, kernels, and downloads on several streams overlap the two "
+                     "copy directions, with chunk counts and vector widths chosen per GPU.",
+    "vecadd_product": "The same chunked multi-stream pipeline around the baseline kernel, which "
+                      "already runs near DRAM bandwidth.",
+}
 # Integer `large` entries that are not problem extents (left out of the size column).
 NON_EXTENT_KEYS = {"expected_checksum"}
 RUN_ID = re.compile(r"\d{8}-\d{6}-.+?-[0-9a-f]{8}(?=-)")
