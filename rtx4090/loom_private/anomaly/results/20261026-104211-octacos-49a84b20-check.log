@@ -1,0 +1,16 @@
+$ make -C /home/ankai/lp-record/applications/loom_private/anomaly VARIANT=baseline check-large CHECK_JSON=/home/ankai/lp-record/rtx4090/loom_private/anomaly/results/20261026-104211-octacos-49a84b20-check.json
+make: Entering directory '/home/ankai/lp-record/applications/loom_private/anomaly'
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/lp-record/rtx4090/loom_private/anomaly/build/anomaly --preset large --action check --launch both --json-out /home/ankai/lp-record/rtx4090/loom_private/anomaly/results/20261026-104211-octacos-49a84b20-check.json
+anomaly: setup 0.28 s
+anomaly: CPU oracle matches upstream reference bytes for dataset samples 0, 2, 3
+anomaly: CPU oracle 0.01 s
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 1: PASS, digest c3b71bd7273b080c (0.25 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 2: PASS, digest c3b71bd7273b080c (0.24 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 1: PASS, digest c3b71bd7273b080c (0.24 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 2: PASS, digest c3b71bd7273b080c (0.24 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/mlperf-tiny-anomaly-model", "variant": "baseline", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde", "preset": "large", "overrides": {}, "dimensions": {"samples": 104858, "sample_elements": 640, "dataset_samples": 40, "layers": 10, "layer_widths": [640, 128, 128, 128, 128, 8, 128, 128, 128, 128, 640], "macs_per_sample": 264192, "input_float32_elements": 67109120, "output_int8_bytes": 67109120}, "asset_sha256": {"mlperf-tiny-ad01-int8-model": "87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24", "mlperf-tiny-ad01-dataset": "31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa", "anomaly-upstream-expected-smoke": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897", "anomaly-upstream-expected-validation": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 4090", "cc": "8.9", "cuda_runtime": 12080, "cuda_driver": 12050}, "timing_scope": {"application": "upload the float32 samples [samples][640] from pinned host memory; int8 inference of every sample through the 10 FC layers; download the int8 outputs [samples][640]", "compute": "int8 inference of every sample through the 10 FC layers with the samples resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}], "outputs_agree": true, "timing": null, "status": "pass"}
+make: Leaving directory '/home/ankai/lp-record/applications/loom_private/anomaly'
