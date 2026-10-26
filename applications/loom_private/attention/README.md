@@ -208,7 +208,12 @@ Four things now differ from the baseline:
   increasing order, the lanes combine through an xor butterfly, and the
   splits are then merged in split order with their rescaling factors. The
   baseline sums 256 strided partials per row through a binary tree, with no
-  splits.
+  splits. A split holds at most $2^{21}$ keys, so no lane sums more than
+  $2^{16}$ terms in one chain. That is no more than the baseline's longest
+  chain, which occurs at the largest context ($2^{24}$ keys over 256
+  threads). Without this bound, the partial-buffer cap leaves two splits at
+  the largest query and context extents, and those $2^{18}$-term chains fail
+  the tolerance at input variant 2.
 
 The check is unchanged. Worst |error|/tolerance at the large preset, input
 variant 0:
@@ -248,7 +253,9 @@ All three GPUs use the same kernel shape: 8 rows per warp, 8 warps,
   thread, and register caps for three or more blocks per SM. Offloading
   some exponentials to the FMA pipe as a polynomial was also slower.
 - **Split count.** This is the only per-GPU choice, read from the compute
-  capability at setup. The grid is 391 row groups × splits blocks.
+  capability at setup. The grid is 391 row groups × splits blocks. (Contexts
+  over $2^{21}$ keys get more splits, from the per-split key bound above;
+  the large preset's 250,000 keys never do.)
   - RTX 3090 (82 SMs) uses 8 splits: 3,128 blocks over 164 resident slots,
     about 19.1 waves. More splits measured slightly slower.
   - RTX 4090 (128 SMs) and RTX 5090 (170 SMs) use 12 splits: 4,692 blocks
@@ -290,5 +297,7 @@ hook is known to have applied.
 It checks every compiled shape with 1, 3, and many splits (partial tiles,
 chunks, and row groups). It also checks the fallback in both launch paths,
 the compute path, and the largest query extent, where the cap on partial
-buffers allows two splits. Invalid hook values must exit 2. A mutant that
+buffers allows eight splits. At the largest context, with a hook asking
+for two splits, the key bound must raise them to eight, and the check must
+pass. Invalid hook values must exit 2. A mutant that
 skips the last key of every tile must fail the check with exit 1.

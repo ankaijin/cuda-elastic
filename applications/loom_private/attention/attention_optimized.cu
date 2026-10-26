@@ -49,9 +49,18 @@ constexpr long long kMaxContextTokens = 1ll << 24;
 constexpr int kProjectionThreads = 256;
 constexpr int kMergeThreads = 256;
 constexpr int kStatisticsThreads = 1024;
+// Keys one split may hold. Each of a row's 32 lanes sums its split's keys in
+// one float chain, so this bounds every chain to 2^16 terms: no longer than
+// the baseline's longest (one of 256 threads over the largest context).
+// Longer chains fail the tolerance at the largest contexts.
+constexpr long long kMaxSplitKeys = 1ll << 21;
 // Splits never make the partial buffers larger than this many (row, split)
-// entries (24 bytes each); large query extents need no splitting to fill a GPU.
-constexpr long long kMaxPartials = 1ll << 23;
+// entries (24 bytes each); large query extents need no splitting to fill a
+// GPU. The cap always leaves room for the splits kMaxSplitKeys requires.
+constexpr long long kMaxPartials =
+    (kMaxContextTokens + kMaxSplitKeys - 1) / kMaxSplitKeys * kMaxQueryTokens;
+static_assert(kMaxPartials / kMaxQueryTokens * kMaxSplitKeys >= kMaxContextTokens,
+              "the partial-buffer cap must allow the splits kMaxSplitKeys needs");
 // Side streams the application scope spreads the context splits over.
 constexpr int kSideStreams = 2;
 
@@ -537,11 +546,12 @@ public:
     check_compute_ = chosen.check_compute;
     const Shape &shape = kShapes[shape_];
     row_groups_ = (int)((Q_ + shape.rows * shape.warps - 1) / (shape.rows * shape.warps));
-    // Splits are contiguous, non-empty, and a multiple of the projection
-    // block long.
+    // Splits are contiguous, non-empty, a multiple of the projection block
+    // long, and at most kMaxSplitKeys long (also when a hook forces fewer).
     long long splits = std::min<long long>(chosen.splits,
                                            (C_ + kProjectionThreads - 1) / kProjectionThreads);
     splits = std::max(1ll, std::min(splits, kMaxPartials / Q_));
+    splits = std::max(splits, (C_ + kMaxSplitKeys - 1) / kMaxSplitKeys);
     const long long per_split = (C_ + splits - 1) / splits;
     split_keys_ = (int)((per_split + kProjectionThreads - 1) / kProjectionThreads *
                         kProjectionThreads);

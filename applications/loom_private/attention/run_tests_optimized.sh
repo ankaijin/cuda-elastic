@@ -3,7 +3,8 @@
 # baseline's cases on the optimized binary). Every kernel shape, split counts
 # from 1 to many (IMU chunk and tile boundaries, both side streams), the exact
 # row-maxima fallback, the compute path, the largest query extent (where the
-# partial-buffer cap limits the splits), invalid hook values (exit 2), and
+# partial-buffer cap limits the splits), the largest context (where the
+# per-split key bound raises them), invalid hook values (exit 2), and
 # the skip-key mutant (exit 1). Each hook case also checks the setup line on
 # stderr, so the hook is known to have applied.
 # Usage: run_tests_optimized.sh <hooks binary> <mutant binary>; GPU_LOCK names
@@ -72,10 +73,16 @@ expect_exit compute_path_default 0 "LP_ATTENTION_CHECK_COMPUTE=1" \
 EXPECT_SETUP="rows8_warps4_tile512, 4 context splits of 256 keys, application runs the compute path" \
 expect_exit compute_path_splits  0 "LP_ATTENTION_CHECK_COMPUTE=1 LP_ATTENTION_SPLITS=7 LP_ATTENTION_SHAPE=2" \
   "$HOOKS" --set query_tokens=50 --set context_tokens=999
-# The largest query extent: the partial-buffer cap allows two splits.
-EXPECT_SETUP="2 context splits of 512 keys" \
-expect_exit largest_query_extent 0 "" \
-  "$HOOKS" --set query_tokens=4194304 --set context_tokens=1024
+# The largest query extent: the partial-buffer cap allows eight splits.
+EXPECT_SETUP="8 context splits of 256 keys" \
+expect_exit largest_query_extent 0 "LP_ATTENTION_SPLITS=12" \
+  "$HOOKS" --set query_tokens=4194304 --set context_tokens=2048
+# The largest context: splits of at most 2^21 keys keep every float chain as
+# short as the baseline's, even when a hook (or the cap) asks for fewer.
+# Two splits of 2^23 keys failed the tolerance at input variant 2.
+EXPECT_SETUP="8 context splits of 2097152 keys" \
+expect_exit largest_context_extent 0 "LP_ATTENTION_SPLITS=2" \
+  "$HOOKS" --set query_tokens=21 --set context_tokens=16777216 --set input_variant=2
 # Tuning hook values outside their ranges, or not integers, are usage errors.
 expect_exit invalid_shape          2 "LP_ATTENTION_SHAPE=9" \
   "$HOOKS" --set query_tokens=4 --set context_tokens=4
