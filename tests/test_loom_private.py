@@ -194,6 +194,37 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(self.m.timing(rows[0]["bench_graph"], "application"), 12.5)
 
 
+    def test_workbook_matches_the_legacy_layout(self):
+        timing = {scope: {"batch_total_ms": 0.25, "batch_per_iteration_us": us,
+                          "single_median_us": us * 1.1}
+                  for scope, us in (("application", 12.5), ("compute", 10.0))}
+        for launch in ("direct", "graph"):
+            self.select(f"bench_{launch}", self.write_record(
+                f"bench-{launch}.json", action="bench", launch=launch, iterations=20,
+                status="unvalidated_bench", timing=timing))
+        manifest, rows = self.select("check", self.write_record("check.json"))
+        book = self.m.workbook([(manifest, rows)])
+        self.assertEqual(book.sheetnames, ["RTX 3090", "Latency RTX 3090", "Sources",
+                                           "Correctness", "Environment", "Contracts"])
+        ws = book["RTX 3090"]
+        self.assertEqual(ws["A1"].value, "RTX 3090")
+        self.assertEqual(ws["A4"].value, "Workload")
+        self.assertEqual(ws["A4"].fill.fgColor.rgb, "001F3864")
+        self.assertEqual(ws.freeze_panes, "C5")
+        # PageRank: an Application row and a Kernel-only row.
+        self.assertEqual([ws.cell(r, 2).value for r in (5, 6)],
+                         ["Application (end to end)", "Kernel only (no transfers)"])
+        self.assertEqual(ws["E5"].value, 12.5)
+        self.assertEqual(ws["E5"].number_format, "#,##0.00")
+        self.assertTrue(ws["E5"].hyperlink.target.endswith("/rtx3090/bench-direct.json"))
+        self.assertEqual(ws["G5"].value, "pending")  # no optimized version yet
+        self.assertEqual(ws["H5"].value, 1.0)
+        self.assertEqual(ws["H5"].number_format, '0.00"x"')
+        latency = book["Latency RTX 3090"]
+        self.assertEqual(latency["I5"].value, 13.75)  # single-iteration median
+        self.assertEqual(latency.max_row, 4 + len(self.m.APPS) * 2 * 3)
+
+
 class ContractTests(unittest.TestCase):
     """Every application contract against the suite README schema and assets.json."""
     APPS = ["pagerank", "attention", "decoder", "anomaly", "vecadd_memory", "vecadd_product"]
