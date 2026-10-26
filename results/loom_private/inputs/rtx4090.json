@@ -2,6 +2,7 @@
   "folder": "rtx4090",
   "label": "RTX 4090 (sm_89, 24 GB)",
   "toolkit": "CUDA 12.8",
+  "source_revision": "296aa928542ce31d456c1b37ec473064f8bdc545",
   "suite_version": "v1",
   "applications": {
     "pagerank": {

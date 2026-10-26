@@ -72,6 +72,7 @@ class ReportTests(unittest.TestCase):
         self.contract_sha = hashlib.sha256(contract.read_bytes()).hexdigest()
         self.manifest = {"folder": "rtx3090", "label": "RTX 3090 (sm_86, 24 GB)",
                          "toolkit": "CUDA 13.3", "suite_version": "v1",
+                         "source_revision": "296aa928542ce31d456c1b37ec473064f8bdc545",
                          "applications": {a: {"check": None, "bench_direct": None,
                                               "bench_graph": None} for a in self.m.APPS}}
 
@@ -122,6 +123,12 @@ class ReportTests(unittest.TestCase):
         manifest, rows = self.select("check", self.write_record(f"{run}-check.json"))
         self.assertEqual(self.m.environment(manifest, rows),
                          ["RTX 3090 (sm_86, 24 GB)", "mono", "610.43.02", "CUDA 13.3", "296aa92"])
+
+    def test_selected_runs_need_a_source_revision(self):
+        del self.manifest["source_revision"]
+        manifest, rows = self.select("check", self.write_record("check.json"))
+        with self.assertRaisesRegex(ValueError, "source_revision"):
+            self.m.environment(manifest, rows)
 
     def test_environment_without_selected_runs_is_pending(self):
         manifest, rows = self.select("check", None)

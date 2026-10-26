@@ -2,6 +2,7 @@
   "folder": "rtx5090",
   "label": "RTX 5090 (sm_120, 32 GB)",
   "toolkit": "CUDA 13.4",
+  "source_revision": "296aa928542ce31d456c1b37ec473064f8bdc545",
   "suite_version": "v1",
   "applications": {
     "pagerank": {

@@ -2,6 +2,7 @@
   "folder": "rtx3090",
   "label": "RTX 3090 (sm_86, 24 GB)",
   "toolkit": "CUDA 13.3",
+  "source_revision": "296aa928542ce31d456c1b37ec473064f8bdc545",
   "suite_version": "v1",
   "applications": {
     "pagerank": {

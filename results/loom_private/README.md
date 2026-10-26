@@ -58,7 +58,7 @@ Each check compares every output with an independent CPU reference. The GPU runs
 
 ## Test machines
 
-Taken from the recorder metadata (`<gpu>/runs/<run>/metadata.json`) of the selected runs. Source revision is the last commit before the run that changed anything other than GPU results.
+Taken from the recorder metadata (`<gpu>/runs/<run>/metadata.json`) of the selected runs. Source revision is the code the runs were built from, as stated in `inputs/<gpu>.json`.
 
 | GPU | Host | Driver | CUDA | Source revision |
 |---|---|---|---|---|
