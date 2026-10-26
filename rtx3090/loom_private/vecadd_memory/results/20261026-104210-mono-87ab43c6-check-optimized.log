@@ -1,0 +1,15 @@
+$ make -C /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory VARIANT=optimized check-large CHECK_JSON=/home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/results/20261026-104210-mono-87ab43c6-check-optimized.json
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory'
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_optimized --preset large --action check --launch both --json-out /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/results/20261026-104210-mono-87ab43c6-check-optimized.json
+vecadd_memory: setup 0.00 s
+vecadd_memory: CPU oracle 0.00 s
+vecadd_memory: 0 of 1048576 results differ; checksum 1649265868800 (expected 1649265868800)
+vecadd_memory: direct invocation 1: PASS, digest 32d2e23d1f459f93 (0.00 s, untimed)
+vecadd_memory: 0 of 1048576 results differ; checksum 1649265868800 (expected 1649265868800)
+vecadd_memory: direct invocation 2: PASS, digest 32d2e23d1f459f93 (0.00 s, untimed)
+vecadd_memory: 0 of 1048576 results differ; checksum 1649265868800 (expected 1649265868800)
+vecadd_memory: graph invocation 1: PASS, digest 32d2e23d1f459f93 (0.00 s, untimed)
+vecadd_memory: 0 of 1048576 results differ; checksum 1649265868800 (expected 1649265868800)
+vecadd_memory: graph invocation 2: PASS, digest 32d2e23d1f459f93 (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/vecadd-memory", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "2cfa489f84dfc97ec02b7a5e2ff08e7f9f4a52b9f865f4325da027d422b21920", "preset": "large", "overrides": {}, "dimensions": {"length": 1048576, "multiplier": 2, "bias": 0}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload of lhs and rhs from pinned host memory, the element-wise add, and download of result to pinned host memory", "compute": "the element-wise add with lhs and rhs resident on the device; no transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "32d2e23d1f459f93"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "32d2e23d1f459f93"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "32d2e23d1f459f93"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "32d2e23d1f459f93"}], "outputs_agree": true, "timing": null, "status": "pass"}
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory'
