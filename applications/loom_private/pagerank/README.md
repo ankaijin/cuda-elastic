@@ -149,8 +149,16 @@ Gauss–Seidel updates, and its scores are bitwise identical to the baseline
 and the oracle. At the large size all 1,048,576 scores are bitwise identical
 on all three GPUs, and the largest relative error is 0.
 
+The result record carries the baseline's `timing_scope` strings word for word,
+as the contract requires. Two phrases in them do not describe this variant:
+"one launch per dependency level per sweep" (it makes one launch per
+invocation), and the score part of "score and contribution initialization".
+The variant initializes the contributions, but it does not write the initial
+1/N scores. Iterations are at least 1, and the last sweep writes every
+score, so those writes would never be read.
+
 **Why.** In the baseline, `update_level` takes 99.6% of kernel time: 320
-launches per invocation. Half of the 16 levels hold 2,778 nodes or fewer, so
+launches per invocation. Seven of the 16 levels hold 2,778 nodes or fewer, so
 those launches mostly pay launch latency and a few dependent memory accesses.
 On the RTX 3090 the large levels also miss in L2 on most accesses (ncu: about
 33% L2 hit rate).
@@ -180,6 +188,12 @@ order, which is level order. Every wait is for a source at an earlier
 position, at a lower level. All blocks are resident, so the earliest
 unfinished position can always complete. Lanes of one warp may wait for each
 other, which relies on independent thread scheduling (sm_70 and later).
+Every spin wait, for a readiness tag or at a barrier, gives up after 2^34 SM
+clock cycles (several seconds; a normal wait lasts microseconds) and traps.
+A broken protocol therefore ends as a CUDA error (exit 70) instead of a hang
+that holds the shared GPU. The check poisons the barrier counter with
+0x40404040, above every barrier target and far from wrapping, so a skipped
+counter reset lets the sweeps overlap and fails.
 
 **Level-ordered layout.** At setup, untimed like the baseline's schedule,
 [`layout.cpp`](layout.cpp) renumbers the nodes to positions in level order:
@@ -226,7 +240,21 @@ sweep's last levels anyway.
 - [`tests/run_optimized_tests.sh`](tests/run_optimized_tests.sh) on a test-only
   build (`-DLP_PAGERANK_TEST_TUNING`) in which `LP_PAGERANK_TUNING` forces a
   tuning entry. This runs every GPU's launch shape, including the 3090's
-  streamed loads, on whichever GPU runs the tests. It also runs a one-block,
-  64-thread grid, in which most waits are between lanes of one warp, at 4×9,
-  4096×6 and 65536×20, and a node count that caps the grid. On the large
-  graph it runs 1 to 6 sweeps, which covers the tag cycle.
+  streamed loads, on whichever GPU runs the tests. It also covers:
+  - a one-block, 64-thread grid at 4×9, 16×3, 32×5, 4096×6 and 65536×20;
+  - a node count that caps the grid;
+  - 1 to 6 sweeps on the large graph, which covers the tag cycle.
+
+  Only the 4-, 16-, 32- and 4096-node graphs have an update that waits for
+  a source stored by another lane of the same warp in the same step. These
+  cases, and the production shapes at 16×3 and 32×5, are the ones that
+  exercise independent thread scheduling. The generated graphs from 8,192
+  nodes up have no such edge.
+- The same script runs two mutants of the readiness protocol:
+  - `-DLP_PAGERANK_MUTANT_TAG` makes the tag alternate every sweep, so stale
+    values look ready. It must exit 1 with mismatches.
+  - `-DLP_PAGERANK_MUTANT_NO_RESET` skips the barrier counter reset. It must
+    exit 1 or 70, never hang.
+
+  Every run in the script has a timeout, and `make test` runs both GPU
+  scripts under a timeout.

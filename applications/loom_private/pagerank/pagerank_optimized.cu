@@ -60,6 +60,16 @@ __device__ __forceinline__ void store_relaxed(unsigned *address, unsigned value)
                : "memory");
 }
 
+// Every spin wait gives up after this many SM clock cycles (several seconds
+// on these GPUs; a normal wait lasts microseconds) and traps, so a broken
+// readiness or barrier protocol ends as a CUDA error (exit 70) instead of a
+// hang that holds the GPU.
+constexpr long long kSpinLimit = 1LL << 34;
+
+__device__ __forceinline__ void check_spin(long long start) {
+  if (clock64() - start > kSpinLimit) __trap();
+}
+
 // Grid-wide barrier over co-resident blocks; `epoch` counts the barriers this
 // invocation has passed, and the counter is zeroed before each launch.
 __device__ __forceinline__ void grid_barrier(unsigned *counter, unsigned epoch) {
@@ -68,12 +78,14 @@ __device__ __forceinline__ void grid_barrier(unsigned *counter, unsigned epoch) 
     const unsigned target = epoch * gridDim.x;
     __threadfence();
     atomicAdd(counter, 1u);
+    const long long start = clock64();
     unsigned seen;
     do {
       asm volatile("ld.acquire.gpu.global.u32 %0, [%1];"
                    : "=r"(seen)
                    : "l"(counter)
                    : "memory");
+      check_spin(start);
     } while (seen < target);
     __threadfence();
   }
@@ -86,7 +98,14 @@ __device__ __forceinline__ void grid_barrier(unsigned *counter, unsigned epoch) 
 // sweep and the tag alternates between those writes, so the value left from
 // two sweeps earlier never carries the current sweep's tag.
 __device__ __forceinline__ unsigned sweep_tag(int sweep) {
+#if defined(LP_PAGERANK_MUTANT_TAG)
+  // Test-only mutant (tests/): a tag that alternates every sweep, so the
+  // value left from two sweeps earlier looks ready. The tests require it to
+  // fail the oracle.
+  return (unsigned)(sweep & 1) << 31;
+#else
   return (unsigned)(sweep >> 1 & 1) << 31;
+#endif
 }
 
 // Sources of one node loaded ahead of its waits; a longer incoming list (the
@@ -123,8 +142,13 @@ __device__ __forceinline__ unsigned load_source(int source, const unsigned *curr
 // the update that produces it has not stored it, and the read is repeated.
 __device__ __forceinline__ float ready_value(unsigned bits, int source,
                                              const unsigned *current, unsigned tag) {
-  if (source & 1)
-    while ((bits & kSign) != tag) bits = load_relaxed(current + (source >> 1));
+  if ((source & 1) && (bits & kSign) != tag) {
+    const long long start = clock64();
+    do {
+      bits = load_relaxed(current + (source >> 1));
+      check_spin(start);
+    } while ((bits & kSign) != tag);
+  }
   return __uint_as_float(bits & ~kSign);
 }
 
@@ -210,10 +234,12 @@ constexpr Tuning kTunings[] = {
     {"sm_89", 512, 3, false},  // RTX 4090
     {"sm_120", 512, 2, false}, // RTX 5090
     {"default", 512, 2, false},
-    // Test only: a grid of one block of 64 threads (blocks_per_sm 0), so most
-    // waits are between lanes of a warp and every thread visits many
-    // positions per sweep.
+#if defined(LP_PAGERANK_TEST_TUNING)
+    // Test only: a grid of one block of 64 threads (blocks_per_sm 0), so
+    // every thread visits many positions per sweep, crossing level
+    // boundaries, and at small sizes lanes of one warp wait for each other.
     {"tiny", 64, 0, false},
+#endif
 };
 
 const Tuning &find_tuning(const std::string &name) {
@@ -352,7 +378,11 @@ public:
     // Float constants exactly as the sequential definition forms them.
     const float initial = 1.0f / (float)nodes_;
     const float base = (1.0f - kDamping) / (float)nodes_;
+#if !defined(LP_PAGERANK_MUTANT_NO_RESET)
+    // Test-only mutant (tests/): without this reset the barriers do not
+    // separate the sweeps. The tests require it to fail, without hanging.
     LP_CUDA(cudaMemsetAsync(d_barrier_, 0, sizeof(unsigned), stream));
+#endif
     cudaLaunchAttribute cooperative{};
     cooperative.id = cudaLaunchAttributeCooperative;
     cooperative.val.cooperative = 1;
@@ -371,9 +401,11 @@ public:
 
   void poison_outputs(cudaStream_t stream) override {
     // 0xFF bytes are a NaN float: any score left unwritten fails the
-    // finiteness check. The contribution buffers hold NaN, and the barrier
-    // counter a value past every barrier, so the initialization and the
-    // counter reset must run in each invocation.
+    // finiteness check, and the contribution buffers start as NaN. The
+    // barrier counter gets 0x40404040, above every barrier target and far
+    // from wrapping, so an invocation that skips the counter reset passes
+    // every barrier at once: its sweeps overlap, and the check fails or a
+    // readiness wait traps.
     const size_t bytes = sizeof(float) * (size_t)nodes_;
     // The device inputs are zeroed: an edgeless graph with out-degree 0 whose
     // positions all name node 0. An invocation that skips their upload then
@@ -385,7 +417,7 @@ public:
     LP_CUDA(cudaMemsetAsync(d_nodes_, 0, node_bytes, stream));
     LP_CUDA(cudaMemsetAsync(d_scores_, 0xFF, bytes, stream));
     LP_CUDA(cudaMemsetAsync(d_contrib_, 0xFF, 2 * bytes, stream));
-    LP_CUDA(cudaMemsetAsync(d_barrier_, 0xFF, sizeof(unsigned), stream));
+    LP_CUDA(cudaMemsetAsync(d_barrier_, 0x40, sizeof(unsigned), stream));
     std::memset(h_scores_, 0xFF, bytes);
   }
 

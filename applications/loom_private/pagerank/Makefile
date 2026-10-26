@@ -32,15 +32,30 @@ test: $(BIN) $(MUTANT) $(HOST_TEST)
 	$(LOCK) $(APP_DIR)/tests/run_gpu_tests.sh $(BIN) $(MUTANT) $(TEST_SCRATCH)
 else
 # The optimized variant runs the baseline's GPU cases on its own binary and
-# Jacobi mutant, the layout's host test, and every tuning-table entry through
-# a test-only build that may force one (tests/run_optimized_tests.sh).
+# Jacobi mutant, the layout's host test, and its own GPU tests
+# (tests/run_optimized_tests.sh): every tuning-table entry through a
+# test-only build that may force one, and two mutants of the readiness
+# protocol, a stale-accepting tag and a skipped barrier reset. The kernel's
+# spin waits trap after a bounded time, and every GPU script runs under a
+# timeout, so a protocol regression cannot hold the GPU lock indefinitely.
 OPT_MUTANT := $(BUILD)/pagerank_optimized_jacobi_mutant
+OPT_TAG_MUTANT := $(BUILD)/pagerank_optimized_tag_mutant
+OPT_RESET_MUTANT := $(BUILD)/pagerank_optimized_no_reset_mutant
 OPT_TUNINGS := $(BUILD)/pagerank_optimized_tunings
 LAYOUT_TEST := $(BUILD)/test_layout
 OPT_TEST_SCRATCH := $(BUILD)/test-output-optimized
+GPU_TEST_TIMEOUT := timeout 1800
 
 $(OPT_MUTANT): $(BIN)
 	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(LP_FLAGS) -DLP_PAGERANK_MUTANT_JACOBI \
+	  $(addprefix $(APP_DIR)/,$(OPT_SRCS)) -o $@
+
+$(OPT_TAG_MUTANT): $(BIN)
+	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(LP_FLAGS) -DLP_PAGERANK_MUTANT_TAG \
+	  $(addprefix $(APP_DIR)/,$(OPT_SRCS)) -o $@
+
+$(OPT_RESET_MUTANT): $(BIN)
+	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(LP_FLAGS) -DLP_PAGERANK_MUTANT_NO_RESET \
 	  $(addprefix $(APP_DIR)/,$(OPT_SRCS)) -o $@
 
 $(OPT_TUNINGS): $(BIN)
@@ -54,9 +69,12 @@ $(LAYOUT_TEST): $(APP_DIR)/tests/test_layout.cpp $(APP_DIR)/layout.cpp $(APP_DIR
 	  $(APP_DIR)/tests/test_layout.cpp $(APP_DIR)/layout.cpp $(APP_DIR)/graph.cpp \
 	  $(APP_DIR)/oracle.cpp -o $@
 
-test: $(BIN) $(OPT_MUTANT) $(OPT_TUNINGS) $(HOST_TEST) $(LAYOUT_TEST)
+test: $(BIN) $(OPT_MUTANT) $(OPT_TAG_MUTANT) $(OPT_RESET_MUTANT) $(OPT_TUNINGS) \
+      $(HOST_TEST) $(LAYOUT_TEST)
 	$(HOST_TEST)
 	$(LAYOUT_TEST)
-	$(LOCK) $(APP_DIR)/tests/run_gpu_tests.sh $(BIN) $(OPT_MUTANT) $(OPT_TEST_SCRATCH)
-	$(LOCK) $(APP_DIR)/tests/run_optimized_tests.sh $(OPT_TUNINGS) $(OPT_TEST_SCRATCH)
+	$(LOCK) $(GPU_TEST_TIMEOUT) $(APP_DIR)/tests/run_gpu_tests.sh $(BIN) $(OPT_MUTANT) \
+	  $(OPT_TEST_SCRATCH)
+	$(LOCK) $(GPU_TEST_TIMEOUT) $(APP_DIR)/tests/run_optimized_tests.sh $(OPT_TUNINGS) \
+	  $(OPT_TAG_MUTANT) $(OPT_RESET_MUTANT) $(OPT_TEST_SCRATCH)
 endif
