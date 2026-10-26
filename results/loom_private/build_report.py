@@ -15,18 +15,22 @@ contract's `large` values, and records from a GPU other than the folder's are
 errors.
 
 Timing cells come only from bench records, so a correctness check never
-appears as a performance measurement. The test-machine table comes from the
+appears as a performance measurement. The workbook uses the layout and styling
+of results/cuda_performance.xlsx: per-GPU summary and Latency sheets, then
+Sources, Correctness, Environment, and Contracts. Its links point at GitHub,
+pinned to the latest origin/main commit that has each file. The test-machine table comes from the
 recorder metadata (<gpu>/runs/<run-id>/metadata.json) of the selected records,
 except the source revision, which the manifest states (`source_revision`, a
 full commit hash): bench runs start from commits that only add earlier runs'
 results, so their recorded commits need not stay in the history.
-Nothing is rerun. Requires openpyxl.
+Nothing is rerun. Requires openpyxl, and git for the workbook's links.
 """
 
 import hashlib
 import json
 import re
 from pathlib import Path
+import subprocess
 
 REPO = Path(__file__).resolve().parents[2]
 HERE = REPO / "results" / "loom_private"
@@ -295,52 +299,314 @@ def markdown(gpus):
     return "\n".join(lines)
 
 
+# --------------------------------------------------------------- workbook ---
+# The workbook uses the layout and styling of results/cuda_performance.xlsx
+# (results/build_spreadsheet.py). The helpers are copied rather than imported so
+# that this report never loads or validates the legacy inputs.
+
+GITHUB = "https://github.com/ankaijin/cuda-elastic/blob"
+BASELINE = "rtx3090"
+VERSIONS = ["Direct", "Graph", "Optimized"]
+STAGES = [("application", "Application (end to end)"), ("compute", "Kernel only (no transfers)")]
+METRIC = "CUDA events (batched)"
+BENCH_PENDING = "pending (no bench run selected)"
+OPTIMIZED_PENDING = "pending (no optimized version yet)"
+PROFILE_PENDING = "pending (not profiled yet)"
+# Short visible note per application and stage; the contract's full timing
+# scope goes in the cell comment.
+SHORT_NOTES = {
+    "application": {
+        "decoder": "Weights stay on the GPU; copies prompts in and tokens out.",
+        "anomaly": "Model loaded before timing; copies samples in and outputs out.",
+    },
+    "compute": {},
+}
+DEFAULT_NOTES = {"application": "Includes input upload and output download (pinned host memory).",
+                 "compute": "Kernels only; inputs already on the GPU."}
+
+
+def link(path):
+    """GitHub URL for path, pinned to the latest commit on origin/main that has
+    the file; files not merged yet link to main."""
+    log = subprocess.run(["git", "-C", str(REPO), "log", "--format=%H", "-1", "origin/main",
+                          "--", path], capture_output=True, text=True).stdout.strip()
+    return f"{GITHUB}/{log or 'main'}/{path}"
+
+
 def workbook(gpus):
     from openpyxl import Workbook
-    from openpyxl.styles import Font, PatternFill
+    from openpyxl.comments import Comment
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
 
-    bold, fill = Font(bold=True), PatternFill("solid", fgColor="DDEBF7")
+    blue = Font(color="0563C1", underline="single")
+    bold = Font(bold=True)
+    grey = Font(italic=True, color="808080")
+    header_fill = PatternFill("solid", fgColor="1F3864")
+    header_font = Font(bold=True, color="FFFFFF")
+    fills = [PatternFill("solid", fgColor=c) for c in ("FCE4D6", "E2EFDA", "DDEBF7")]
+    thin = Side(style="thin", color="BFBFBF")
+    box = Border(left=thin, right=thin, top=thin, bottom=thin)
+    wrap = Alignment(wrap_text=True, vertical="top")
+    links = {}
     book = Workbook()
     book.remove(book.active)
 
-    def sheet(title, header, rows):
+    def github(path):
+        if path not in links:
+            links[path] = link(path)
+        return links[path]
+
+    def table_sheet(title, headers, widths, description):
         ws = book.create_sheet(title)
-        ws.append(header)
-        for cell in ws[1]:
-            cell.font, cell.fill = bold, fill
-        for row in rows:
-            ws.append(row)
-        for column in ws.columns:
-            width = max(len(str(c.value or "")) for c in column)
-            ws.column_dimensions[column[0].column_letter].width = min(max(width + 2, 10), 60)
-        ws.freeze_panes = "A2"
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(headers))
+        ws.cell(1, 1, title).font = Font(bold=True, size=14)
+        ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=len(headers))
+        ws.cell(2, 1, description).alignment = wrap
+        ws.row_dimensions[2].height = 42
+        for i, (header, width) in enumerate(zip(headers, widths), 1):
+            c = ws.cell(4, i, header)
+            c.font, c.fill, c.border = header_font, header_fill, box
+            c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            ws.column_dimensions[get_column_letter(i)].width = width
+        ws.row_dimensions[4].height = 42
+        ws.freeze_panes = "C5"
+        ws.sheet_view.showGridLines = False
+        ws.sheet_properties.pageSetUpPr.fitToPage = True
+        ws.page_setup.orientation = "landscape"
+        ws.page_setup.paperSize = ws.PAPERSIZE_A3
+        ws.page_setup.fitToWidth, ws.page_setup.fitToHeight = 1, 0
+        ws.print_title_rows = "1:4"
+        return ws
+
+    def finish_table(ws):
+        ws.auto_filter.ref = f"A4:{get_column_letter(ws.max_column)}{ws.max_row}"
+        for row in ws.iter_rows(min_row=5):
+            for c in row:
+                c.alignment = wrap
+                c.border = box
+            ws.row_dimensions[row[0].row].height = 58
+
+    def value(ws, row, col, data, source=None, speedup=False):
+        """A number (linked to its source) or grey pending text with its reason."""
+        c = ws.cell(row, col)
+        if isinstance(data, (int, float)):
+            c.value = round(data, 3)
+            c.number_format = '0.00"x"' if speedup else '#,##0.00'
+            if source:
+                c.hyperlink, c.font = github(source), blue
+        elif data is not None:
+            c.value = "pending" if data.startswith("pending") else data
+            c.font = grey
+            if data.startswith("pending"):
+                c.comment = Comment(data, "build_report.py")
+        return c
+
+    def put_link(ws, row, col, path, text):
+        c = ws.cell(row, col, text)
+        c.hyperlink, c.font = github(path), blue
+        return c
+
+    def note(ws, row, col, short, full):
+        c = ws.cell(row, col, short)
+        c.comment = Comment(full, "build_report.py", width=480, height=280)
+        return c
+
+    def ratio(a, b):
+        numbers = isinstance(a, (int, float)) and isinstance(b, (int, float))
+        return a / b if numbers and b else None
+
+    def bench(record, scope, field="batch_per_iteration_us"):
+        return BENCH_PENDING if record is None else record["timing"][scope][field]
+
+    def stage_note(row, scope):
+        spec, records = row["contract"] or {}, [row["bench_direct"], row["bench_graph"]]
+        short = SHORT_NOTES[scope].get(row["app"], DEFAULT_NOTES[scope])
+        counts = {r["iterations"] for r in records if r}
+        if len(counts) == 1:
+            short += f" {counts.pop():,} iterations/batch. One run."
+        full = spec.get("timing_scope", {}).get(scope, "Contract pending.")
+        return short, full[0].upper() + full[1:] + "."
+
+    names = {m["folder"]: m["label"].split(" (")[0] for m, _ in gpus}
+    base_rows = dict((m["folder"], rows) for m, rows in gpus)[BASELINE]
+    shared = ["Sources", "Correctness", "Environment", "Contracts"]
 
     for manifest, rows in gpus:
-        sheet(manifest["label"].split(" (")[0],
-              ["Workload", "Large problem size", "Application scope", "Direct (us)",
-               "Graph (us)", "Compute-only Direct (us)", "Compute-only Graph (us)",
-               "Direct record", "Graph record"],
-              [[(r["contract"] or {}).get("identity", r["app"]), size_text(r["contract"]),
-                (r["contract"] or {}).get("timing_scope", {}).get("application", PENDING),
-                timing(r["bench_direct"], "application"), timing(r["bench_graph"], "application"),
-                timing(r["bench_direct"], "compute"), timing(r["bench_graph"], "compute"),
-                (r["bench_direct"] or {}).get("_path", PENDING),
-                (r["bench_graph"] or {}).get("_path", PENDING)] for r in rows])
-    sheet("Correctness",
-          ["GPU", "Workload", "Contract SHA-256", "Status", "Direct", "Graph",
-           "Direct = Graph", "Record"],
-          [[m["label"], (r["contract"] or {}).get("identity", r["app"]),
-            (r["contract"] or {}).get("_sha256", PENDING), *check_cells(r["check"]),
-            (r["check"] or {}).get("_path", PENDING)] for m, rows in gpus for r in rows])
-    sheet("Environment", ["GPU", "Host", "Driver", "CUDA", "Source revision"],
-          [environment(m, rows) for m, rows in gpus])
-    sheet("Contracts",
-          ["Workload", "Directory", "Contract SHA-256", "Upstream commit", "Extension"],
-          [[(spec or {}).get("identity", app), f"applications/loom_private/{app}",
-            (spec or {}).get("_sha256", PENDING),
-            (spec or {}).get("upstream", {}).get("commit", PENDING),
-            str((spec or {}).get("extension_of_upstream", PENDING))]
-           for app, spec in ((a, contract(a)) for a in APPS)])
+        folder, title = manifest["folder"], names[manifest["folder"]]
+        compare = folder != BASELINE
+        headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)", "Graph (us)",
+                   "Optimized (us)", "Graph speedup\nDirect / Graph",
+                   "Optimized speedup\nGraph / Optimized"]
+        if compare:
+            headers += [f"GPU speedup\n{names[BASELINE].removeprefix('RTX ')} / "
+                        f"{title.removeprefix('RTX ')}\n(Graph)"]
+        headers += ["Notes"]
+        ws = table_sheet(title, headers,
+                         [24, 30, 30, 20, 15, 15, 15, 15, 17] + ([18] if compare else []) + [48],
+                         f"{manifest['label']}; {manifest['toolkit']}. Large workloads: time per "
+                         "iteration in a back-to-back batch; lower is better. Times link to the "
+                         "bench records. Notes have full explanations in comments.")
+        for col, target in enumerate([f"Latency {title}"] + shared, 1):
+            c = ws.cell(3, col, target)
+            c.hyperlink, c.font = f"#'{target}'!A1", blue
+        for index, row in enumerate(rows):
+            for scope, stage in STAGES:
+                r = ws.max_row + 1
+                for col, text in enumerate((PROBLEMS[row["app"]][0], stage,
+                                            problem_text(row["app"], row["contract"]), METRIC), 1):
+                    ws.cell(r, col, text)
+                ws.cell(r, 1).font = bold
+                direct, graph = bench(row["bench_direct"], scope), bench(row["bench_graph"], scope)
+                sources = [(row["bench_direct"] or {}).get("_path"),
+                           (row["bench_graph"] or {}).get("_path"), None]
+                for col, (data, source, fill) in enumerate(
+                        zip((direct, graph, OPTIMIZED_PENDING), sources, fills), 5):
+                    value(ws, r, col, data, source).fill = fill
+                value(ws, r, 8, ratio(direct, graph) or BENCH_PENDING, speedup=True)
+                value(ws, r, 9, OPTIMIZED_PENDING, speedup=True)
+                if compare:
+                    base = bench(base_rows[index]["bench_graph"], scope)
+                    value(ws, r, 10, ratio(base, graph) or BENCH_PENDING, speedup=True)
+                note(ws, r, len(headers), *stage_note(row, scope))
+        finish_table(ws)
+
+    for manifest, rows in gpus:
+        title = names[manifest["folder"]]
+        headers = ["Workload", "Stage", "Problem size", "Version", "Batch iterations", "Runs",
+                   "Full batch (ms)", "Batched (us/iteration)", "Single (us)", "Single / batched",
+                   "Graph speedup (single)", "Optimized speedup (single)", "Notes"]
+        ws = table_sheet(f"Latency {title}", headers,
+                         [24, 24, 30, 16, 14, 9, 16, 17, 15, 15, 17, 18, 48],
+                         f"{manifest['label']}. Single = median of the isolated iterations that "
+                         "follow the batch (as many as the batch has). Single/batched reflects "
+                         "scheduling and timing conditions, not pure launch overhead. Each "
+                         "version comes from one bench run; missing measurements stay pending.")
+        for row in rows:
+            for scope, stage in STAGES:
+                singles = {}
+                for version, key, fill in zip(VERSIONS, ("bench_direct", "bench_graph", None),
+                                              fills):
+                    record = row.get(key) if key else None
+                    pending = BENCH_PENDING if key else OPTIMIZED_PENDING
+                    r = ws.max_row + 1
+                    for col, text in enumerate((PROBLEMS[row["app"]][0], stage,
+                                                problem_text(row["app"], row["contract"]),
+                                                version), 1):
+                        ws.cell(r, col, text)
+                    ws.cell(r, 1).font = bold
+                    if record is None:
+                        for col in range(5, 11):
+                            value(ws, r, col, pending, speedup=col == 10)
+                    else:
+                        timing_ = record["timing"][scope]
+                        singles[version] = timing_["single_median_us"]
+                        ws.cell(r, 5, record["iterations"])
+                        ws.cell(r, 6, 1)
+                        for col, data in enumerate((timing_["batch_total_ms"],
+                                                    timing_["batch_per_iteration_us"],
+                                                    timing_["single_median_us"]), 7):
+                            value(ws, r, col, data, record["_path"])
+                        value(ws, r, 10, ratio(timing_["single_median_us"],
+                                               timing_["batch_per_iteration_us"]), speedup=True)
+                    if version == "Graph":
+                        value(ws, r, 11, ratio(singles.get("Direct"), singles.get("Graph"))
+                              or pending, speedup=True)
+                    if version == "Optimized":
+                        value(ws, r, 12, OPTIMIZED_PENDING, speedup=True)
+                    note(ws, r, 13, *stage_note(row, scope))
+                    for col in range(1, len(headers) + 1):
+                        ws.cell(r, col).fill = fill
+        finish_table(ws)
+
+    ws = table_sheet("Sources", ["GPU", "Workload", "Problem size", "Version", "Measurement",
+                                 "Run metadata", "NCU report", "Nsight Systems", "Notes"],
+                     [15, 24, 30, 15, 44, 44, 30, 30, 48],
+                     "Source files for every timing. Filenames link to the original evidence. "
+                     "Profiles are pending until the workloads are profiled.")
+    for manifest, rows in gpus:
+        for row in rows:
+            for version, key in zip(VERSIONS, ("bench_direct", "bench_graph", None)):
+                record = row.get(key) if key else None
+                r = ws.max_row + 1
+                for col, text in enumerate((names[manifest["folder"]], PROBLEMS[row["app"]][0],
+                                            problem_text(row["app"], row["contract"]), version), 1):
+                    ws.cell(r, col, text)
+                if record is None:
+                    value(ws, r, 5, BENCH_PENDING if key else OPTIMIZED_PENDING)
+                else:
+                    put_link(ws, r, 5, record["_path"], Path(record["_path"]).name)
+                    meta = run_metadata(record)
+                    if meta:
+                        path = f"{manifest['folder']}/runs/{meta['run_id']}/metadata.json"
+                        put_link(ws, r, 6, path, f"{meta['run_id']}/metadata.json")
+                value(ws, r, 7, PROFILE_PENDING)
+                value(ws, r, 8, PROFILE_PENDING)
+                note(ws, r, 9, *stage_note(row, "application"))
+    finish_table(ws)
+
+    ws = table_sheet("Correctness", ["GPU", "Workload", "Contract SHA-256", "Status", "Direct",
+                                     "Graph", "Direct = Graph", "Record"],
+                     [15, 24, 30, 12, 12, 12, 14, 44],
+                     "Large-workload checks, not timings. Each runs the CPU reference once, then "
+                     "two Direct and two Graph invocations from poisoned buffers; every output "
+                     "must match the reference and all four must be identical.")
+    for manifest, rows in gpus:
+        for row in rows:
+            r = ws.max_row + 1
+            spec, record = row["contract"] or {}, row["check"]
+            for col, text in enumerate((names[manifest["folder"]], PROBLEMS[row["app"]][0],
+                                        spec.get("_sha256", PENDING)), 1):
+                ws.cell(r, col, text)
+            for col, text in enumerate(check_cells(record), 4):
+                if text == PENDING:
+                    value(ws, r, col, "pending (no check run selected)")
+                else:
+                    ws.cell(r, col, text)
+            if record:
+                put_link(ws, r, 8, record["_path"], Path(record["_path"]).name)
+    finish_table(ws)
+
+    ws = table_sheet("Environment", ["GPU", "Run", "Measurement", "Host", "Driver", "CUDA",
+                                     "Source revision"],
+                     [15, 44, 20, 12, 14, 12, 16],
+                     "Recorder metadata of every selected run. Source revision is the code the "
+                     "runs were built from, as stated in results/loom_private/inputs/<gpu>.json.")
+    for manifest, rows in gpus:
+        runs = {}
+        for row in rows:
+            for key in SELECTIONS:
+                if row[key] is not None and (meta := run_metadata(row[key])):
+                    runs[meta["run_id"]] = (key.replace("_", " "), meta)
+        for run_id, (kind, meta) in sorted(runs.items()):
+            r = ws.max_row + 1
+            ws.cell(r, 1, names[manifest["folder"]])
+            put_link(ws, r, 2, f"{manifest['folder']}/runs/{run_id}/metadata.json", run_id)
+            nvcc = meta.get("installed_tools", {}).get("nvcc") or ""
+            release = re.search(r"release ([\d.]+)", nvcc)
+            for col, text in enumerate((kind, meta["host"], meta["gpu"]["driver"],
+                                        f"CUDA {release.group(1)}" if release else "unknown",
+                                        manifest["source_revision"][:7]), 3):
+                ws.cell(r, col, text)
+    finish_table(ws)
+
+    ws = table_sheet("Contracts", ["Workload", "Contract", "Contract SHA-256", "Upstream commit",
+                                   "Extension of upstream"],
+                     [24, 44, 30, 30, 60],
+                     "Each workload's contract.json fixes its dimensions, inputs, outputs, "
+                     "tolerances, and timing scopes. Every result record names the contract hash "
+                     "it validated.")
+    for app in APPS:
+        spec = contract(app) or {}
+        r = ws.max_row + 1
+        ws.cell(r, 1, PROBLEMS[app][0]).font = bold
+        put_link(ws, r, 2, f"applications/loom_private/{app}/contract.json",
+                 f"{app}/contract.json")
+        ws.cell(r, 3, spec.get("_sha256", PENDING))
+        ws.cell(r, 4, spec.get("upstream", {}).get("commit", PENDING))
+        extension = spec.get("extension_of_upstream", PENDING)
+        ws.cell(r, 5, "No (direct port)" if extension is False else str(extension))
+    finish_table(ws)
     return book
 
 
