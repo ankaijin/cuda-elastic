@@ -4,12 +4,17 @@
 # smoke configuration (0 warmup, 1 measured sample) is not reproduced as a
 # configuration here: records=1 is a one-record check against the oracle, and
 # the bench test below runs the large workload only for its timing record.
-#   run_gpu_tests.sh <binary> <build dir with mutant/slow-warmup binaries> <scratch dir>
+#   run_gpu_tests.sh <binary> <build dir with mutant/slow-warmup binaries> <scratch dir> [variant]
+# The optimized variant's test binaries carry an _optimized suffix, and it adds
+# chunking and chunk-copy tests.
 set -uo pipefail
 
 bin=$1
 build=$2
 scratch=$3
+variant=${4:-baseline}
+suffix=
+[[ $variant == optimized ]] && suffix=_optimized
 mkdir -p "$scratch"
 failures=0
 cache=${LOOM_PRIVATE_ASSET_CACHE:-$HOME/.cache/cuda-elastic/loom-private-assets}
@@ -56,14 +61,14 @@ require_log check-reports-canary records-1000 "canary bytes damaged"
 # Mutants of the same source must fail where the real binary passes.
 #  1 saturating add (no wraparound)      2 one word past the output extent
 #  3 sums land in the neighbouring slot  4 records with r mod 256 == 255 skipped
-expect mutant1-saturating 1 "$build/vecadd_product_mutant1" --set records=1024
+expect mutant1-saturating 1 "$build/vecadd_product_mutant1$suffix" --set records=1024
 require_log mutant1-reports-mismatch mutant1-saturating "mismatch at output byte"
-expect mutant2-overrun 1 "$build/vecadd_product_mutant2" --set records=1024
+expect mutant2-overrun 1 "$build/vecadd_product_mutant2$suffix" --set records=1024
 require_log mutant2-reports-canary mutant2-overrun "canary after the output overwritten"
-expect mutant3-neighbour-slot 1 "$build/vecadd_product_mutant3" --set records=64
-expect mutant4-skipped-slots 1 "$build/vecadd_product_mutant4" --set records=1024
+expect mutant3-neighbour-slot 1 "$build/vecadd_product_mutant3$suffix" --set records=64
+expect mutant4-skipped-slots 1 "$build/vecadd_product_mutant4$suffix" --set records=1024
 require_log mutant4-skipped-slot-is-record-255 mutant4-skipped-slots "record 255, lane 0"
-expect mutant4-below-first-skip 0 "$build/vecadd_product_mutant4" --set records=255
+expect mutant4-below-first-skip 0 "$build/vecadd_product_mutant4$suffix" --set records=255
 
 # Out-of-bounds device accesses (reads or writes) under compute-sanitizer.
 sanitizer=$(command -v compute-sanitizer || true)
@@ -111,7 +116,7 @@ require_log bench-record-unvalidated bench-graph '"status": "unvalidated_bench"'
 # Warmup exclusion. The slow-warmup binary makes the first three application
 # invocations (the default bench warmups) spin the GPU for 300 ms each. With
 # 3 warmups the timed batch must not see them; with 0 warmups it must.
-slow="$build/vecadd_product_slow_warmup"
+slow="$build/vecadd_product_slow_warmup$suffix"
 batch_ms() { # batch_total_ms of the application scope from a RESULT line
   python3 -I -c '
 import json, sys
@@ -129,6 +134,44 @@ if python3 -I -c 'import sys; sys.exit(0 if float(sys.argv[1]) < 200 and float(s
 else
   echo "FAIL warmups-outside-timed-interval (batch ${excluded} ms with warmups, ${included} ms without)"
   failures=$((failures + 1))
+fi
+
+if [[ $variant == optimized ]]; then
+  # Chunking: LP_VECADD_CHUNKS forces the chunk count (it is capped at the
+  # record count), so small record counts cross chunk boundaries, including
+  # more chunks than records, uneven chunk sizes, and chunk starts that are not
+  # multiples of the 256-record period. Every case runs Direct and Graph.
+  for chunks in 1 2 3 5 16 64; do
+    for n in 1 2 3 7 255 257 1000 65537 1000003; do
+      expect "chunks-$chunks-records-$n" 0 env LP_VECADD_CHUNKS=$chunks "$bin" --set records=$n
+    done
+  done
+  # Mutants that drop a chunk's copy must fail, with one chunk and with many.
+  for chunks in 1 4 64; do
+    expect "mutant5-skip-upload-chunks-$chunks" 1 env LP_VECADD_CHUNKS=$chunks \
+      "$build/vecadd_product_mutant5$suffix" --set records=100003
+    expect "mutant6-skip-download-chunks-$chunks" 1 env LP_VECADD_CHUNKS=$chunks \
+      "$build/vecadd_product_mutant6$suffix" --set records=100003
+  done
+  expect mutant5-large 1 "$build/vecadd_product_mutant5$suffix"
+  expect mutant6-large 1 "$build/vecadd_product_mutant6$suffix"
+  # The other mutants stay caught when the records are split into chunks
+  # (the kernels keep absolute record indices).
+  expect mutant1-chunked 1 env LP_VECADD_CHUNKS=7 "$build/vecadd_product_mutant1$suffix" --set records=4097
+  expect mutant3-chunked 1 env LP_VECADD_CHUNKS=7 "$build/vecadd_product_mutant3$suffix" --set records=4097
+  expect mutant4-chunked 1 env LP_VECADD_CHUNKS=7 "$build/vecadd_product_mutant4$suffix" --set records=4097
+  expect mutant2-chunked 1 env LP_VECADD_CHUNKS=7 "$build/vecadd_product_mutant2$suffix" --set records=4097
+  if [[ -n $sanitizer ]]; then
+    expect memcheck-chunks-64 0 env LP_VECADD_CHUNKS=64 "$sanitizer" --error-exitcode 9 \
+      --tool memcheck "$bin" --set records=1000 --launch direct
+    expect memcheck-chunks-3 0 env LP_VECADD_CHUNKS=3 "$sanitizer" --error-exitcode 9 \
+      --tool memcheck "$bin" --set records=65537 --launch direct
+  fi
+  if grep -q '"variant": "optimized"' "$scratch/bench-graph.log"; then
+    echo "PASS bench-record-names-variant"
+  else
+    echo "FAIL bench-record-names-variant"; failures=$((failures + 1))
+  fi
 fi
 
 if [[ $failures -ne 0 ]]; then

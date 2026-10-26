@@ -148,3 +148,85 @@ No timings are reported yet.
   the setup loop in `vecadd_product.cu` and `oracle.cpp`, and the contract.
 - The kernel is a straightforward one-pass copy-add and is not tuned. The work
   is bandwidth-bound by the transfers at application scope.
+
+## Optimized variant
+
+[`vecadd_product_optimized.cu`](vecadd_product_optimized.cu) implements the
+same contract: the same dimensions, scopes, fixtures, oracle, exact check,
+canaries, `--set` handling, asset handling, and poisoning (the workload class
+is copied from the baseline). Build and run it with `VARIANT=optimized`:
+
+```bash
+make -C applications/loom_private/vecadd_product check-large VARIANT=optimized
+make -C applications/loom_private/vecadd_product bench LAUNCH=graph VARIANT=optimized
+make -C applications/loom_private/vecadd_product test VARIANT=optimized
+```
+
+### Why
+
+The application scope is dominated by PCIe: a 128 MiB upload and a 64 MiB
+download, against a kernel of 100 to 240 microseconds. The baseline issues
+upload, kernel, and download in sequence on one stream, so the two copy
+directions never overlap. The kernel is already close to DRAM bandwidth (ncu
+on the 3090: 92 to 93% of peak sustained DRAM throughput; on the 5090: 89%), so
+there is nothing to gain there, and the variant keeps the baseline's kernel.
+
+A copy-only microbenchmark (128 MiB up and 64 MiB down, 16 chunks) shows what
+overlap can buy. On the 3090 and 4090 the concurrent transfer takes only a few
+percent longer than the upload alone, so the two directions are independent.
+On the 5090 it takes nearly the sum of the two directions, so uploads and
+downloads share a limit and the possible gain is a few percent.
+
+### What changed
+
+- **Chunked pipeline.** The records are split into equal chunks. Every chunk has
+  its own stream: it uploads its inputs, runs the kernel over its records, and
+  downloads its outputs, so later uploads overlap earlier downloads and
+  kernels. The harness stream forks with an event, and joins on one event per
+  chunk, so Direct launches and the captured CUDA Graph hold the same pipeline.
+  The bytes moved are the baseline's: 128 bytes up and 64 bytes down per
+  record.
+- **Kernel launches.** Each chunk launches the baseline's kernel over its own
+  range of words. The kernel keeps absolute word indices, so the mutants and
+  the output-slot isolation (canaries, neighbour-slot sums) see the same
+  indices as the baseline. The compute scope is one launch over all records.
+
+### GPU-specific choices
+
+The chunk count is chosen at setup from the compute capability (`chunks_for`).
+Measured at 2 to 32 chunks on all three GPUs.
+
+| GPU | Chunks | Reason |
+|---|--:|---|
+| RTX 3090 (sm_86) | 16 | The time falls steeply up to 8 chunks and is flat from 16 to 32; 16 is the smallest count on the plateau. A smaller last chunk (halving the final chunk) made no measurable difference. |
+| RTX 4090 (sm_89) | 16 | Same plateau as the 3090. |
+| RTX 5090 (sm_120) | 16 | The uploads and downloads share a limit, so every count from 1 to 32 is within a few percent of the baseline; 16 is at or near the best in Graph and Direct. |
+
+`LP_VECADD_CHUNKS` (1 to 64) overrides the choice. The tests use it to run many
+chunk counts; it never changes the result. The count is capped at the number of
+records, so every chunk holds at least one record.
+
+### Numerics
+
+Exact integer arithmetic with the baseline's kernel, so every output byte equals
+the oracle's, the canaries are untouched, and Direct and Graph outputs agree
+bitwise. Nothing is cached between invocations: every invocation uploads all
+inputs and downloads all outputs.
+
+### Tests (`make test VARIANT=optimized`)
+
+Everything the baseline's `make test` runs, against the optimized binary
+(mutants, memcheck, assets, invalid input, the bench path, and the warmup
+exclusion test), plus:
+
+- chunk counts 1, 2, 3, 5, 16, and 64 at record counts 1, 2, 3, 7, 255, 257,
+  1,000, 65,537, and 1,000,003 (more chunks than records, uneven chunks, and
+  chunk starts off the 256-record period included), in Direct and Graph;
+- mutants 5 and 6, which skip the last chunk's upload or download, at 1, 4, and
+  64 chunks and at the large size; each must fail the check;
+- mutants 1 to 4 again with the records split into chunks, which must still
+  fail (the kernel keeps absolute record indices);
+- `compute-sanitizer --tool memcheck` with 3 and 64 chunks;
+- a bench record that names the variant.
+
+The test binaries carry an `_optimized` suffix next to the baseline's.
