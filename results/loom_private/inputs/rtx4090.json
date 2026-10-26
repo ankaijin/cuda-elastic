@@ -2,32 +2,32 @@
   "folder": "rtx4090",
   "label": "RTX 4090 (sm_89, 24 GB)",
   "toolkit": "CUDA 12.8",
-  "source_revision": "b17b3412e7698390707049f45667b3232c14be39",
+  "source_revision": "90b0b41e5df515ff346fb0048b3b0590553fcb1a",
   "suite_version": "v1",
   "applications": {
     "pagerank": {
-      "check": "loom_private/pagerank/results/20261026-104211-octacos-49a84b20-check.json",
-      "check_optimized": "loom_private/pagerank/results/20261026-104211-octacos-49a84b20-check-optimized.json",
+      "check": "loom_private/pagerank/results/20261026-173721-octacos-7914e968-check.json",
+      "check_optimized": "loom_private/pagerank/results/20261026-173721-octacos-7914e968-check-optimized.json",
       "bench_direct": [
-        "loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-direct-r1.json",
-        "loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-direct-r2.json",
-        "loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-direct-r3.json"
+        "loom_private/pagerank/results/20261026-174553-octacos-02c4482b-bench-direct-r1.json",
+        "loom_private/pagerank/results/20261026-174553-octacos-02c4482b-bench-direct-r2.json",
+        "loom_private/pagerank/results/20261026-174553-octacos-02c4482b-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-r1.json",
-        "loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-r2.json",
-        "loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-r3.json"
+        "loom_private/pagerank/results/20261026-174553-octacos-02c4482b-bench-graph-r1.json",
+        "loom_private/pagerank/results/20261026-174553-octacos-02c4482b-bench-graph-r2.json",
+        "loom_private/pagerank/results/20261026-174553-octacos-02c4482b-bench-graph-r3.json"
       ],
       "bench_optimized": [
-        "loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
-        "loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
-        "loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json"
+        "loom_private/pagerank/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r1.json",
+        "loom_private/pagerank/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r2.json",
+        "loom_private/pagerank/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r3.json"
       ],
       "profiles": {
         "nsys": {
-          "direct": "loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep",
-          "graph": "loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep",
-          "optimized": "loom_private/pagerank/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep"
+          "direct": "loom_private/pagerank/profiles/20261026-175046-octacos-088f64e9-baseline-direct.nsys-rep",
+          "graph": "loom_private/pagerank/profiles/20261026-175046-octacos-088f64e9-baseline-graph.nsys-rep",
+          "optimized": "loom_private/pagerank/profiles/20261026-175046-octacos-088f64e9-optimized-graph.nsys-rep"
         },
         "ncu": {
           "direct": null,
@@ -37,28 +37,28 @@
       }
     },
     "attention": {
-      "check": "loom_private/attention/results/20261026-104211-octacos-49a84b20-check.json",
-      "check_optimized": "loom_private/attention/results/20261026-104211-octacos-49a84b20-check-optimized.json",
+      "check": "loom_private/attention/results/20261026-173721-octacos-7914e968-check.json",
+      "check_optimized": "loom_private/attention/results/20261026-173721-octacos-7914e968-check-optimized.json",
       "bench_direct": [
-        "loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-direct-r1.json",
-        "loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-direct-r2.json",
-        "loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-direct-r3.json"
+        "loom_private/attention/results/20261026-174553-octacos-02c4482b-bench-direct-r1.json",
+        "loom_private/attention/results/20261026-174553-octacos-02c4482b-bench-direct-r2.json",
+        "loom_private/attention/results/20261026-174553-octacos-02c4482b-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-r1.json",
-        "loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-r2.json",
-        "loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-r3.json"
+        "loom_private/attention/results/20261026-174553-octacos-02c4482b-bench-graph-r1.json",
+        "loom_private/attention/results/20261026-174553-octacos-02c4482b-bench-graph-r2.json",
+        "loom_private/attention/results/20261026-174553-octacos-02c4482b-bench-graph-r3.json"
       ],
       "bench_optimized": [
-        "loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
-        "loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
-        "loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json"
+        "loom_private/attention/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r1.json",
+        "loom_private/attention/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r2.json",
+        "loom_private/attention/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r3.json"
       ],
       "profiles": {
         "nsys": {
-          "direct": "loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep",
-          "graph": "loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep",
-          "optimized": "loom_private/attention/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep"
+          "direct": "loom_private/attention/profiles/20261026-175046-octacos-088f64e9-baseline-direct.nsys-rep",
+          "graph": "loom_private/attention/profiles/20261026-175046-octacos-088f64e9-baseline-graph.nsys-rep",
+          "optimized": "loom_private/attention/profiles/20261026-175046-octacos-088f64e9-optimized-graph.nsys-rep"
         },
         "ncu": {
           "direct": null,
@@ -68,28 +68,28 @@
       }
     },
     "decoder": {
-      "check": "loom_private/decoder/results/20261026-104211-octacos-49a84b20-check.json",
-      "check_optimized": "loom_private/decoder/results/20261026-104211-octacos-49a84b20-check-optimized.json",
+      "check": "loom_private/decoder/results/20261026-173721-octacos-7914e968-check.json",
+      "check_optimized": "loom_private/decoder/results/20261026-173721-octacos-7914e968-check-optimized.json",
       "bench_direct": [
-        "loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-direct-r1.json",
-        "loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-direct-r2.json",
-        "loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-direct-r3.json"
+        "loom_private/decoder/results/20261026-174553-octacos-02c4482b-bench-direct-r1.json",
+        "loom_private/decoder/results/20261026-174553-octacos-02c4482b-bench-direct-r2.json",
+        "loom_private/decoder/results/20261026-174553-octacos-02c4482b-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-r1.json",
-        "loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-r2.json",
-        "loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-r3.json"
+        "loom_private/decoder/results/20261026-174553-octacos-02c4482b-bench-graph-r1.json",
+        "loom_private/decoder/results/20261026-174553-octacos-02c4482b-bench-graph-r2.json",
+        "loom_private/decoder/results/20261026-174553-octacos-02c4482b-bench-graph-r3.json"
       ],
       "bench_optimized": [
-        "loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
-        "loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
-        "loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json"
+        "loom_private/decoder/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r1.json",
+        "loom_private/decoder/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r2.json",
+        "loom_private/decoder/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r3.json"
       ],
       "profiles": {
         "nsys": {
-          "direct": "loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep",
-          "graph": "loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep",
-          "optimized": "loom_private/decoder/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep"
+          "direct": "loom_private/decoder/profiles/20261026-175046-octacos-088f64e9-baseline-direct.nsys-rep",
+          "graph": "loom_private/decoder/profiles/20261026-175046-octacos-088f64e9-baseline-graph.nsys-rep",
+          "optimized": "loom_private/decoder/profiles/20261026-175046-octacos-088f64e9-optimized-graph.nsys-rep"
         },
         "ncu": {
           "direct": null,
@@ -99,28 +99,28 @@
       }
     },
     "anomaly": {
-      "check": "loom_private/anomaly/results/20261026-104211-octacos-49a84b20-check.json",
-      "check_optimized": "loom_private/anomaly/results/20261026-104211-octacos-49a84b20-check-optimized.json",
+      "check": "loom_private/anomaly/results/20261026-173721-octacos-7914e968-check.json",
+      "check_optimized": "loom_private/anomaly/results/20261026-173721-octacos-7914e968-check-optimized.json",
       "bench_direct": [
-        "loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-direct-r1.json",
-        "loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-direct-r2.json",
-        "loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-direct-r3.json"
+        "loom_private/anomaly/results/20261026-174553-octacos-02c4482b-bench-direct-r1.json",
+        "loom_private/anomaly/results/20261026-174553-octacos-02c4482b-bench-direct-r2.json",
+        "loom_private/anomaly/results/20261026-174553-octacos-02c4482b-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-r1.json",
-        "loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-r2.json",
-        "loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-r3.json"
+        "loom_private/anomaly/results/20261026-174553-octacos-02c4482b-bench-graph-r1.json",
+        "loom_private/anomaly/results/20261026-174553-octacos-02c4482b-bench-graph-r2.json",
+        "loom_private/anomaly/results/20261026-174553-octacos-02c4482b-bench-graph-r3.json"
       ],
       "bench_optimized": [
-        "loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
-        "loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
-        "loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json"
+        "loom_private/anomaly/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r1.json",
+        "loom_private/anomaly/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r2.json",
+        "loom_private/anomaly/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r3.json"
       ],
       "profiles": {
         "nsys": {
-          "direct": "loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep",
-          "graph": "loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep",
-          "optimized": "loom_private/anomaly/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep"
+          "direct": "loom_private/anomaly/profiles/20261026-175046-octacos-088f64e9-baseline-direct.nsys-rep",
+          "graph": "loom_private/anomaly/profiles/20261026-175046-octacos-088f64e9-baseline-graph.nsys-rep",
+          "optimized": "loom_private/anomaly/profiles/20261026-175046-octacos-088f64e9-optimized-graph.nsys-rep"
         },
         "ncu": {
           "direct": null,
@@ -130,28 +130,28 @@
       }
     },
     "vecadd_memory": {
-      "check": "loom_private/vecadd_memory/results/20261026-104211-octacos-49a84b20-check.json",
-      "check_optimized": "loom_private/vecadd_memory/results/20261026-104211-octacos-49a84b20-check-optimized.json",
+      "check": "loom_private/vecadd_memory/results/20261026-173721-octacos-7914e968-check.json",
+      "check_optimized": "loom_private/vecadd_memory/results/20261026-173721-octacos-7914e968-check-optimized.json",
       "bench_direct": [
-        "loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-direct-r1.json",
-        "loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-direct-r2.json",
-        "loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-direct-r3.json"
+        "loom_private/vecadd_memory/results/20261026-174553-octacos-02c4482b-bench-direct-r1.json",
+        "loom_private/vecadd_memory/results/20261026-174553-octacos-02c4482b-bench-direct-r2.json",
+        "loom_private/vecadd_memory/results/20261026-174553-octacos-02c4482b-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-r1.json",
-        "loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-r2.json",
-        "loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-r3.json"
+        "loom_private/vecadd_memory/results/20261026-174553-octacos-02c4482b-bench-graph-r1.json",
+        "loom_private/vecadd_memory/results/20261026-174553-octacos-02c4482b-bench-graph-r2.json",
+        "loom_private/vecadd_memory/results/20261026-174553-octacos-02c4482b-bench-graph-r3.json"
       ],
       "bench_optimized": [
-        "loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
-        "loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
-        "loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json"
+        "loom_private/vecadd_memory/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r1.json",
+        "loom_private/vecadd_memory/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r2.json",
+        "loom_private/vecadd_memory/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r3.json"
       ],
       "profiles": {
         "nsys": {
-          "direct": "loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep",
-          "graph": "loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep",
-          "optimized": "loom_private/vecadd_memory/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep"
+          "direct": "loom_private/vecadd_memory/profiles/20261026-175046-octacos-088f64e9-baseline-direct.nsys-rep",
+          "graph": "loom_private/vecadd_memory/profiles/20261026-175046-octacos-088f64e9-baseline-graph.nsys-rep",
+          "optimized": "loom_private/vecadd_memory/profiles/20261026-175046-octacos-088f64e9-optimized-graph.nsys-rep"
         },
         "ncu": {
           "direct": null,
@@ -161,28 +161,28 @@
       }
     },
     "vecadd_product": {
-      "check": "loom_private/vecadd_product/results/20261026-104211-octacos-49a84b20-check.json",
-      "check_optimized": "loom_private/vecadd_product/results/20261026-104211-octacos-49a84b20-check-optimized.json",
+      "check": "loom_private/vecadd_product/results/20261026-173721-octacos-7914e968-check.json",
+      "check_optimized": "loom_private/vecadd_product/results/20261026-173721-octacos-7914e968-check-optimized.json",
       "bench_direct": [
-        "loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-direct-r1.json",
-        "loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-direct-r2.json",
-        "loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-direct-r3.json"
+        "loom_private/vecadd_product/results/20261026-174553-octacos-02c4482b-bench-direct-r1.json",
+        "loom_private/vecadd_product/results/20261026-174553-octacos-02c4482b-bench-direct-r2.json",
+        "loom_private/vecadd_product/results/20261026-174553-octacos-02c4482b-bench-direct-r3.json"
       ],
       "bench_graph": [
-        "loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-r1.json",
-        "loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-r2.json",
-        "loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-r3.json"
+        "loom_private/vecadd_product/results/20261026-174553-octacos-02c4482b-bench-graph-r1.json",
+        "loom_private/vecadd_product/results/20261026-174553-octacos-02c4482b-bench-graph-r2.json",
+        "loom_private/vecadd_product/results/20261026-174553-octacos-02c4482b-bench-graph-r3.json"
       ],
       "bench_optimized": [
-        "loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
-        "loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
-        "loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json"
+        "loom_private/vecadd_product/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r1.json",
+        "loom_private/vecadd_product/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r2.json",
+        "loom_private/vecadd_product/results/20261026-174553-octacos-02c4482b-bench-graph-optimized-r3.json"
       ],
       "profiles": {
         "nsys": {
-          "direct": "loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-baseline-direct.nsys-rep",
-          "graph": "loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-baseline-graph.nsys-rep",
-          "optimized": "loom_private/vecadd_product/profiles/20261026-105438-octacos-e7f2c332-optimized-graph.nsys-rep"
+          "direct": "loom_private/vecadd_product/profiles/20261026-175046-octacos-088f64e9-baseline-direct.nsys-rep",
+          "graph": "loom_private/vecadd_product/profiles/20261026-175046-octacos-088f64e9-baseline-graph.nsys-rep",
+          "optimized": "loom_private/vecadd_product/profiles/20261026-175046-octacos-088f64e9-optimized-graph.nsys-rep"
         },
         "ncu": {
           "direct": null,
