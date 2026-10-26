@@ -1,6 +1,8 @@
 // Shared harness for the loom_private CUDA applications.
 //
 // Every application implements lp::Workload and calls lp::run_main from main().
+// An application may also have an optimized implementation of the same
+// contract (common.mk VARIANT=optimized); the record names the variant.
 // The harness owns the common command line, the Direct and CUDA Graph
 // executors, the correctness protocol, timing, and the JSON result record.
 //
@@ -52,6 +54,9 @@
 #endif
 #ifndef LP_APP
 #error "build with -DLP_APP=\"<application directory name>\" (see common.mk)"
+#endif
+#ifndef LP_VARIANT
+#error "build with -DLP_VARIANT=\"baseline\" or \"optimized\" (see common.mk)"
 #endif
 
 #define LP_SUITE_VERSION "v1"
@@ -473,6 +478,7 @@ inline int run_main(int argc, char **argv, Factory factory) {
       {"schema", Json::quote("loom_private.result/1")},
       {"suite_version", Json::quote(LP_SUITE_VERSION)},
       {"identity", Json::quote(workload->identity())},
+      {"variant", Json::quote(LP_VARIANT)},
       {"loom_commit", Json::quote(LP_LOOM_COMMIT)},
       {"contract_sha256", Json::quote(LP_CONTRACT_SHA256)},
       {"preset", Json::quote(options.preset)},
