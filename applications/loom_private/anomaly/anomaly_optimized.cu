@@ -80,13 +80,11 @@ struct ModelParams {
 
 // The padded tensor-core layout of one layer: weights [n_tiles * 8][k_padded]
 // row-major, zero beyond the real extents, at padded_offset in the padded
-// weight array. kappa and lambda = kappa * 2^-20 are the layer's binary32
-// requantization scales (requant.cuh; kappa = 0 selects the binary64 path),
-// and code_min is the output zero point with ReLU, else -128.
+// weight array. fast holds the layer's binary32 requantization constants
+// (requant.cuh make_fast_layer).
 struct GemmLayer {
   int k_padded, n_tiles, padded_offset;
-  float kappa, lambda;
-  int code_min;
+  anomaly_requant::FastLayer fast;
 };
 // The requantization constants of output columns 2p and 2p + 1 of a layer, at
 // pair (bias_offset / 2 + p): the zero-point corrections z_in * sum_i w[o][i]
@@ -136,8 +134,8 @@ __device__ __forceinline__ int requantize_code(int acc, const int32_t *bias, flo
   (void)gemm;
   return anomaly_requant::requantize(acc, *bias, layer);
 #else
-  return anomaly_requant::requantize_fast(acc, bias, beta, margin_base, gemm.kappa,
-                                          gemm.lambda, gemm.code_min, layer);
+  return anomaly_requant::requantize_fast(acc, bias, beta, margin_base, gemm.fast.kappa,
+                                          gemm.fast.lambda, gemm.fast.code_min, layer);
 #endif
 }
 
@@ -298,6 +296,10 @@ tiled_inference_kernel(const float *__restrict__ input, int begin, int end, int 
   constexpr int kNT = kTile / 8;
   constexpr int kMTiles = kTile / 16;
   constexpr int kChunks = (int)kSampleElements / kKStep;
+  // Layer 1 gives each warp one unit: kWarps / kMTiles chunks of kNT n-tiles
+  // per m-tile must cover its (at most kNarrowWidth) outputs.
+  static_assert(kWarps % kMTiles == 0 && kWarps / kMTiles * kNT * 8 >= kNarrowWidth,
+                "layer 1 schedule covers kNarrowWidth outputs");
   __shared__ __align__(16) int8_t smem[kTile * (2 * kNarrowStride + 2 * kKStep)];
   int8_t *act[2] = {smem, smem + kTile * kNarrowStride}; // [kTile][kNarrowStride]
   int8_t *stage[2] = {smem + 2 * kTile * kNarrowStride,  // [kTile][kKStep]
@@ -495,25 +497,13 @@ public:
                  "variant needs a multiple of 8, at most %d before the last layer",
                  l + 1, layer.output_count, kNarrowWidth);
       LayerParams &p = params_.layers[l];
-      p.input_count = (int)layer.input_count;
-      p.output_count = (int)layer.output_count;
-      p.weight_offset = weight_count;
-      p.bias_offset = (int)biases.size();
-      p.input_scale = layer.input.scale;
-      p.weight_scale = layer.weight.scale;
-      p.bias_scale = layer.bias.scale;
-      p.output_scale = layer.output.scale;
-      p.input_zero_point = (int)layer.input.zero_point;
-      p.output_zero_point = (int)layer.output.zero_point;
-      p.relu = layer.relu ? 1 : 0;
+      p = anomaly_requant::make_layer_params(layer, weight_count, (int)biases.size());
       weight_count += (int)layer.weights.size();
       biases.insert(biases.end(), layer.biases.begin(), layer.biases.end());
 
       GemmLayer &g = gemm_.layers[l];
       std::vector<float> betas(layer.output_count);
-      g.kappa = anomaly_requant::fast_constants(p, layer.biases.data(), betas.data());
-      g.lambda = g.kappa * 0x1p-20f; // exact: kappa >= 2^-100
-      g.code_min = p.relu ? p.output_zero_point : -128;
+      g.fast = anomaly_requant::make_fast_layer(p, layer.biases.data(), betas.data());
       g.k_padded = (int)((layer.input_count + kKStep - 1) / kKStep * kKStep);
       g.n_tiles = (int)(layer.output_count / 8);
       g.padded_offset = (int)padded.size();

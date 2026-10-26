@@ -45,8 +45,16 @@ expect() {
 # input value and every accumulator within the contract's bound, for every
 # output of the pinned model. A mutant without the safety margin must fail.
 expect fast-path-exactness 0 'PASS requantization' "$dir/test_requant" "$cache"
-expect fast-path-no-margin-mutant 1 'FAIL input quantization' \
+# Both halves must catch it: the requantization half shows that the
+# half-integer margin matters (the input half also catches the overflow that
+# the margin guards against).
+expect fast-path-no-margin-mutant 1 'FAIL requantization' \
   "$dir/test_requant_no_margin_mutant" "$cache"
+if grep -q 'FAIL input quantization' "$scratch/fast-path-no-margin-mutant.log"; then
+  passed=$((passed + 1)); echo "PASS fast-path-no-margin-mutant-input"
+else
+  failed=$((failed + 1)); echo "FAIL fast-path-no-margin-mutant-input"
+fi
 
 # --- Tile edges with this GPU's configuration: one sample, one whole block of
 # 16, a partial second block, and many blocks with a partial last one.

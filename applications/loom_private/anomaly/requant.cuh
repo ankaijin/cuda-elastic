@@ -10,6 +10,8 @@
 // accumulator within the contract's bound.
 #pragma once
 
+#include "model.h"
+
 #include <cuda_runtime.h>
 
 #include <cmath>
@@ -59,19 +61,46 @@ __device__ __forceinline__ int quantize_input(float x, float scale, int zero_poi
   return saturate_int8((double)ratio, zero_point);
 }
 
-// Host constants of the fast paths, from binary64:
-// - input_reciprocal = fl32(1 / input scale), or 0 when it is not a normal
-//   number (never for the pinned model; 0 selects quantize_input()).
-// - per layer kappa = fl32(in_scale * w_scale / out_scale), or 0 when it is
-//   not finite or below 2^-100, so that kappa * 2^-20 stays normal (0
-//   selects requantize()); and per output beta = fl32(bias * bias_scale /
-//   out_scale); a non-finite beta also sets kappa to 0.
+// The kernel-side description of a parsed layer (as packed in anomaly.cu).
+inline LayerParams make_layer_params(const anomaly_model::Layer &layer, int weight_offset,
+                                     int bias_offset) {
+  LayerParams p{};
+  p.input_count = (int)layer.input_count;
+  p.output_count = (int)layer.output_count;
+  p.weight_offset = weight_offset;
+  p.bias_offset = bias_offset;
+  p.input_scale = layer.input.scale;
+  p.weight_scale = layer.weight.scale;
+  p.bias_scale = layer.bias.scale;
+  p.output_scale = layer.output.scale;
+  p.input_zero_point = (int)layer.input.zero_point;
+  p.output_zero_point = (int)layer.output.zero_point;
+  p.relu = layer.relu ? 1 : 0;
+  return p;
+}
+
+// Host constants of the fast paths, from binary64. The kernel and
+// tests/test_requant.cu both derive them here.
+// - fast_input_reciprocal() = fl32(1 / input scale), or 0 when it is not a
+//   normal number (never for the pinned model; 0 selects quantize_input()).
+// - make_fast_layer(): kappa = fl32(in_scale * w_scale / out_scale), or 0
+//   when it is not finite or below 2^-100, so that lambda = kappa * 2^-20 is
+//   exact and normal (0 selects requantize()); code_min = the output zero
+//   point with ReLU, else -128; and per output
+//   betas[o] = fl32(bias[o] * bias_scale / out_scale) (a non-finite beta also
+//   sets kappa to 0).
+struct FastLayer {
+  float kappa, lambda;
+  int code_min;
+};
+
 inline float fast_input_reciprocal(float scale) {
   const float reciprocal = (float)(1.0 / (double)scale);
   return std::isnormal(reciprocal) && reciprocal > 0.0f ? reciprocal : 0.0f;
 }
-inline float fast_constants(const LayerParams &layer, const int32_t *biases,
-                            float *betas) {
+
+inline FastLayer make_fast_layer(const LayerParams &layer, const int32_t *biases,
+                                 float *betas) {
   float kappa = (float)((double)layer.input_scale * (double)layer.weight_scale /
                         (double)layer.output_scale);
   if (!std::isfinite(kappa) || !(kappa >= 0x1p-100f)) kappa = 0.0f;
@@ -83,7 +112,7 @@ inline float fast_constants(const LayerParams &layer, const int32_t *biases,
       kappa = 0.0f;
     }
   }
-  return kappa;
+  return {kappa, kappa * 0x1p-20f, layer.relu ? layer.output_zero_point : -128};
 }
 
 // quantize_input_try_fast() computes quantize_input(x, scale, zero_point)
@@ -92,8 +121,10 @@ inline float fast_constants(const LayerParams &layer, const int32_t *biases,
 // comes from fast_input_reciprocal(scale).
 //
 // The baseline code is sat(ratio) with ratio = fl32(x / scale). For
-// |ratio| < 1024, ratio +- 0.5 is exact in binary64 when |ratio| >= 2^-29 (at
-// most 34 significant bits) and stays within 2^-29 of +-0.5 otherwise, so
+// 2^-29 <= |ratio| < 1024, ratio +- 0.5 is exact in binary64: it is a
+// multiple of ulp(ratio) >= 2^-52 below max(2^(e + 2), 2) for
+// 2^e <= |ratio| < 2^(e + 1), so at most 53 significant bits. Below 2^-29
+// it stays within 2^-29 of +-0.5. So
 // saturate_int8 gives clip(round_half_away(ratio) + zero point); for
 // |ratio| >= 1024 it saturates, as does the clip of any |n| >= 1023 plus a
 // zero point in [-128, 127].
@@ -104,9 +135,11 @@ inline float fast_constants(const LayerParams &layer, const int32_t *biases,
 // half-integer (rounding is monotone and 0.5 is representable), so p is more
 // than 0.87 * 2^-20 |p| > 2^-24 |p| from every half-integer, and q, p, and
 // ratio all lie strictly between the same two half-integers: r is
-// round_half_away(ratio). |q| >= 2^19 (or an overflowed q) fails the test, so
-// the conversion of r cannot overflow. The fallback fraction is about
-// 2^-19 |p|.
+// round_half_away(ratio). The relative bounds need p and q normal; if either
+// is below 2^-126 in magnitude, all three are far below 0.5 (the absolute
+// errors are at most 2^-149), and r = 0 = round_half_away(ratio). |q| >= 2^19
+// (or an overflowed q) fails the test, so the conversion of r cannot
+// overflow. The fallback fraction is about 2^-19 |p|.
 __device__ __forceinline__ bool quantize_input_try_fast(float x, float reciprocal,
                                                        int zero_point, int &code) {
   const float q = __fmul_rn(x, reciprocal);
@@ -136,10 +169,8 @@ __device__ __forceinline__ float fast_margin_base(float beta) {
 
 // requantize_try_fast() computes requantize(acc, bias, layer) in binary32 and
 // returns true when that code is proven equal; requantize_fast() falls back to
-// requantize() otherwise. kappa and beta come from
-// fast_constants(), lambda = kappa * 2^-20 (exact), margin_base from
-// fast_margin_base(beta), and code_min is the layer's zero point with ReLU,
-// else -128.
+// requantize() otherwise. kappa, lambda, code_min, and beta come from
+// make_fast_layer(), and margin_base from fast_margin_base(beta).
 //
 // Let v = acc * kappa* + beta* be the exact value of real / out_scale
 // (kappa*, beta* the exact quotients) and S = |acc| kappa* + |beta*| >= |v|.
@@ -150,10 +181,12 @@ __device__ __forceinline__ float fast_margin_base(float beta) {
 //   term covers the rounding of V +- 0.5).
 // - f = fma(fl32(acc), kappa, beta) rounds acc (2^-24 relative, exact below
 //   2^24), kappa and beta (2^-24 + 2^-51 each), and the fma (2^-24), so
-//   |f - v| <= E32 = 2^-21.9 S.
+//   |f - v| <= E32 = 2^-21.9 S. (A subnormal beta is off by at most 2^-149,
+//   which the 2^-22 term of the margin absorbs.)
 // - r = rint(f), and d = |f - r| is exact (r = 0 for |f| < 0.5, else
-//   Sterbenz). margin = fma(|fl32(acc)|, lambda, margin_base) is at least
-//   (1 - 2^-23) (2^-20 S + 2^-22). The test fl32(d + margin) < 0.5 implies
+//   Sterbenz). margin = fma(|fl32(acc)|, lambda, margin_base) rounds three
+//   times (fl32(acc), margin_base, the fma), so it is at least
+//   (1 - 3 * 2^-24) (2^-20 S + 2^-22). The test fl32(d + margin) < 0.5 implies
 //   d + margin < 0.5 (rounding is monotone and 0.5 is representable), so f is
 //   more than margin from every half-integer, and v more than
 //   margin - E32 >= 0.73 * 2^-20 S + 0.99 * 2^-22 > E64.

@@ -65,15 +65,17 @@ $(OPT_TEST_DIR)/anomaly_optimized_chunks%: $(BIN)
 	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(LP_FLAGS) -DLP_ANOMALY_FORCE_CHUNKS=$* \
 	  $(addprefix $(APP_DIR)/,$(OPT_SRCS)) -o $@
 
-$(OPT_TEST_DIR)/test_requant: $(TEST_REQUANT_SRCS) $(addprefix $(APP_DIR)/,$(OPT_HEADERS))
-	@mkdir -p $(OPT_TEST_DIR)
-	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(LP_REQUIRED_NVCCFLAGS) $(TEST_REQUANT_SRCS) -o $@
+TEST_REQUANT_DEPS := $(TEST_REQUANT_SRCS) $(addprefix $(APP_DIR)/,$(OPT_HEADERS)) \
+                     $(LP_ROOT)/common.mk $(APP_DIR)/Makefile
 
-$(OPT_TEST_DIR)/test_requant_no_margin_mutant: $(TEST_REQUANT_SRCS) \
-                                               $(addprefix $(APP_DIR)/,$(OPT_HEADERS))
+$(OPT_TEST_DIR)/test_requant: $(TEST_REQUANT_DEPS)
 	@mkdir -p $(OPT_TEST_DIR)
-	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(LP_REQUIRED_NVCCFLAGS) \
-	  -DLP_ANOMALY_MUTANT_NO_MARGIN $(TEST_REQUANT_SRCS) -o $@
+	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(LP_FLAGS) $(TEST_REQUANT_SRCS) -o $@
+
+$(OPT_TEST_DIR)/test_requant_no_margin_mutant: $(TEST_REQUANT_DEPS)
+	@mkdir -p $(OPT_TEST_DIR)
+	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(LP_FLAGS) -DLP_ANOMALY_MUTANT_NO_MARGIN \
+	  $(TEST_REQUANT_SRCS) -o $@
 
 test: $(BIN) $(MUTANT) $(HOST_TEST) $(OPT_TEST_BINS)
 	$(HOST_TEST) $(ASSET_CACHE)

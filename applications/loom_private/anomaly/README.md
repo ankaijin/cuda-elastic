@@ -135,8 +135,12 @@ warmups, the oracle, and checking. No timings are claimed here.
 
 - The kernel is a correctness baseline. A faster variant might stage the
   weights in shared memory, process several samples per block, or use
-  `dp4a`. It must keep the exact integer sums and the same sequence of double
-  operations to stay bitwise equal to the oracle.
+  `dp4a`. It must keep the exact integer sums and stay bitwise equal to the
+  oracle. The baseline does this by replaying the contract's sequence of
+  double operations. The optimized variant (below) departs from that
+  sequence: its binary32 fast paths are proven, and exhaustively tested, to
+  give the same codes, and they fall back to the baseline sequence
+  otherwise.
 - The dataset has only 40 unique samples. Any variant must still infer every
   sample and must not cache results across samples.
 - Non-finite inputs are rejected at setup. A variant that streams
@@ -177,13 +181,12 @@ things.
   quantization, unchanged. The baseline's `__fdiv_rn` division and binary64
   `saturate_int8` are those fallbacks. On the large workload the kernel
   executes about 1% of the first version's FP64 instructions.
-- **Exhaustive check of the fast paths.** `tests/test_requant.cu` checks
-  every accepted code against the baseline functions. For the input, it
-  covers every finite binary32 value. For requantization, it covers every
-  accumulator within the contract's bound $|acc| \le 20{,}889{,}600$ for each
-  of the 1,672 layer outputs of the pinned model. The reference codes come
-  from threshold tables built by bisection with the baseline functions, which
-  are monotone. The tables are cross-checked against direct evaluations.
+- **Exhaustive check of the fast paths.** `tests/test_requant.cu` compares
+  every accepted code with a direct call of the baseline function. For the
+  input, it covers every finite binary32 value. For requantization, it
+  covers every accumulator within the contract's bound
+  $|acc| \le 20{,}889{,}600$ for each of the 1,672 layer outputs of the
+  pinned model. It also checks that it visited exactly that many arguments.
 - **Pipelined transfers.** The application scope splits the samples into
   chunks of whole tiles. Chunk $c$ is uploaded on a side stream, inferred on
   the harness stream after its upload event, and downloaded on a second side
@@ -214,8 +217,8 @@ about 1.7 on the 3090, and most stalls wait on L1/L2 weight loads.
 `tests/run_tests.sh` case on the optimized binary and its skip-last-sample
 mutant. It then runs [`tests/run_optimized_tests.sh`](tests/run_optimized_tests.sh):
 
-- the exhaustive fast-path test above, and a mutant without the margin, which
-  it must reject;
+- the exhaustive fast-path test above, and a mutant without the margin,
+  which both of its halves must reject;
 - sample counts at tile edges (1, 16, 33, 4,099);
 - a build that uses the baseline arithmetic for every code (the fallback
   paths) on 1,003 samples;
