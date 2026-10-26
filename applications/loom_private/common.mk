@@ -37,6 +37,11 @@ LP_REQUIRED_NVCCFLAGS := -std=c++17 -arch=$(ARCH) --fmad=false \
                          -Xcompiler -ffp-contract=off
 OUT := $(ROOT)/$(GPU)/loom_private/$(APP)
 BUILD := $(OUT)/build
+# Only the make command line selects the variant: an exported VARIANT (the
+# legacy profile scripts export VARIANT=baseline|sota) must not leak in.
+ifneq ($(filter environment%,$(origin VARIANT)),)
+VARIANT := baseline
+endif
 VARIANT ?= baseline
 ifeq ($(VARIANT),baseline)
 BIN := $(BUILD)/$(APP)

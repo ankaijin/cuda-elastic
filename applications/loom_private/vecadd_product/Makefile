@@ -23,7 +23,6 @@ TUNING_BIN := $(if $(OPTIMIZED),$(BUILD)/vecadd_product_tuning_optimized)
 SLOW_WARMUP := $(BUILD)/vecadd_product_slow_warmup$(SUFFIX)
 HOST_TEST := $(BUILD)/test_host
 TEST_SCRATCH := $(BUILD)/test-output$(SUFFIX)
-SRC_PATHS := $(addprefix $(APP_DIR)/,$(VARIANT_SRCS) $(VARIANT_HEADERS))
 
 .PHONY: test
 

@@ -12,17 +12,19 @@ with paths relative to that GPU's folder (null means pending):
   the optimized variant.
 - `bench_direct`, `bench_graph` (baseline) and `bench_optimized` (optimized
   variant, CUDA Graph launches): lists of `--action bench` records, one per
-  recorded repetition. Times are the median over the list.
+  recorded repetition, all with the same iterations and warmup. Times are the
+  median over the list. A variant's bench needs that variant's passing check.
 - `profiles`: `nsys` and `ncu` reports for `direct`, `graph` and `optimized`
   (the same three versions), written by applications/loom_private/tools/
   profile.py with CSV exports beside them, so reading them needs no Nsight
-  tools.
+  tools. Each report holds exactly one end-to-end invocation.
 
 Missing files, unsafe paths, records of another workload, variant, action or
 launch (a check must cover both launch modes), records that validated an older
 contract, records whose integer dimensions differ from the contract's `large`
-values, records from a GPU other than the folder's, and profiles of another
-application or version are errors.
+values, records from a GPU other than the folder's, repeated or inconsistent
+repetitions, benches without a passing check of their variant, and profiles of
+another application, version, or GPU are errors.
 
 Timing cells come only from bench records, so a correctness check never
 appears as a performance measurement. The workbook uses the layout and styling
@@ -66,8 +68,6 @@ BENCHES = ["bench_direct", "bench_graph", "bench_optimized"]
 PROFILE_VERSIONS = {"direct": "baseline-direct", "graph": "baseline-graph",
                     "optimized": "optimized-graph"}
 PROFILE_SUFFIXES = {"nsys": (".nsys-rep",), "ncu": (".ncu-rep", ".ncu-repz")}
-# tools/profile.py runs one bench of --iterations 1 --warmup 0: four invocations.
-PROFILED_INVOCATIONS = 4
 PENDING = "pending"
 # Display name and a format string over the contract's `large` values.
 PROBLEMS = {
@@ -190,9 +190,15 @@ def load_benches(folder, app, key, value, spec):
     if value is None:
         return None
     values = value if isinstance(value, list) else [value]
+    where = f"inputs/{folder}.json: {app} {key}"
     if not values:
-        raise ValueError(f"inputs/{folder}.json: {app} {key} is an empty list; use null")
-    return [load_record(folder, app, key, v, spec) for v in values]
+        raise ValueError(f"{where} is an empty list; use null")
+    if len(set(values)) != len(values):
+        raise ValueError(f"{where} lists a record more than once")
+    records = [load_record(folder, app, key, v, spec) for v in values]
+    if len({(r.get("iterations"), r.get("warmup")) for r in records}) != 1:
+        raise ValueError(f"{where}: repetitions differ in iterations or warmup")
+    return records
 
 
 def load_profile(folder, app, kind, version, value):
@@ -210,6 +216,10 @@ def load_profile(folder, app, kind, version, value):
                             else f"{stem}-ncu-raw.csv")
     if not export.is_file():
         raise ValueError(f"{folder}/{value}: its export {export.name} is missing")
+    meta = run_metadata(f"{folder}/{value}")
+    gpu = ((meta or {}).get("gpu") or {}).get("name")
+    if meta and not device_matches(folder, gpu):
+        raise ValueError(f"{folder}/{value}: profiled on {gpu!r}, not the {folder} folder's GPU")
     return {"_path": f"{folder}/{value}",
             "csv": f"{folder}/{Path(value).with_name(export.name)}"}
 
@@ -232,6 +242,10 @@ def load_gpu(folder):
             row[key] = load_record(folder, app, key, selected[key], spec)
         for key in BENCHES:
             row[key] = load_benches(folder, app, key, selected[key], spec)
+            check = row["check_optimized" if key == "bench_optimized" else "check"]
+            if row[key] and not (check and check_passed(check)):
+                raise ValueError(f"inputs/{folder}.json: {app} {key} needs a passing "
+                                 f"{'check_optimized' if key == 'bench_optimized' else 'check'}")
         profiles = selected["profiles"]
         if sorted(profiles) != sorted(PROFILE_SUFFIXES) or any(
                 sorted(profiles[kind]) != sorted(PROFILE_VERSIONS) for kind in profiles):
@@ -259,9 +273,10 @@ def timing(records, scope, field="batch_per_iteration_us"):
     return statistics.median(r["timing"][scope][field] for r in records)
 
 
-def median_record(records, scope):
-    """The repetition whose batched time is the (lower) median, for links."""
-    ranked = sorted(records, key=lambda r: r["timing"][scope]["batch_per_iteration_us"])
+def median_record(records, scope, field="batch_per_iteration_us"):
+    """The repetition holding the (lower) median of a field, for links. With an
+    odd count it holds the displayed median exactly."""
+    ranked = sorted(records, key=lambda r: r["timing"][scope][field])
     return ranked[(len(ranked) - 1) // 2]
 
 
@@ -297,13 +312,16 @@ def problem_text(app, spec):
     return PROBLEMS[app][1].format(**spec["large"])
 
 
+def check_passed(record):
+    """True only when every invocation passed and Direct and Graph agree."""
+    return (record["status"] == "pass" and record["outputs_agree"]
+            and all(c["pass"] for c in record["checks"]))
+
+
 def check_summary(record):
-    """pass only when every invocation passed and Direct and Graph agree."""
     if record is None:
         return PENDING
-    passed = (record["status"] == "pass" and record["outputs_agree"]
-              and all(c["pass"] for c in record["checks"]))
-    return f"[{'pass' if passed else 'FAIL'}](../../{record['_path']})"
+    return f"[{'pass' if check_passed(record) else 'FAIL'}](../../{record['_path']})"
 
 
 def run_metadata(path):
@@ -348,31 +366,26 @@ def environment(manifest, rows):
 
 
 def short_kernel(name):
-    """`<unnamed>::foo<128>(float *, int)` -> `foo<128>`."""
+    """`void <unnamed>::foo<(int)8, 4>(float *, int)` -> `foo<(int)8, 4>`."""
     for prefix in ("<unnamed>::", "(anonymous namespace)::"):
         name = name.replace(prefix, "")
     name = name.removeprefix("void ")
-    base, bracket, rest = name.split("(")[0].partition("<")
+    depth = 0
+    for i, c in enumerate(name):
+        depth += {"<": 1, ">": -1}.get(c, 0)
+        if c == "(" and depth == 0:
+            name = name[:i]
+            break
+    base, bracket, rest = name.partition("<")
     return base.split("::")[-1] + bracket + rest
 
 
 def nsys_kernels(profile):
-    """Per-invocation kernel time from an nsys kernel summary.
-
-    Returns ([(kernel, us per invocation, launches per invocation)], [setup
-    kernels]): setup kernels run a number of times that is not a multiple of
-    the profiled invocations."""
+    """[(kernel, us, launches)] of the one end-to-end invocation an nsys report
+    captures (tools/profile.py), from its kernel summary."""
     with open(REPO / profile["csv"]) as stream:
-        rows = list(csv.DictReader(stream))
-    kernels, setup = [], []
-    for row in rows:
-        count, total_us = int(row["Instances"]), float(row["Total Time (ns)"]) / 1e3
-        if count % PROFILED_INVOCATIONS:
-            setup.append(short_kernel(row["Name"]))
-        else:
-            kernels.append((short_kernel(row["Name"]), total_us / PROFILED_INVOCATIONS,
-                            count // PROFILED_INVOCATIONS))
-    return kernels, setup
+        return [(short_kernel(row["Name"]), float(row["Total Time (ns)"]) / 1e3,
+                 int(row["Instances"])) for row in csv.DictReader(stream)]
 
 
 def ncu_rows(profile):
@@ -651,50 +664,49 @@ def workbook(gpus):
     def bench(records, scope, field="batch_per_iteration_us"):
         return BENCH_PENDING if not records else timing(records, scope, field)
 
-    def bench_source(records, scope):
-        return median_record(records, scope)["_path"] if records else None
+    def bench_source(records, scope, field="batch_per_iteration_us"):
+        return median_record(records, scope, field)["_path"] if records else None
 
     def kernel_time(profile):
-        return NSYS_PENDING if profile is None else sum(us for _, us, _ in nsys_kernels(profile)[0])
+        return NSYS_PENDING if profile is None else sum(us for _, us, _ in nsys_kernels(profile))
 
-    def describe(records):
-        counts = {r["iterations"] for r in records}
-        runs = len(records)
+    def describe(row):
+        """Iterations per batch and run counts, per version."""
+        counts = {r["iterations"] for key in BENCHES for r in row[key] or []}
         text = f" {counts.pop():,} iterations/batch." if len(counts) == 1 else ""
-        return text + (" One run." if runs == 1 else f" Median of {runs} runs.")
+        runs = {version: len(row[key]) for version, key in zip(VERSIONS, BENCHES) if row[key]}
+        if len(set(runs.values())) == 1:
+            n = next(iter(runs.values()))
+            return text + (" One run each." if n == 1 else f" Median of {n} runs each.")
+        return text + " Runs: " + ", ".join(f"{v} {n}" for v, n in runs.items()) + "."
 
     def stage_note(row, scope):
         spec = row["contract"] or {}
         short = SHORT_NOTES[scope].get(row["app"], DEFAULT_NOTES[scope])
-        records = [r for key in BENCHES for r in row[key] or []]
-        if records:
-            short += describe(records)
+        if any(row[key] for key in BENCHES):
+            short += describe(row)
         full = spec.get("timing_scope", {}).get(scope, "Contract pending.")
         return short, full[0].upper() + full[1:] + "."
 
     def kernel_note(row):
-        parts, setup_kernels = [], set()
-        for version, (kind, key) in zip(VERSIONS, [("nsys", v) for v in PROFILE_VERSIONS]):
-            profile = row["profiles"][(kind, key)]
+        parts, launches = [], {}
+        for version, key in zip(VERSIONS, PROFILE_VERSIONS):
+            profile = row["profiles"][("nsys", key)]
             if profile is None:
                 continue
-            kernels, setup = nsys_kernels(profile)
-            setup_kernels.update(setup)
+            kernels = nsys_kernels(profile)
+            launches[version] = sum(count for _, _, count in kernels)
             total = sum(us for _, us, _ in kernels) or 1
             parts.append(f"{version}: " + ", ".join(
                 f"{name} ×{count} ({100 * us / total:.0f}%)"
                 for name, us, count in sorted(kernels, key=lambda k: -k[1])))
         if not parts:
             return "Not profiled yet.", "No Nsight Systems profile is selected."
-        launches = sum(c for _, _, c in nsys_kernels(row["profiles"][("nsys", "optimized")]
-                                                     or row["profiles"][("nsys", "graph")]
-                                                     or row["profiles"][("nsys", "direct")])[0])
-        short = f"Sum of every kernel in one invocation ({launches:,} launches, last version)."
-        full = ("Kernel time per invocation from Nsight Systems: the profile runs four "
-                "invocations (two end to end, two kernel only), and each kernel's total is "
-                "divided by four. " + " ".join(f"{p}." for p in parts))
-        if setup_kernels:
-            full += " Setup kernels, not counted: " + ", ".join(sorted(setup_kernels)) + "."
+        short = "Every kernel of one end-to-end invocation; launches: " + ", ".join(
+            f"{v} {n:,}" for v, n in launches.items()) + "."
+        full = ("Kernel time of one end-to-end invocation from Nsight Systems, captured after "
+                "one warmup invocation; copies and setup are left out. " +
+                " ".join(f"{p}." for p in parts))
         return short, full
 
     names = {m["folder"]: m["label"].split(" (")[0] for m, _ in gpus}
@@ -715,7 +727,9 @@ def workbook(gpus):
 
     def speedup(a, b):
         """a / b, else the pending reason of the missing value."""
-        return ratio(a, b) or next((x for x in (b, a) if isinstance(x, str)), BENCH_PENDING)
+        if ratio(a, b) is not None:
+            return ratio(a, b)
+        return next((x for x in (b, a) if isinstance(x, str)), "n/a (zero time)")
 
     def summary_values(ws, r, direct, graph, optimized, sources, base_graph=None, compare=False):
         for col, (data, source, fill) in enumerate(zip((direct, graph, optimized), sources,
@@ -776,14 +790,14 @@ def workbook(gpus):
                         for col in range(5, 11):
                             value(ws, r, col, BENCH_PENDING, speedup=col == 10)
                     else:
-                        source = bench_source(records, scope)
                         singles[version] = timing(records, scope, "single_median_us")
                         iterations = {rec["iterations"] for rec in records}
                         ws.cell(r, 5, iterations.pop() if len(iterations) == 1 else "mixed")
                         ws.cell(r, 6, len(records))
                         for col, field in enumerate(("batch_total_ms", "batch_per_iteration_us",
                                                      "single_median_us"), 7):
-                            value(ws, r, col, timing(records, scope, field), source)
+                            value(ws, r, col, timing(records, scope, field),
+                                  bench_source(records, scope, field))
                         value(ws, r, 10, ratio(singles[version],
                                                timing(records, scope)), speedup=True)
                     if version == "Graph":
@@ -900,7 +914,7 @@ def workbook(gpus):
                          [24, 14, 46, 11, 15, 15, 15, 17, 17, 18, 18, 19, 22, 22, 17, 22, 50, 20,
                           30],
                          "Large workloads; one row per report, kernel, and launch configuration. "
-                         "Each report covers the setup kernels and one end-to-end invocation. "
+                         "Each report covers one end-to-end invocation, after a warmup. "
                          "Medians and min/max describe profiled launches, not application "
                          "latency or total GPU utilization. Missing metrics stay blank.")
         raw = table_sheet(raw_title, ["Workload", "Version", "ncu report", "Launch #", "Kernel"]

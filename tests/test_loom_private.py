@@ -55,6 +55,36 @@ class RunSuiteArgumentTests(unittest.TestCase):
     def test_unknown_variant_is_rejected(self):
         self.assertEqual(self.run_suite("--variant", "fast", "pagerank").returncode, 2)
 
+    def test_file_names_name_the_variant_and_launch(self):
+        suite = load(SUITE / "run_suite.py", "lp_run_suite")
+        def name(**fields):
+            args = {"action": "bench", "launch": "graph", "variant": "baseline", **fields}
+            return suite.run_name(type("Args", (), args))
+        self.assertEqual(name(), "bench-graph")
+        self.assertEqual(name(variant="optimized"), "bench-graph-optimized")
+        self.assertEqual(name(action="check", launch=None), "check")
+        self.assertEqual(name(action="check", launch=None, variant="optimized"),
+                         "check-optimized")
+
+
+class ProfileToolTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.m = load(SUITE / "tools/profile.py", "lp_profile")
+
+    def test_captures_hold_one_invocation(self):
+        prefix = Path("/x/run.host-baseline-graph")
+        steps = [[str(part) for part in step]
+                 for step in self.m.commands(Path("/b/app"), "graph", prefix, ncu=True)]
+        nsys, stats, ncu = steps
+        self.assertIn("cudaProfilerApi", nsys)
+        self.assertEqual(ncu[ncu.index("--profile-from-start") + 1], "off")
+        for step in (nsys, ncu):
+            self.assertEqual(step[step.index("--action") + 1], "profile")
+            self.assertEqual(step[:2], ["flock", self.m.LOCK])
+        self.assertEqual(stats[-1], "/x/run.host-baseline-graph.nsys-rep")
+        self.assertEqual(len(self.m.commands(Path("/b/app"), "direct", prefix, ncu=False)), 2)
+
 
 class ReportTests(unittest.TestCase):
     @classmethod
@@ -130,6 +160,13 @@ class ReportTests(unittest.TestCase):
         self.manifest["applications"]["pagerank"]["profiles"][kind][version] = value
         (self.m.HERE / "inputs/rtx3090.json").write_text(json.dumps(self.manifest))
         return self.m.load_gpu("rtx3090")
+
+    def pass_checks(self):
+        """Select passing checks of both variants, as every bench selection needs."""
+        selected = self.manifest["applications"]["pagerank"]
+        selected["check"] = self.write_record("check.json")
+        selected["check_optimized"] = self.write_record("check-optimized.json",
+                                                        variant="optimized")
 
     def select(self, key, value):
         self.manifest["applications"]["pagerank"][key] = value
@@ -229,12 +266,37 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(self.m.size_text(spec), "length=1,048,576")
 
     def test_repetitions_report_the_median_and_link_its_record(self):
+        self.pass_checks()
         names = [self.write_bench(f"r{i}.json", us) for i, us in enumerate((30.0, 10.0, 20.0), 1)]
         manifest, rows = self.select("bench_graph", names)
         self.assertEqual(self.m.timing(rows[0]["bench_graph"], "application"), 20.0)
         self.assertEqual(self.m.median_record(rows[0]["bench_graph"], "application")["_path"],
                          "rtx3090/r3.json")
         self.assertIn("then the median of 3 recorded runs", self.m.markdown([(manifest, rows)]))
+        latency = self.m.workbook([(manifest, rows)])["Latency RTX 3090"]
+        self.assertEqual(latency["F6"].value, 3)
+        self.assertIn("Median of 3 runs", latency["M6"].value)
+
+    def test_repetitions_must_be_distinct_and_consistent(self):
+        self.pass_checks()
+        name = self.write_bench("r1.json", 10.0)
+        with self.assertRaisesRegex(ValueError, "more than once"):
+            self.select("bench_graph", [name, name])
+        other = self.write_record("r2.json", **{**json.loads(
+            (self.m.REPO / "rtx3090/r1.json").read_text()), "iterations": 5})
+        with self.assertRaisesRegex(ValueError, "differ in iterations or warmup"):
+            self.select("bench_graph", [name, other])
+
+    def test_bench_needs_a_passing_check_of_its_variant(self):
+        with self.assertRaisesRegex(ValueError, "bench_graph needs a passing check"):
+            self.select("bench_graph", [self.write_bench("graph.json", 10.0)])
+        self.manifest["applications"]["pagerank"]["bench_graph"] = None
+        self.select("check", self.write_record("check.json"))
+        self.select("check_optimized", self.write_record(
+            "check-optimized.json", variant="optimized", status="fail"))
+        with self.assertRaisesRegex(ValueError, "bench_optimized needs a passing check_optimized"):
+            self.select("bench_optimized", [self.write_bench("opt.json", 5.0,
+                                                             variant="optimized")])
 
     def test_empty_repetition_list_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "empty list"):
@@ -248,12 +310,13 @@ class ReportTests(unittest.TestCase):
                                                              "optimized")])
         with self.assertRaisesRegex(ValueError, "selected as check_optimized"):
             self.select("check_optimized", self.write_record("check.json"))
-        self.manifest["applications"]["pagerank"]["check_optimized"] = None
+        self.pass_checks()
         _, rows = self.select("bench_optimized", [self.write_bench("opt.json", 5.0,
                                                                    variant="optimized")])
         self.assertEqual(self.m.timing(rows[0]["bench_optimized"], "compute"), 4.0)
 
     def test_optimized_speedup_is_graph_over_optimized(self):
+        self.pass_checks()
         self.select("bench_graph", [self.write_bench("graph.json", 30.0)])
         manifest, rows = self.select("bench_optimized", [self.write_bench(
             "opt.json", 10.0, variant="optimized")])
@@ -285,16 +348,28 @@ class ReportTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "export run-baseline-graph_cuda_gpu_kern_sum.csv"):
             self.select_profile("nsys", "graph", path)
 
-    def test_kernel_time_per_invocation_leaves_out_setup_kernels(self):
+    def test_kernels_come_from_the_one_captured_invocation(self):
+        # Chunked variants launch a kernel once per chunk: every instance counts.
         path = self.write_profile("run-optimized-graph", kernels=[
-            ("<unnamed>::update<128>(const int *, float *)", 8000, 8),
-            ("void (anonymous namespace)::init(int)", 5000, 1)])
+            ("<unnamed>::update<128>(const int *, float *)", 8000, 34),
+            ("void (anonymous namespace)::merge(int)", 500, 1)])
         _, rows = self.select_profile("nsys", "optimized", path)
-        kernels, setup = self.m.nsys_kernels(rows[0]["profiles"][("nsys", "optimized")])
-        self.assertEqual(kernels, [("update<128>", 2.0, 2)])
-        self.assertEqual(setup, ["init"])
+        self.assertEqual(self.m.nsys_kernels(rows[0]["profiles"][("nsys", "optimized")]),
+                         [("update<128>", 8.0, 34), ("merge", 0.5, 1)])
+        self.assertEqual(self.m.short_kernel("void <unnamed>::partial<(int)8, (int)4>(int)"),
+                         "partial<(int)8, (int)4>")
+
+    def test_profile_from_another_gpu_is_rejected(self):
+        run = "20261026-000000-kilia-1234abcd"
+        meta = self.m.REPO / "rtx3090/runs" / run / "metadata.json"
+        meta.parent.mkdir(parents=True)
+        meta.write_text(json.dumps({"run_id": run, "gpu": {"name": "NVIDIA GeForce RTX 5090"}}))
+        path = self.write_profile(f"{run}-baseline-graph", kernels=[("k", 400, 1)])
+        with self.assertRaisesRegex(ValueError, "not the rtx3090 folder's GPU"):
+            self.select_profile("nsys", "graph", path)
 
     def test_bench_record_fills_timing(self):
+        self.pass_checks()
         timing = {"application": {"batch_per_iteration_us": 12.5},
                   "compute": {"batch_per_iteration_us": 10.0}}
         name = self.write_record("bench.json", action="bench", launch="graph",
@@ -305,6 +380,7 @@ class ReportTests(unittest.TestCase):
 
 
     def test_workbook_matches_the_legacy_layout(self):
+        self.pass_checks()
         timing = {scope: {"batch_total_ms": 0.25, "batch_per_iteration_us": us,
                           "single_median_us": us * 1.1}
                   for scope, us in (("application", 12.5), ("compute", 10.0))}
@@ -351,7 +427,7 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(latency["L7"].value, 2.292)  # Graph single / Optimized single
         self.assertEqual(latency.max_row, 4 + len(self.m.APPS) * 2 * 3)
         kernels = book["Kernels RTX 3090"]
-        self.assertEqual(kernels["F5"].value, 0.1)  # 400 ns over four invocations
+        self.assertEqual(kernels["F5"].value, 0.4)  # 400 ns in the captured invocation
         self.assertEqual(kernels["E5"].value, "pending")
         metrics = book["ncu metrics (RTX 3090)"]
         self.assertEqual([metrics.cell(5, c).value for c in (2, 3, 4, 5, 8)],

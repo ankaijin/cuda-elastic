@@ -7,26 +7,26 @@
 Each application is profiled in three versions: the baseline with direct
 launches, the baseline as a CUDA Graph, and the optimized variant as a CUDA
 Graph (the version the report's Optimized column times). Every capture runs
-one bench of `--iterations 1 --warmup 0`: setup, then two invocations at
-application scope and two at compute scope.
+the binary's `--action profile`: setup and one warmup invocation, then exactly
+one end-to-end invocation between cudaProfilerStart and cudaProfilerStop. The
+profilers capture only that range (nsys --capture-range cudaProfilerApi, ncu
+--profile-from-start off), so each report holds one complete invocation and
+nothing from setup.
 
 Per version, files go to <gpu>/loom_private/<app>/profiles/ as
 <stamp>-<version>.nsys-rep with its kernel and memcpy summaries
 (<stamp>-<version>_cuda_gpu_kern_sum.csv, _cuda_gpu_mem_time_sum.csv), and
 <stamp>-<version>.ncu-rep (or .ncu-repz) with its raw metrics exported to
-<stamp>-<version>-ncu-raw.csv, so the report never needs this machine's ncu
-to read them. ncu (`--set basic`) profiles the setup kernels and the first
-application-scope invocation: the launch count comes from the Nsight Systems
-summary, where setup kernels are those whose instance count is not a
-multiple of the four invocations. The stamp is $TIMESTAMP when set
-(results/record_run.py sets it to the run id).
+<stamp>-<version>-ncu-raw.csv, so the report never needs this machine's Nsight
+tools to read them. The stamp is $TIMESTAMP when set (results/record_run.py
+sets it to the run id).
 
-Binaries must be built first (run_suite.py builds both variants). Each
-profiled process takes the GPU lock; do not wrap this script in flock.
+Both variants' binaries must be built first (`make build` with VARIANT=baseline
+and VARIANT=optimized). Each profiled process takes the GPU lock; do not wrap
+this script in flock.
 """
 
 import argparse
-import csv
 from datetime import datetime, timezone
 import os
 from pathlib import Path
@@ -38,20 +38,38 @@ REPO = SUITE.parents[1]
 APPS = ["pagerank", "attention", "decoder", "anomaly", "vecadd_memory", "vecadd_product"]
 VERSIONS = [("baseline-direct", "baseline", "direct"), ("baseline-graph", "baseline", "graph"),
             ("optimized-graph", "optimized", "graph")]
-INVOCATIONS = 4  # --iterations 1 --warmup 0: one batch and one single, per scope
 LOCK = os.environ.get("GPU_LOCK", "/tmp/cuda-elastic-gpu.lock")
+
+
+def named(prefix, suffix):
+    """prefix + suffix, whatever dots the stamp contains."""
+    return prefix.parent / (prefix.name + suffix)
+
+
+def commands(binary, launch, prefix, ncu):
+    """The capture and export commands for one version, in order."""
+    run = [binary, "--action", "profile", "--launch", launch]
+    steps = [
+        ["flock", LOCK, "nsys", "profile", "--trace", "cuda", "--cuda-graph-trace", "node",
+         "--capture-range", "cudaProfilerApi", "--capture-range-end", "stop",
+         "--force-overwrite", "true", "--output", prefix, *run],
+        ["nsys", "stats", "--report", "cuda_gpu_kern_sum,cuda_gpu_mem_time_sum",
+         "--format", "csv", "--force-export", "true", "--output", prefix,
+         named(prefix, ".nsys-rep")],
+    ]
+    if ncu:
+        steps.append(["flock", LOCK, "ncu", "--set", "basic", "--graph-profiling", "node",
+                      "--profile-from-start", "off", "--target-processes", "application-only",
+                      "--force-overwrite", "--export", prefix, *run])
+    return steps
 
 
 def run(command, **kwargs):
     print("$ " + " ".join(map(str, command)), flush=True)
-    return subprocess.run([str(c) for c in command], check=True, **kwargs)
-
-
-def launch_count(kernel_summary):
-    """Setup kernels plus one invocation's kernels, from an nsys kernel summary."""
-    with open(kernel_summary) as stream:
-        instances = [int(row["Instances"]) for row in csv.DictReader(stream)]
-    return sum(n if n % INVOCATIONS else n // INVOCATIONS for n in instances)
+    result = subprocess.run([str(c) for c in command], **kwargs)
+    if result.returncode:
+        sys.exit(f"profile.py: command failed with exit {result.returncode}: "
+                 + " ".join(map(str, command)))
 
 
 def profile(app, folder, stamp, ncu):
@@ -63,23 +81,16 @@ def profile(app, folder, stamp, ncu):
         if not binary.is_file():
             sys.exit(f"{binary.relative_to(REPO)} is missing; build both variants first")
         prefix = out / f"{stamp}-{name}"
-        bench = [binary, "--action", "bench", "--launch", launch, "--iterations", "1",
-                 "--warmup", "0"]
-        run(["flock", LOCK, "nsys", "profile", "--trace", "cuda", "--cuda-graph-trace", "node",
-             "--force-overwrite", "true", "--output", prefix, *bench], stdout=subprocess.DEVNULL)
-        run(["nsys", "stats", "--report", "cuda_gpu_kern_sum,cuda_gpu_mem_time_sum",
-             "--format", "csv", "--force-export", "true", "--output", prefix,
-             prefix.with_suffix(".nsys-rep")], stdout=subprocess.DEVNULL)
-        prefix.with_suffix(".sqlite").unlink(missing_ok=True)
+        for command in commands(binary, launch, prefix, ncu):
+            run(command, stdout=subprocess.DEVNULL)
+        named(prefix, ".sqlite").unlink(missing_ok=True)
         if not ncu:
             continue
-        count = launch_count(f"{prefix}_cuda_gpu_kern_sum.csv")
-        run(["flock", LOCK, "ncu", "--set", "basic", "--graph-profiling", "node",
-             "--launch-count", count, "--target-processes", "application-only",
-             "--force-overwrite", "--export", prefix, *bench], stdout=subprocess.DEVNULL)
-        report = next(p for p in (prefix.with_suffix(".ncu-rep"), prefix.with_suffix(".ncu-repz"))
-                      if p.is_file())
-        with open(f"{prefix}-ncu-raw.csv", "w") as stream:
+        report = next((p for p in (named(prefix, ".ncu-rep"), named(prefix, ".ncu-repz"))
+                       if p.is_file()), None)
+        if report is None:
+            sys.exit(f"profile.py: ncu wrote no report for {prefix.relative_to(REPO)}")
+        with open(named(prefix, "-ncu-raw.csv"), "w") as stream:
             run(["ncu", "--import", report, "--csv", "--page", "raw"], stdout=stream)
 
 
