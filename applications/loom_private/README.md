@@ -1,103 +1,125 @@
 # Private Loom CUDA workloads (suite v1)
 
-Six CUDA applications ported from private Loom (`PolyArch/loom-private`) at commit
-`4a75f8d743ef7fe755822bab0ea0fb78009c145b`. They are new workload identities. The
-legacy applications at the repository root (`llama2c/`, `loom_msa/`, `pagerank/`,
-`mlperf-anomaly/`, `mlperf-classification/`) and their results stay unchanged
-as historical workloads. The suite started from cuda-elastic commit
-`4ce57c7c0a333b74e9e6e2bd78142604c4c2cf39`; `legacy-freeze.json` records the hashes
-of every legacy application, script, selected input, raw result, and generated
-report at that commit, and `tools/legacy_freeze.py verify` checks them.
+Six CUDA workloads ported from private Loom (`PolyArch/loom-private`, commit
+`4a75f8d`). Each one checks its GPU output against an independent CPU
+reference, and each can be timed with direct kernel launches or with a CUDA
+Graph. Results are on the [results page](../../results/loom_private/README.md).
 
-This delivery covers large workload correctness on the RTX 3090. Timings are
-pending, and no optimized variants exist yet.
+| Directory | Workload at the large size |
+|---|---|
+| [`pagerank/`](pagerank) | Ordered Gauss–Seidel PageRank: 1,048,576 vertices, 2,097,151 edges, 20 iterations |
+| [`attention/`](attention) | Multisensor attention: 25,000 queries × 250,000 context tokens |
+| [`decoder/`](decoder) | llama2c decoder: 1,024 sequences × 4 steps, width 16,384, vocabulary 8,192 |
+| [`anomaly/`](anomaly) | MLPerf Tiny anomaly model (int8, 10 layers): 104,858 samples × 640 values |
+| [`vecadd_memory/`](vecadd_memory) | Integer vector add: 1,048,576 elements |
+| [`vecadd_product/`](vecadd_product) | Byte-wise add of 1,048,576 pairs of 64-byte operands |
 
-| Directory | Identity | Large workload |
-|---|---|---|
-| [`pagerank/`](pagerank) | `loom-private/pagerank` | ordered Gauss–Seidel PageRank, $2^{20}$ vertices, 2,097,151 edges, 20 iterations |
-| [`attention/`](attention) | `loom-private/multisensor-attention` | 25,000 query × 250,000 context tokens |
-| [`decoder/`](decoder) | `loom-private/llama2c-decoder` | 1,024 sequences, width 16,384, vocabulary 8,192, 4 dependent steps |
-| [`anomaly/`](anomaly) | `loom-private/mlperf-tiny-anomaly-model` | 104,858 samples × 640 elements through the 10-layer int8 model |
-| [`vecadd_memory/`](vecadd_memory) | `loom-private/vecadd-memory` | 1,048,576 integer elements |
-| [`vecadd_product/`](vecadd_product) | `loom-private/vecadd-product` | 1,048,576 records of two 64-byte operands |
+The older workloads at the repository root (`llama2c/`, `loom_msa/`,
+`pagerank/`, `mlperf-*`) are separate and unchanged.
+[`legacy-freeze.json`](legacy-freeze.json) holds their hashes, and
+`tools/legacy_freeze.py verify` checks them.
 
-## Commands
+## Quick start
+
+Fetch the model, dataset, and fixtures. This needs `gh` access to
+`PolyArch/loom-private`.
 
 ```bash
 python3 applications/loom_private/tools/fetch_assets.py
 ```
 
-```bash
-make -C applications/loom_private/pagerank build check-large
-```
+Build and check all six workloads at the large size:
 
 ```bash
 python3 applications/loom_private/run_suite.py
 ```
 
-`run_suite.py` builds and checks the named applications (all six by default)
-at the large preset. Each application's `make test` runs its own tests,
-mostly with small `--set` overrides; `vecadd_product`'s tests also run
-large-preset bench invocations (no oracle) to exercise the bench path and
-warmup exclusion.
-Upstream smoke and validation configurations are documented in each
-`contract.json` as references only; no target runs them.
+Time one workload. Choose `direct` or `graph`.
 
-## Shared conventions
+```bash
+python3 applications/loom_private/run_suite.py --action bench --launch graph pagerank
+```
 
-**Layout.** Each application directory holds its CUDA sources, an independent
-CPU oracle in separate host files, a `Makefile` that includes
-[`common.mk`](common.mk), tests, `contract.json`, and a README. Binaries and
-artifacts go under `<gpu>/loom_private/<application>/` (binaries in `build/`).
-Asset caches stay outside tracked source (see [`assets.json`](assets.json)).
-Private Loom files are referenced by commit, path, and hash; they are not
-copied here.
+You can also run one application's targets directly:
+`make -C applications/loom_private/<app> build`, `check-large`, `test`, or
+`bench LAUNCH=graph`.
 
-**Command line** (from [`common/lp_harness.cuh`](common/lp_harness.cuh)):
-`--preset large`, `--launch direct|graph|both`, `--action check|bench`. The
-default is `--preset large --action check --launch both`. Bench needs an explicit
-`--launch direct` or `--launch graph`. `--set key=value` overrides a dimension
-for tests (check only) and is recorded in the result. `--asset name=path`
-replaces a cached asset path; an unknown asset name exits 2. `--json-out PATH` writes the result record.
-Exit codes: 0 pass, 1 mismatch, 2 usage or invalid dimensions, 3 missing or
-corrupt asset, 70 CUDA error.
+Results are written to `<gpu>/loom_private/<app>/results/`. To record a run
+with provenance, run it under `results/record_run.py`. See
+[docs/concurrent-development.md](../../docs/concurrent-development.md).
 
-**Correctness.** `make check-large` runs the CPU oracle once, then two
-invocations in Direct mode and two in Graph mode of the same computation. Each
-invocation starts from poisoned outputs (and, for applications that upload
-inputs per invocation, poisoned device inputs) and must pass the oracle. All four
-output digests must agree bitwise. The result record (`RESULT {...}` on
-stdout) carries the workload identity, contract hash, dimensions, asset
-hashes, timing scopes, and per-invocation status.
+## What a check does
 
-**Timing.** `--action bench` times application scope and compute-only scope.
-Application scope includes host↔device transfers for most applications; the
-decoder keeps weights and working state resident; the anomaly application
-excludes model loading, parsing, and weight upload, and includes each
-invocation's sample upload and output download. Allocation, graph construction,
-warmups, the CPU oracle, and output checking stay outside every timed interval.
+1. It runs the CPU reference once.
+2. It runs the GPU twice with direct launches and twice with a CUDA Graph.
+   Each run starts from poisoned buffers.
+3. It passes only if every run matches the reference and all four outputs are
+   bit-identical.
 
-**GPU lock.** Every GPU run takes `/tmp/cuda-elastic-gpu.lock` (`GPU_LOCK`).
-The Makefile targets already lock; never wrap them in another `flock` on the
-same file.
+## What a benchmark times
+
+- **End to end** (application scope): uploading the inputs, running every
+  kernel, and downloading the results.
+  - The decoder keeps its weights on the GPU, so it transfers only prompts and
+    tokens.
+  - The anomaly model is loaded and uploaded once, outside the timed interval.
+- **Kernel only** (compute scope): the same kernels without the copies.
+
+Setup, graph capture, warmups, the CPU reference, and output checking are
+never timed. Each `contract.json` defines the scopes exactly.
+
+## Command-line options
+
+| Option | Meaning |
+|---|---|
+| `--action check\|bench` | Check (the default) or time. |
+| `--launch direct\|graph\|both` | A check runs both by default. A bench needs `direct` or `graph`. |
+| `--preset large` | The only preset. Upstream smoke sizes are documented, never run. |
+| `--iterations N`, `--warmup N` | Bench batch length and warmups (defaults 20 and 3). |
+| `--set key=value` | Change a dimension. Checks only; tests use it. |
+| `--asset name=path` | Use another file for a cached asset. |
+| `--json-out PATH` | Also write the result record to a file. |
+
+Exit codes: 0 pass, 1 wrong output, 2 bad arguments or dimensions, 3 missing
+or corrupt asset, 70 CUDA error.
+
+Every GPU command takes `/tmp/cuda-elastic-gpu.lock`. Never wrap these
+commands in another `flock` on the same file.
+
+## Layout
+
+Each application directory has:
+
+- its CUDA source
+- a CPU reference (`oracle.cpp`)
+- a `Makefile` that includes [`common.mk`](common.mk)
+- tests
+- `contract.json`
+- a README with design notes
+
+The shared harness is [`common/lp_harness.cuh`](common/lp_harness.cuh).
+Binaries go to `<gpu>/loom_private/<app>/build/`. Assets are listed in
+[`assets.json`](assets.json). They are cached outside the repository, in
+`~/.cache/cuda-elastic/loom-private-assets` or `$LOOM_PRIVATE_ASSET_CACHE`.
+No private Loom source is copied here; contracts cite it by commit, path,
+and hash.
 
 ## Workload contracts
 
-Each `contract.json` has these fields:
+`contract.json` defines each workload. The build embeds the contract's SHA-256
+in the binary and in every result record, so each result names the exact
+contract it checked.
 
-- `identity`, `suite_version` (`v1`), `extension_of_upstream` (`false` for a
-  direct port; a sentence describing the extension otherwise).
-- `upstream`: repository, commit, and each source path with its git blob hash.
-- `large`: the exact large dimensions, including derived counts.
-- `data_generation`: how every input is produced, precisely enough to
-  reimplement.
-- `outputs`: every output the check covers and its byte layout.
-- `tolerances`: the comparison for each output and where it comes from.
-- `timing_scope`: what application and compute scopes include and exclude.
-- `assets`: asset names from `assets.json` with their SHA-256, or empty.
-- `reference_only_upstream_configurations`: upstream smoke and validation
-  settings with their oracle hashes. These are documentation; nothing runs
-  them.
-
-The build embeds the contract's SHA-256 in the binary and in every result
-record, so a result names the exact contract it validated.
+| Field | Contents |
+|---|---|
+| `identity` | Workload name, such as `loom-private/pagerank`. |
+| `suite_version` | `v1`. |
+| `extension_of_upstream` | `false` for a direct port, otherwise a sentence describing the extension. |
+| `upstream` | Repository, commit, and each source path with its git blob hash. |
+| `large` | The exact large dimensions, including derived counts. |
+| `data_generation` | How every input is produced. |
+| `outputs` | Every checked output and its byte layout. |
+| `tolerances` | How each output is compared, and why. |
+| `timing_scope` | What end-to-end and kernel-only timing include. |
+| `assets` | Asset names from `assets.json` with their SHA-256 hashes. |
+| `reference_only_upstream_configurations` | Upstream smoke and validation settings. Documentation only. |

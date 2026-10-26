@@ -66,11 +66,13 @@ class ReportTests(unittest.TestCase):
         contract = self.m.SUITE / "pagerank" / "contract.json"
         contract.parent.mkdir(parents=True)
         contract.write_text(json.dumps({"identity": "loom-private/pagerank",
-                                        "large": {"vertices": 1048576},
+                                        "large": {"nodes": 1048576, "edges": 2097151,
+                                                  "iterations": 20},
                                         "timing_scope": {"application": "upload + compute + download"}}))
         self.contract_sha = hashlib.sha256(contract.read_bytes()).hexdigest()
         self.manifest = {"folder": "rtx3090", "label": "RTX 3090 (sm_86, 24 GB)",
                          "toolkit": "CUDA 13.3", "suite_version": "v1",
+                         "source_revision": "296aa928542ce31d456c1b37ec473064f8bdc545",
                          "applications": {a: {"check": None, "bench_direct": None,
                                               "bench_graph": None} for a in self.m.APPS}}
 
@@ -78,7 +80,7 @@ class ReportTests(unittest.TestCase):
         record = {"schema": "loom_private.result/1", "identity": "loom-private/pagerank",
                   "contract_sha256": self.contract_sha, "preset": "large", "overrides": {},
                   "action": "check", "launch": "both", "status": "pass",
-                  "dimensions": {"vertices": 1048576, "levels": 16},
+                  "dimensions": {"nodes": 1048576, "levels": 16},
                   "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6"},
                   "outputs_agree": True, "timing": None,
                   "checks": [{"launch": "direct", "pass": True},
@@ -100,10 +102,37 @@ class ReportTests(unittest.TestCase):
     def test_check_record_never_becomes_a_timing(self):
         manifest, rows = self.select("check", self.write_record("check.json"))
         text = self.m.markdown([(manifest, rows)])
-        timing_row = next(line for line in text.splitlines()
-                          if line.startswith("| `loom-private/pagerank`") and "vertices" in line)
-        self.assertEqual(timing_row.count("pending"), 4)
-        self.assertIn("| pass | 1/1 pass | 1/1 pass | yes |", text)
+        pagerank = [line for line in text.splitlines() if line.startswith("| PageRank |")]
+        self.assertEqual(len(pagerank), 4)  # workloads, two timing tables, correctness
+        self.assertIn("1,048,576 vertices, 2,097,151 edges, 20 ordered", pagerank[0])
+        self.assertEqual([line.count("pending") for line in pagerank[1:3]], [2, 2])
+        self.assertEqual(pagerank[3], "| PageRank | [pass](../../rtx3090/check.json) |")
+
+    def test_disagreeing_outputs_fail_the_check_summary(self):
+        _, rows = self.select("check", self.write_record("split.json", outputs_agree=False))
+        self.assertEqual(self.m.check_summary(rows[0]["check"]), "[FAIL](../../rtx3090/split.json)")
+
+    def test_environment_comes_from_run_metadata(self):
+        run = "20261026-000000-mono-12345678"
+        meta = self.m.REPO / "rtx3090/runs" / run / "metadata.json"
+        meta.parent.mkdir(parents=True)
+        meta.write_text(json.dumps({
+            "run_id": run, "host": "mono", "source_commit": "296aa928542ce31d",
+            "gpu": {"driver": "610.43.02"},
+            "installed_tools": {"nvcc": "Cuda compilation tools, release 13.3, V13.3.73"}}))
+        manifest, rows = self.select("check", self.write_record(f"{run}-check.json"))
+        self.assertEqual(self.m.environment(manifest, rows),
+                         ["RTX 3090 (sm_86, 24 GB)", "mono", "610.43.02", "CUDA 13.3", "296aa92"])
+
+    def test_selected_runs_need_a_source_revision(self):
+        del self.manifest["source_revision"]
+        manifest, rows = self.select("check", self.write_record("check.json"))
+        with self.assertRaisesRegex(ValueError, "source_revision"):
+            self.m.environment(manifest, rows)
+
+    def test_environment_without_selected_runs_is_pending(self):
+        manifest, rows = self.select("check", None)
+        self.assertEqual(self.m.environment(manifest, rows)[1:], ["pending"] * 4)
 
     def test_check_record_cannot_be_selected_as_bench(self):
         with self.assertRaisesRegex(ValueError, "selected as bench_direct"):
@@ -115,7 +144,7 @@ class ReportTests(unittest.TestCase):
             self.select("check", name)
 
     def test_overridden_dimensions_are_rejected(self):
-        name = self.write_record("small.json", overrides={"vertices": 1024})
+        name = self.write_record("small.json", overrides={"nodes": 1024})
         with self.assertRaisesRegex(ValueError, "large-preset"):
             self.select("check", name)
 
@@ -130,12 +159,12 @@ class ReportTests(unittest.TestCase):
             self.select("check", name)
 
     def test_dimensions_must_match_the_contract(self):
-        name = self.write_record("other-size.json", dimensions={"vertices": 1024})
-        with self.assertRaisesRegex(ValueError, "dimension vertices=1024 differs"):
+        name = self.write_record("other-size.json", dimensions={"nodes": 1024})
+        with self.assertRaisesRegex(ValueError, "dimension nodes=1024 differs"):
             self.select("check", name)
 
     def test_dimensions_without_an_integer_contract_value_are_not_compared(self):
-        name = self.write_record("extra.json", dimensions={"vertices": 1048576, "levels": 3})
+        name = self.write_record("extra.json", dimensions={"nodes": 1048576, "levels": 3})
         _, rows = self.select("check", name)
         self.assertEqual(rows[0]["check"]["status"], "pass")
 

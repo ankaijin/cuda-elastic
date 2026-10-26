@@ -1,38 +1,39 @@
 {
   "folder": "rtx4090",
   "label": "RTX 4090 (sm_89, 24 GB)",
-  "toolkit": "not yet measured",
+  "toolkit": "CUDA 12.8",
+  "source_revision": "296aa928542ce31d456c1b37ec473064f8bdc545",
   "suite_version": "v1",
   "applications": {
     "pagerank": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/pagerank/results/20261025-235039-octacos-c1f83c8f-check.json",
+      "bench_direct": "loom_private/pagerank/results/20261025-235536-octacos-eccbe1ac-bench-direct.json",
+      "bench_graph": "loom_private/pagerank/results/20261025-235634-octacos-19c4c2a0-bench-graph.json"
     },
     "attention": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/attention/results/20261025-235039-octacos-c1f83c8f-check.json",
+      "bench_direct": "loom_private/attention/results/20261025-235536-octacos-eccbe1ac-bench-direct.json",
+      "bench_graph": "loom_private/attention/results/20261025-235634-octacos-19c4c2a0-bench-graph.json"
     },
     "decoder": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/decoder/results/20261025-235039-octacos-c1f83c8f-check.json",
+      "bench_direct": "loom_private/decoder/results/20261025-235536-octacos-eccbe1ac-bench-direct.json",
+      "bench_graph": "loom_private/decoder/results/20261025-235634-octacos-19c4c2a0-bench-graph.json"
     },
     "anomaly": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/anomaly/results/20261025-235039-octacos-c1f83c8f-check.json",
+      "bench_direct": "loom_private/anomaly/results/20261025-235536-octacos-eccbe1ac-bench-direct.json",
+      "bench_graph": "loom_private/anomaly/results/20261025-235634-octacos-19c4c2a0-bench-graph.json"
     },
     "vecadd_memory": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/vecadd_memory/results/20261025-235039-octacos-c1f83c8f-check.json",
+      "bench_direct": "loom_private/vecadd_memory/results/20261025-235536-octacos-eccbe1ac-bench-direct.json",
+      "bench_graph": "loom_private/vecadd_memory/results/20261025-235634-octacos-19c4c2a0-bench-graph.json"
     },
     "vecadd_product": {
-      "check": null,
-      "bench_direct": null,
-      "bench_graph": null
+      "check": "loom_private/vecadd_product/results/20261025-235039-octacos-c1f83c8f-check.json",
+      "bench_direct": "loom_private/vecadd_product/results/20261025-235536-octacos-eccbe1ac-bench-direct.json",
+      "bench_graph": "loom_private/vecadd_product/results/20261025-235634-octacos-19c4c2a0-bench-graph.json"
     }
   }
 }

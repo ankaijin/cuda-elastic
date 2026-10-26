@@ -1,0 +1,7 @@
+pagerank        pass                 exit 0  rtx3090/loom_private/pagerank/results/20261025-234934-mono-39816759-check.log
+attention       pass                 exit 0  rtx3090/loom_private/attention/results/20261025-234934-mono-39816759-check.log
+decoder         pass                 exit 0  rtx3090/loom_private/decoder/results/20261025-234934-mono-39816759-check.log
+anomaly         pass                 exit 0  rtx3090/loom_private/anomaly/results/20261025-234934-mono-39816759-check.log
+vecadd_memory   pass                 exit 0  rtx3090/loom_private/vecadd_memory/results/20261025-234934-mono-39816759-check.log
+vecadd_product  pass                 exit 0  rtx3090/loom_private/vecadd_product/results/20261025-234934-mono-39816759-check.log
+PASS: rtx3090/loom_private/suite-20261025-234934-mono-39816759-check.json
