@@ -37,13 +37,29 @@ LP_REQUIRED_NVCCFLAGS := -std=c++17 -arch=$(ARCH) --fmad=false \
                          -Xcompiler -ffp-contract=off
 OUT := $(ROOT)/$(GPU)/loom_private/$(APP)
 BUILD := $(OUT)/build
+# Only the make command line selects the variant: an exported VARIANT (the
+# legacy profile scripts export VARIANT=baseline|sota) must not leak in.
+ifneq ($(filter environment%,$(origin VARIANT)),)
+VARIANT := baseline
+endif
+VARIANT ?= baseline
+ifeq ($(VARIANT),baseline)
 BIN := $(BUILD)/$(APP)
+VARIANT_SRCS = $(SRCS)
+VARIANT_HEADERS = $(HEADERS)
+else ifeq ($(VARIANT),optimized)
+BIN := $(BUILD)/$(APP)_optimized
+VARIANT_SRCS = $(OPT_SRCS)
+VARIANT_HEADERS = $(OPT_HEADERS)
+else
+$(error VARIANT must be baseline or optimized, not $(VARIANT))
+endif
 GPU_LOCK ?= /tmp/cuda-elastic-gpu.lock
 LOCK := flock $(GPU_LOCK)
 CONTRACT := $(APP_DIR)/contract.json
 CONTRACT_SHA256 = $(shell sha256sum $(CONTRACT) | cut -d' ' -f1)
 LP_FLAGS = $(LP_REQUIRED_NVCCFLAGS) -I$(LP_ROOT)/common -DLP_APP=\"$(APP)\" \
-           -DLP_CONTRACT_SHA256=\"$(CONTRACT_SHA256)\"
+           -DLP_CONTRACT_SHA256=\"$(CONTRACT_SHA256)\" -DLP_VARIANT=\"$(VARIANT)\"
 # CHECK_JSON=path (BENCH_JSON=path) also writes the result record there.
 CHECK_ARGS = $(if $(CHECK_JSON),--json-out $(CHECK_JSON))
 # bench needs LAUNCH=direct or LAUNCH=graph; ITERATIONS and WARMUP are optional.
@@ -54,11 +70,12 @@ BENCH_ARGS = --launch $(LAUNCH) $(if $(ITERATIONS),--iterations $(ITERATIONS)) \
 
 build: $(BIN)
 
-$(BIN): $(addprefix $(APP_DIR)/,$(SRCS) $(HEADERS)) $(CONTRACT) \
+$(BIN): $(addprefix $(APP_DIR)/,$(VARIANT_SRCS) $(VARIANT_HEADERS)) $(CONTRACT) \
         $(LP_ROOT)/common/lp_harness.cuh $(LP_ROOT)/common.mk $(APP_DIR)/Makefile
+	@test -n "$(VARIANT_SRCS)" || { echo "$(APP) has no $(VARIANT) sources" >&2; exit 2; }
 	@mkdir -p $(BUILD)
 	$(NVCC) $(NVCCFLAGS) $(EXTRA_NVCCFLAGS) $(LP_FLAGS) \
-	  $(addprefix $(APP_DIR)/,$(SRCS)) -o $@
+	  $(addprefix $(APP_DIR)/,$(VARIANT_SRCS)) -o $@
 
 check-large: $(BIN)
 	$(LOCK) $(BIN) --preset large --action check --launch both $(CHECK_ARGS)

@@ -3,11 +3,14 @@
 
   run_suite.py [APP ...]                         build, then check-large each app
   run_suite.py --action bench --launch graph APP  time an app (explicit only)
+  run_suite.py --variant optimized ...           the optimized implementations
+  run_suite.py --action bench --repeat 3 ...     three timed runs per app
 
 APP names are directory names under applications/loom_private (default: all
 six). Each run writes its result record and log to
-<gpu>/loom_private/<app>/results/<stamp>-<action>[-<launch>].{json,log} and a
-suite summary to <gpu>/loom_private/suite-<stamp>-<action>.json. The stamp is
+<gpu>/loom_private/<app>/results/<stamp>-<action>[-<launch>][-optimized][-r<N>]
+.{json,log} and a suite summary to
+<gpu>/loom_private/suite-<stamp>-<action>[-<launch>][-optimized].json. The stamp is
 $TIMESTAMP when set (results/record_run.py sets it to the run id, so these
 files become that run's artifacts), otherwise the current UTC time.
 
@@ -37,17 +40,23 @@ def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def run_app(app, args, folder, stamp):
+def run_name(args):
+    """<action>[-<launch>][-optimized], the part of every file name after the stamp."""
+    name = args.action + (f"-{args.launch}" if args.action == "bench" else "")
+    return name + ("-optimized" if args.variant == "optimized" else "")
+
+
+def run_app(app, args, folder, stamp, repetition=None):
     out = REPO / folder / "loom_private" / app / "results"
     out.mkdir(parents=True, exist_ok=True)
-    name = f"{stamp}-{args.action}" + (f"-{args.launch}" if args.action == "bench" else "")
+    name = f"{stamp}-{run_name(args)}" + (f"-r{repetition}" if repetition else "")
     record, log = out / f"{name}.json", out / f"{name}.log"
     # A record or log left by an earlier run with the same stamp must never be
     # reported as this run's result.
     record.unlink(missing_ok=True)
     log.unlink(missing_ok=True)
-    make = ["make", "-C", str(SUITE / app)]
-    commands = [] if args.no_build else [make + ["build"]]
+    make = ["make", "-C", str(SUITE / app), f"VARIANT={args.variant}"]
+    commands = [] if args.no_build or repetition and repetition > 1 else [make + ["build"]]
     if args.action == "check":
         commands.append(make + ["check-large", f"CHECK_JSON={record}"])
     else:
@@ -63,7 +72,7 @@ def run_app(app, args, folder, stamp):
             code = subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT).returncode
             if code:
                 break
-    result = {"application": app, "exit_code": code,
+    result = {"application": app, "variant": args.variant, "exit_code": code,
               "log": str(log.relative_to(REPO)), "log_sha256": sha256(log)}
     if record.is_file():
         result.update(record=str(record.relative_to(REPO)), record_sha256=sha256(record),
@@ -72,6 +81,8 @@ def run_app(app, args, folder, stamp):
         result["status"] = "no_record"
     if code and result["status"] == "pass":
         result["status"] = "fail"
+    if repetition:
+        result["repetition"] = repetition
     print(f"{app:15s} {result['status']:20s} exit {code}  {result['log']}", flush=True)
     return result
 
@@ -85,6 +96,9 @@ def main():
                         help="required with --action bench")
     parser.add_argument("--iterations", type=int)
     parser.add_argument("--warmup", type=int)
+    parser.add_argument("--variant", choices=["baseline", "optimized"], default="baseline")
+    parser.add_argument("--repeat", type=int, default=1,
+                        help="bench only: timed runs per app (files end in -r1, -r2, ...)")
     parser.add_argument("--no-build", action="store_true", help="skip make build")
     args = parser.parse_args()
     apps = args.apps or APPS
@@ -93,19 +107,27 @@ def main():
         parser.error(f"unknown application(s): {', '.join(unknown)}; choose from {', '.join(APPS)}")
     if args.action == "bench" and not args.launch:
         parser.error("--action bench needs --launch direct or --launch graph")
-    if args.action == "check" and (args.launch or args.iterations or args.warmup is not None):
-        parser.error("--launch, --iterations and --warmup apply to bench only; "
+    if args.action == "check" and (args.launch or args.iterations or args.warmup is not None
+                                   or args.repeat != 1):
+        parser.error("--launch, --iterations, --warmup and --repeat apply to bench only; "
                      "check always runs Direct and Graph")
+    if args.repeat < 1:
+        parser.error("--repeat must be at least 1")
 
     folder = gpu_folder()
     stamp = os.environ.get("TIMESTAMP") or f"{datetime.now(timezone.utc):%Y%m%d-%H%M%S}"
     commit = subprocess.check_output(["git", "-C", str(REPO), "rev-parse", "HEAD"], text=True).strip()
-    results = [run_app(app, args, folder, stamp) for app in apps]
-    summary = REPO / folder / "loom_private" / f"suite-{stamp}-{args.action}.json"
+    if args.repeat == 1:
+        results = [run_app(app, args, folder, stamp) for app in apps]
+    else:
+        results = [run_app(app, args, folder, stamp, repetition)
+                   for repetition in range(1, args.repeat + 1) for app in apps]
+    summary = REPO / folder / "loom_private" / f"suite-{stamp}-{run_name(args)}.json"
     summary.write_text(json.dumps({
         "schema": "loom_private.suite/1", "suite_version": "v1", "stamp": stamp,
         "source_commit": commit, "gpu_folder": folder, "action": args.action,
-        "launch": args.launch or "both", "preset": "large", "applications": results,
+        "launch": args.launch or "both", "variant": args.variant, "repeat": args.repeat,
+        "preset": "large", "applications": results,
     }, indent=1) + "\n")
     passed = all(r["status"] == "pass" or (args.action == "bench" and r["exit_code"] == 0)
                  for r in results)

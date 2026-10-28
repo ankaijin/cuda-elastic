@@ -1,0 +1,950 @@
+400/400 legacy files match 4ce57c7c0a333b74e9e6e2bd78142604c4c2cf39
+ok   anomaly-upstream-expected-smoke 212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897 /home/ankai/.cache/cuda-elastic/loom-private-assets/anomaly-upstream-expected-smoke
+ok   anomaly-upstream-expected-validation f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80 /home/ankai/.cache/cuda-elastic/loom-private-assets/anomaly-upstream-expected-validation
+ok   mlperf-tiny-ad01-dataset 31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa /home/ankai/.cache/cuda-elastic/loom-private-assets/mlperf-tiny-ad01-dataset
+ok   mlperf-tiny-ad01-int8-model 87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24 /home/ankai/.cache/cuda-elastic/loom-private-assets/mlperf-tiny-ad01-int8-model
+ok   vecadd-product-operands 89712b453849a8d420cce0c7a5afff97c7c5f5a84509abef8fd47b67075815fb /home/ankai/.cache/cuda-elastic/loom-private-assets/vecadd-product-operands
+ok   vecadd-product-upstream-expected-smoke 39a9a7849bacd718ad79ac23efb85bdc6dcd7a1e18fcf0a5302ccf04a914b39b /home/ankai/.cache/cuda-elastic/loom-private-assets/vecadd-product-upstream-expected-smoke
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/pagerank.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/pagerank_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/layout.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_optimized
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention'
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/attention.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/attention/build/attention
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention'
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/attention_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/attention/build/attention_optimized
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder'
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder/decoder.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/decoder/build/decoder
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder'
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder/decoder_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/decoder/build/decoder_optimized
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/anomaly.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/model.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/anomaly
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/anomaly_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/model.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/anomaly_optimized
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_memory\" -DLP_CONTRACT_SHA256=\"2cfa489f84dfc97ec02b7a5e2ff08e7f9f4a52b9f865f4325da027d422b21920\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/vecadd_memory.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_memory\" -DLP_CONTRACT_SHA256=\"2cfa489f84dfc97ec02b7a5e2ff08e7f9f4a52b9f865f4325da027d422b21920\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/vecadd_memory_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_optimized
+/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/vecadd_memory_optimized.cu(16): warning #177-D: variable "<unnamed>::kKernelVariants" was declared but never referenced
+  constexpr int kKernelVariants = 3;
+                ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_optimized
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"baseline\" -DLP_PAGERANK_MUTANT_JACOBI \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/pagerank.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_jacobi_mutant
+/home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/test_host
+graph nodes=8 edges=15 levels=4
+graph nodes=1024 edges=2047 levels=9
+graph nodes=65536 edges=131071 levels=12
+nodes=16 iterations=3: Jacobi outside tolerance on 16 nodes (first 0: Gauss-Seidel 0.0778064132, Jacobi 0.074542895)
+nodes=4096 iterations=6: Jacobi outside tolerance on 4094 nodes (first 0: Gauss-Seidel 0.000421350764, Jacobi 0.000363955362)
+nodes=8192 iterations=20: Jacobi outside tolerance on 8037 nodes (first 0: Gauss-Seidel 8.05821255e-05, Jacobi 8.0597667e-05)
+host tests passed
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/tests/run_gpu_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_jacobi_mutant /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/test-output
+PASS small-16x3 (exit 0)
+PASS small-4096x6 (exit 0)
+PASS small-65536x20 (exit 0)
+PASS small-8192x1-direct (exit 0)
+PASS result-record
+PASS jacobi-mutant-4096x6 (exit 1)
+PASS jacobi-mutant-65536x20 (exit 1)
+PASS jacobi-mutant-reports-mismatches
+PASS non-power-of-two (exit 2)
+PASS too-small (exit 2)
+PASS zero-nodes (exit 2)
+PASS negative-nodes (exit 2)
+PASS too-large (exit 2)
+PASS zero-iterations (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+GPU tests passed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"optimized\" -DLP_PAGERANK_MUTANT_JACOBI \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/pagerank_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/layout.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_optimized_jacobi_mutant
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"optimized\" -DLP_PAGERANK_MUTANT_TAG \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/pagerank_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/layout.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_optimized_tag_mutant
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"optimized\" -DLP_PAGERANK_MUTANT_NO_RESET \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/pagerank_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/layout.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_optimized_no_reset_mutant
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"optimized\" -DLP_PAGERANK_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/pagerank_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/layout.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_optimized_tunings
+/home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/test_host
+graph nodes=8 edges=15 levels=4
+graph nodes=1024 edges=2047 levels=9
+graph nodes=65536 edges=131071 levels=12
+nodes=16 iterations=3: Jacobi outside tolerance on 16 nodes (first 0: Gauss-Seidel 0.0778064132, Jacobi 0.074542895)
+nodes=4096 iterations=6: Jacobi outside tolerance on 4094 nodes (first 0: Gauss-Seidel 0.000421350764, Jacobi 0.000363955362)
+nodes=8192 iterations=20: Jacobi outside tolerance on 8037 nodes (first 0: Gauss-Seidel 8.05821255e-05, Jacobi 8.0597667e-05)
+host tests passed
+/home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/test_layout
+layout tests passed
+flock /tmp/cuda-elastic-gpu.lock timeout 1800 /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/tests/run_gpu_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_optimized /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_optimized_jacobi_mutant \
+  /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/test-output-optimized
+PASS small-16x3 (exit 0)
+PASS small-4096x6 (exit 0)
+PASS small-65536x20 (exit 0)
+PASS small-8192x1-direct (exit 0)
+PASS result-record
+PASS jacobi-mutant-4096x6 (exit 1)
+PASS jacobi-mutant-65536x20 (exit 1)
+PASS jacobi-mutant-reports-mismatches
+PASS non-power-of-two (exit 2)
+PASS too-small (exit 2)
+PASS zero-nodes (exit 2)
+PASS negative-nodes (exit 2)
+PASS too-large (exit 2)
+PASS zero-iterations (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+GPU tests passed
+flock /tmp/cuda-elastic-gpu.lock timeout 1800 /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank/tests/run_optimized_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_optimized_tunings \
+  /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_optimized_tag_mutant /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/pagerank_optimized_no_reset_mutant /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/pagerank/build/test-output-optimized
+PASS tuning-sm_86 (exit 0)
+PASS tuning-sm_89 (exit 0)
+PASS tuning-sm_120 (exit 0)
+PASS tuning-default (exit 0)
+PASS tiny-4x9 (exit 0)
+PASS tiny-16x3 (exit 0)
+PASS tiny-32x5 (exit 0)
+PASS tiny-4096x6 (exit 0)
+PASS tiny-65536x20 (exit 0)
+PASS sm_86-32 (exit 0)
+PASS large-x1-sm_120 (exit 0)
+PASS large-x2-sm_120 (exit 0)
+PASS large-x3-sm_120 (exit 0)
+PASS large-x4-sm_120 (exit 0)
+PASS large-x5-sm_120 (exit 0)
+PASS large-x6-sm_86 (exit 0)
+PASS unknown-tuning (exit 2)
+PASS tag-mutant-4096x6 (exit 1)
+PASS tag-mutant-65536x20 (exit 1)
+PASS tag-mutant-reports-mismatches
+PASS no-reset-mutant-4096x6 (exit 70)
+PASS no-reset-mutant-65536x20 (exit 70)
+optimized GPU tests passed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/pagerank'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention'
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/run_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/attention/build/attention
+PASS single_token_each (exit 0)
+PASS few_queries_long_context (exit 0)
+PASS many_queries_short_ctx (exit 0)
+PASS equal_extent_variant1 (exit 0)
+PASS unequal_variant2 (exit 0)
+PASS stride_edges (exit 0)
+PASS medium_unequal (exit 0)
+PASS direct_only (exit 0)
+PASS graph_only (exit 0)
+PASS zero_queries (exit 2)
+PASS negative_context (exit 2)
+PASS too_many_queries (exit 2)
+PASS too_much_context (exit 2)
+PASS bad_variant (exit 2)
+PASS non_integer (exit 2)
+PASS unknown_key (exit 2)
+PASS unknown_preset (exit 2)
+PASS bench_with_set (exit 2)
+attention tests: 18 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention'
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"optimized\" -DLP_ATTENTION_TUNING_HOOKS \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/attention_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/attention/build/attention_optimized_hooks
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"optimized\" \
+  -DLP_ATTENTION_MUTANT_SKIP_TILE_LAST_KEY /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/attention_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/attention/build/attention_optimized_skip_key_mutant
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/run_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/attention/build/attention_optimized
+PASS single_token_each (exit 0)
+PASS few_queries_long_context (exit 0)
+PASS many_queries_short_ctx (exit 0)
+PASS equal_extent_variant1 (exit 0)
+PASS unequal_variant2 (exit 0)
+PASS stride_edges (exit 0)
+PASS medium_unequal (exit 0)
+PASS direct_only (exit 0)
+PASS graph_only (exit 0)
+PASS zero_queries (exit 2)
+PASS negative_context (exit 2)
+PASS too_many_queries (exit 2)
+PASS too_much_context (exit 2)
+PASS bad_variant (exit 2)
+PASS non_integer (exit 2)
+PASS unknown_key (exit 2)
+PASS unknown_preset (exit 2)
+PASS bench_with_set (exit 2)
+attention tests: 18 passed, 0 failed
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention/run_tests_optimized.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/attention/build/attention_optimized_hooks /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/attention/build/attention_optimized_skip_key_mutant
+PASS shape0_one_split (exit 0)
+PASS shape0_three_splits (exit 0)
+PASS shape0_many_splits (exit 0)
+PASS shape1_one_split (exit 0)
+PASS shape1_three_splits (exit 0)
+PASS shape1_many_splits (exit 0)
+PASS shape2_one_split (exit 0)
+PASS shape2_three_splits (exit 0)
+PASS shape2_many_splits (exit 0)
+PASS shape3_one_split (exit 0)
+PASS shape3_three_splits (exit 0)
+PASS shape3_many_splits (exit 0)
+PASS exact_maximum_application (exit 0)
+PASS exact_maximum_compute (exit 0)
+PASS exact_maximum_small_rows (exit 0)
+PASS compute_path_default (exit 0)
+PASS compute_path_splits (exit 0)
+PASS largest_query_extent (exit 0)
+PASS largest_context_extent (exit 0)
+PASS invalid_shape (exit 2)
+PASS invalid_splits_zero (exit 2)
+PASS invalid_splits_large (exit 2)
+PASS invalid_splits_text (exit 2)
+PASS invalid_exact_maximum (exit 2)
+PASS invalid_check_compute (exit 2)
+PASS mutant_skip_key (exit 1)
+PASS mutant_skip_key_large (exit 1)
+attention optimized tests: 27 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/attention'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder'
+flock /tmp/cuda-elastic-gpu.lock bash /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder/tests/run_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/decoder/build/decoder
+PASS wraparound (exit 0)
+PASS minimum (exit 0)
+PASS square (exit 0)
+PASS wide (exit 0)
+PASS graph-only (exit 0)
+PASS vocab-1 (exit 2)
+PASS vocab-gt-width (exit 2)
+PASS steps-1 (exit 2)
+PASS batch-0 (exit 2)
+PASS width-0 (exit 2)
+PASS width-over-exact (exit 2)
+PASS too-large (exit 2)
+PASS not-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS fault-token (exit 1)
+PASS fault-activation (exit 1)
+PASS fault-probability (exit 1)
+decoder tests: 18 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder'
+make -C /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder build VARIANT=baseline
+make[1]: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder'
+make[1]: Nothing to be done for 'build'.
+make[1]: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder'
+flock /tmp/cuda-elastic-gpu.lock bash /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder/tests/run_optimized_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/decoder/build/decoder_optimized /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/decoder/build/decoder_optimized_tuning /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/decoder/build/decoder /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/decoder/build/decoder_optimized_mutant1 /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/decoder/build/decoder_optimized_mutant2
+PASS wraparound (exit 0)
+PASS minimum (exit 0)
+PASS square (exit 0)
+PASS wide (exit 0)
+PASS graph-only (exit 0)
+PASS vocab-1 (exit 2)
+PASS vocab-gt-width (exit 2)
+PASS steps-1 (exit 2)
+PASS batch-0 (exit 2)
+PASS width-0 (exit 2)
+PASS width-over-exact (exit 2)
+PASS too-large (exit 2)
+PASS not-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS fault-token (exit 1)
+PASS fault-activation (exit 1)
+PASS fault-probability (exit 1)
+decoder tests: 18 passed, 0 failed
+PASS baseline test cases
+PASS optimized binary ignores the tuning hooks
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 default
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_CTAS=1
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_CTAS=5
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_CTAS=7
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_CTAS=11
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 default
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_CTAS=1
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_CTAS=5
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_CTAS=7
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_CTAS=11
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 default
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_CTAS=1
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_CTAS=5
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_CTAS=7
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_CTAS=11
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 default
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_CTAS=1
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_CTAS=5
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_CTAS=7
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_CTAS=11
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 default
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_CTAS=1
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_CTAS=5
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_CTAS=7
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_CTAS=11
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 default
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_CTAS=1
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_CTAS=5
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_CTAS=7
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_CTAS=11
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 default
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_CTAS=1
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_CTAS=5
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_CTAS=7
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_CTAS=11
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 default
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_CTAS=1
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_CTAS=5
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_CTAS=7
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_CTAS=11
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 default
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_CTAS=1
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_CTAS=5
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_CTAS=7
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_CTAS=11
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 default
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_CTAS=1
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_CTAS=5
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_CTAS=7
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_CTAS=11
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 default
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_CTAS=1
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_CTAS=5
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_CTAS=7
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_CTAS=11
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 default
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_CTAS=1
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_CTAS=5
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_CTAS=7
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_CTAS=11
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 default
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_CTAS=1
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_CTAS=5
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_CTAS=7
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_CTAS=11
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 default
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_CTAS=1
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_CTAS=5
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_CTAS=7
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_CTAS=11
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 default
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_CTAS=1
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_CTAS=5
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_CTAS=7
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_CTAS=11
+PASS stream-K split with 5 blocks, tile 128x256x16 [batch=300 width=1001 vocab=999 steps=3]
+PASS stream-K split with 7 blocks, tile 128x256x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS stream-K split with 11 blocks, tile 128x128x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS unknown-tile
+PASS empty-tile
+PASS bad-schedule
+PASS ctas-zero
+PASS ctas-text
+PASS ctas-too-many
+PASS mutant-handoff
+PASS mutant-last-stage tile=128x256x16
+PASS mutant-last-stage tile=128x256x8
+PASS mutant-last-stage tile=128x128x8
+decoder optimized tests: 105 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/decoder'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"baseline\" \
+  -DLP_ANOMALY_MUTANT_SKIP_LAST_SAMPLE /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/anomaly.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/model.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/anomaly_skip_last_mutant
+/home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/test_host ${LOOM_PRIVATE_ASSET_CACHE:-$HOME/.cache/cuda-elastic/loom-private-assets}
+PASS sha256-empty
+PASS sha256-abc
+PASS sha256-448-bit
+PASS model-asset-present
+PASS dataset-asset-present
+PASS parse-pinned-model
+PASS model-structure
+PASS reject-identifier
+PASS reject-size
+PASS reject-root-offset
+PASS reject-zero-root
+PASS reject-schema-version
+    20596 single-byte corruptions, 2805 rejected
+PASS corruption-robustness
+PASS oracle-sample-0-matches-smoke-reference
+PASS oracle-rejects-non-finite
+PASS reference-parser-rejects-bad-line
+anomaly host tests: 16 passed, 0 failed
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/tests/run_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/anomaly /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/anomaly_skip_last_mutant /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/test-output
+PASS samples-7 (exit 0)
+PASS samples-93 (exit 0)
+PASS samples-41-direct (exit 0)
+PASS samples-1003-graph (exit 0)
+PASS result-record
+PASS result-record-assets
+PASS result-record-widths
+PASS mutant-skip-last (exit 1)
+PASS corrupt-model (exit 3)
+PASS missing-model (exit 3)
+PASS missing-dataset (exit 3)
+PASS truncated-dataset (exit 3)
+PASS oversized-dataset (exit 3)
+PASS corrupt-reference (exit 3)
+PASS zero-samples (exit 2)
+PASS negative-samples (exit 2)
+PASS too-many-samples (exit 2)
+PASS non-integer-samples (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS unknown-asset (exit 2)
+PASS bench-with-set (exit 2)
+anomaly tests: 22 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" \
+  -DLP_ANOMALY_MUTANT_SKIP_LAST_SAMPLE /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/anomaly_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/model.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/anomaly_optimized_skip_last_mutant
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" -DLP_ANOMALY_BASELINE_ARITHMETIC \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/anomaly_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/model.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/optimized-tests/anomaly_optimized_baseline_arithmetic
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" -DLP_ANOMALY_FORCE_CHUNKS=1 \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/anomaly_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/model.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/optimized-tests/anomaly_optimized_chunks1
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" -DLP_ANOMALY_FORCE_CHUNKS=3 \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/anomaly_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/model.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/optimized-tests/anomaly_optimized_chunks3
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" -DLP_ANOMALY_FORCE_CHUNKS=16 \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/anomaly_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/model.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/optimized-tests/anomaly_optimized_chunks16
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" -DLP_ANOMALY_FORCE_CHUNKS=32 \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/anomaly_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/model.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/optimized-tests/anomaly_optimized_chunks32
+/home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/test_host ${LOOM_PRIVATE_ASSET_CACHE:-$HOME/.cache/cuda-elastic/loom-private-assets}
+PASS sha256-empty
+PASS sha256-abc
+PASS sha256-448-bit
+PASS model-asset-present
+PASS dataset-asset-present
+PASS parse-pinned-model
+PASS model-structure
+PASS reject-identifier
+PASS reject-size
+PASS reject-root-offset
+PASS reject-zero-root
+PASS reject-schema-version
+    20596 single-byte corruptions, 2805 rejected
+PASS corruption-robustness
+PASS oracle-sample-0-matches-smoke-reference
+PASS oracle-rejects-non-finite
+PASS reference-parser-rejects-bad-line
+anomaly host tests: 16 passed, 0 failed
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/tests/run_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/anomaly_optimized /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/anomaly_optimized_skip_last_mutant /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/test-output-optimized
+PASS samples-7 (exit 0)
+PASS samples-93 (exit 0)
+PASS samples-41-direct (exit 0)
+PASS samples-1003-graph (exit 0)
+PASS result-record
+PASS result-record-assets
+PASS result-record-widths
+PASS mutant-skip-last (exit 1)
+PASS corrupt-model (exit 3)
+PASS missing-model (exit 3)
+PASS missing-dataset (exit 3)
+PASS truncated-dataset (exit 3)
+PASS oversized-dataset (exit 3)
+PASS corrupt-reference (exit 3)
+PASS zero-samples (exit 2)
+PASS negative-samples (exit 2)
+PASS too-many-samples (exit 2)
+PASS non-integer-samples (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS unknown-asset (exit 2)
+PASS bench-with-set (exit 2)
+anomaly tests: 22 passed, 0 failed
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly/tests/run_optimized_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/anomaly_optimized /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/optimized-tests \
+  "1 3 16 32" ${LOOM_PRIVATE_ASSET_CACHE:-$HOME/.cache/cuda-elastic/loom-private-assets} /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/anomaly/build/test-output-optimized
+PASS fast-path-exactness (exit 0)
+PASS fast-path-no-margin-mutant (exit 1)
+PASS fast-path-no-margin-mutant-input
+PASS samples-1 (exit 0)
+PASS samples-16 (exit 0)
+PASS samples-33 (exit 0)
+PASS samples-4099-config (exit 0)
+PASS baseline-arithmetic-1003 (exit 0)
+PASS chunks1-samples-4099 (exit 0)
+PASS chunks1-samples-17 (exit 0)
+PASS chunks3-samples-4099 (exit 0)
+PASS chunks3-samples-17 (exit 0)
+PASS chunks16-samples-4099 (exit 0)
+PASS chunks16-samples-17 (exit 0)
+PASS chunks32-samples-4099 (exit 0)
+PASS chunks32-samples-17 (exit 0)
+PASS chunks3-pipeline (exit 0)
+PASS chunks32-pipeline (exit 0)
+anomaly optimized tests: 18 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/anomaly'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_memory\" -DLP_CONTRACT_SHA256=\"2cfa489f84dfc97ec02b7a5e2ff08e7f9f4a52b9f865f4325da027d422b21920\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_MUTANT_DROP_LAST  \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/vecadd_memory.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_drop_last_mutant
+/home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/test_host
+PASS large oracle checksum 1649265868800
+PASS oracle matches closed form and per-element formula
+PASS validation boundaries
+host tests passed
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/tests/run_gpu_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_drop_last_mutant /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/test-output baseline /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build
+PASS length-1 (exit 0)
+PASS length-2 (exit 0)
+PASS length-255 (exit 0)
+PASS length-256 (exit 0)
+PASS length-257 (exit 0)
+PASS length-1000003 (exit 0)
+PASS length-1000003-direct (exit 0)
+PASS length-5000-graph (exit 0)
+PASS mult-7-bias-neg5 (exit 0)
+PASS mult-neg3-bias-11 (exit 0)
+PASS mult-0-bias-neg100 (exit 0)
+PASS mult-neg1 (exit 0)
+PASS int32-max-result (exit 0)
+PASS int32-min-rhs (exit 0)
+PASS int32-large-multiplier (exit 0)
+PASS large-length-mult-2047 (exit 0)
+PASS result-record
+PASS drop-last-mutant-1000003 (exit 1)
+PASS drop-last-mutant-1 (exit 1)
+PASS drop-last-mutant-reports-index-and-checksum
+PASS zero-length (exit 2)
+PASS negative-length (exit 2)
+PASS too-long (exit 2)
+PASS mult-overflows-result (exit 2)
+PASS mult-overflows-large (exit 2)
+PASS bias-overflows-result (exit 2)
+PASS bias-overflows-rhs (exit 2)
+PASS negative-overflow (exit 2)
+PASS multiplier-not-int32 (exit 2)
+PASS bias-not-int32 (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+PASS validation-messages
+GPU tests passed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_memory\" -DLP_CONTRACT_SHA256=\"2cfa489f84dfc97ec02b7a5e2ff08e7f9f4a52b9f865f4325da027d422b21920\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT_DROP_LAST -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/vecadd_memory_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_drop_last_mutant_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_memory\" -DLP_CONTRACT_SHA256=\"2cfa489f84dfc97ec02b7a5e2ff08e7f9f4a52b9f865f4325da027d422b21920\" -DLP_VARIANT=\"optimized\" \
+  -DLP_VECADD_MUTANT_SKIP_UPLOAD -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/vecadd_memory_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_skip_upload_mutant_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_memory\" -DLP_CONTRACT_SHA256=\"2cfa489f84dfc97ec02b7a5e2ff08e7f9f4a52b9f865f4325da027d422b21920\" -DLP_VARIANT=\"optimized\" \
+  -DLP_VECADD_MUTANT_SKIP_DOWNLOAD -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/vecadd_memory_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_skip_download_mutant_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_memory\" -DLP_CONTRACT_SHA256=\"2cfa489f84dfc97ec02b7a5e2ff08e7f9f4a52b9f865f4325da027d422b21920\" -DLP_VARIANT=\"optimized\" \
+  -DLP_VECADD_MUTANT_NO_JOIN -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/vecadd_memory_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_no_join_mutant_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_memory\" -DLP_CONTRACT_SHA256=\"2cfa489f84dfc97ec02b7a5e2ff08e7f9f4a52b9f865f4325da027d422b21920\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/vecadd_memory_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_tuning_optimized
+/home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/test_host
+PASS large oracle checksum 1649265868800
+PASS oracle matches closed form and per-element formula
+PASS validation boundaries
+host tests passed
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory/tests/run_gpu_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_optimized /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_drop_last_mutant_optimized /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build/test-output_optimized optimized /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_memory/build
+PASS length-1 (exit 0)
+PASS length-2 (exit 0)
+PASS length-255 (exit 0)
+PASS length-256 (exit 0)
+PASS length-257 (exit 0)
+PASS length-1000003 (exit 0)
+PASS length-1000003-direct (exit 0)
+PASS length-5000-graph (exit 0)
+PASS mult-7-bias-neg5 (exit 0)
+PASS mult-neg3-bias-11 (exit 0)
+PASS mult-0-bias-neg100 (exit 0)
+PASS mult-neg1 (exit 0)
+PASS int32-max-result (exit 0)
+PASS int32-min-rhs (exit 0)
+PASS int32-large-multiplier (exit 0)
+PASS large-length-mult-2047 (exit 0)
+PASS result-record
+PASS drop-last-mutant-1000003 (exit 1)
+PASS drop-last-mutant-1 (exit 1)
+PASS drop-last-mutant-reports-index-and-checksum
+PASS zero-length (exit 2)
+PASS negative-length (exit 2)
+PASS too-long (exit 2)
+PASS mult-overflows-result (exit 2)
+PASS mult-overflows-large (exit 2)
+PASS bias-overflows-result (exit 2)
+PASS bias-overflows-rhs (exit 2)
+PASS negative-overflow (exit 2)
+PASS multiplier-not-int32 (exit 2)
+PASS bias-not-int32 (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+PASS validation-messages
+PASS suite-binary-ignores-tuning-env (exit 0)
+PASS chunks-1-kernel-0-length-1 (exit 0)
+PASS chunks-1-kernel-0-length-5 (exit 0)
+PASS chunks-1-kernel-0-length-257 (exit 0)
+PASS chunks-1-kernel-0-length-5000 (exit 0)
+PASS chunks-1-kernel-0-length-1000003 (exit 0)
+PASS chunks-1-kernel-0-length-1000004 (exit 0)
+PASS chunks-3-kernel-0-length-1 (exit 0)
+PASS chunks-3-kernel-0-length-5 (exit 0)
+PASS chunks-3-kernel-0-length-257 (exit 0)
+PASS chunks-3-kernel-0-length-5000 (exit 0)
+PASS chunks-3-kernel-0-length-1000003 (exit 0)
+PASS chunks-3-kernel-0-length-1000004 (exit 0)
+PASS chunks-8-kernel-0-length-1 (exit 0)
+PASS chunks-8-kernel-0-length-5 (exit 0)
+PASS chunks-8-kernel-0-length-257 (exit 0)
+PASS chunks-8-kernel-0-length-5000 (exit 0)
+PASS chunks-8-kernel-0-length-1000003 (exit 0)
+PASS chunks-8-kernel-0-length-1000004 (exit 0)
+PASS chunks-64-kernel-0-length-1 (exit 0)
+PASS chunks-64-kernel-0-length-5 (exit 0)
+PASS chunks-64-kernel-0-length-257 (exit 0)
+PASS chunks-64-kernel-0-length-5000 (exit 0)
+PASS chunks-64-kernel-0-length-1000003 (exit 0)
+PASS chunks-64-kernel-0-length-1000004 (exit 0)
+PASS kernel-0-large (exit 0)
+PASS kernel-0-mult-2047 (exit 0)
+PASS chunks-1-kernel-1-length-1 (exit 0)
+PASS chunks-1-kernel-1-length-5 (exit 0)
+PASS chunks-1-kernel-1-length-257 (exit 0)
+PASS chunks-1-kernel-1-length-5000 (exit 0)
+PASS chunks-1-kernel-1-length-1000003 (exit 0)
+PASS chunks-1-kernel-1-length-1000004 (exit 0)
+PASS chunks-3-kernel-1-length-1 (exit 0)
+PASS chunks-3-kernel-1-length-5 (exit 0)
+PASS chunks-3-kernel-1-length-257 (exit 0)
+PASS chunks-3-kernel-1-length-5000 (exit 0)
+PASS chunks-3-kernel-1-length-1000003 (exit 0)
+PASS chunks-3-kernel-1-length-1000004 (exit 0)
+PASS chunks-8-kernel-1-length-1 (exit 0)
+PASS chunks-8-kernel-1-length-5 (exit 0)
+PASS chunks-8-kernel-1-length-257 (exit 0)
+PASS chunks-8-kernel-1-length-5000 (exit 0)
+PASS chunks-8-kernel-1-length-1000003 (exit 0)
+PASS chunks-8-kernel-1-length-1000004 (exit 0)
+PASS chunks-64-kernel-1-length-1 (exit 0)
+PASS chunks-64-kernel-1-length-5 (exit 0)
+PASS chunks-64-kernel-1-length-257 (exit 0)
+PASS chunks-64-kernel-1-length-5000 (exit 0)
+PASS chunks-64-kernel-1-length-1000003 (exit 0)
+PASS chunks-64-kernel-1-length-1000004 (exit 0)
+PASS kernel-1-large (exit 0)
+PASS kernel-1-mult-2047 (exit 0)
+PASS chunks-1-kernel-2-length-1 (exit 0)
+PASS chunks-1-kernel-2-length-5 (exit 0)
+PASS chunks-1-kernel-2-length-257 (exit 0)
+PASS chunks-1-kernel-2-length-5000 (exit 0)
+PASS chunks-1-kernel-2-length-1000003 (exit 0)
+PASS chunks-1-kernel-2-length-1000004 (exit 0)
+PASS chunks-3-kernel-2-length-1 (exit 0)
+PASS chunks-3-kernel-2-length-5 (exit 0)
+PASS chunks-3-kernel-2-length-257 (exit 0)
+PASS chunks-3-kernel-2-length-5000 (exit 0)
+PASS chunks-3-kernel-2-length-1000003 (exit 0)
+PASS chunks-3-kernel-2-length-1000004 (exit 0)
+PASS chunks-8-kernel-2-length-1 (exit 0)
+PASS chunks-8-kernel-2-length-5 (exit 0)
+PASS chunks-8-kernel-2-length-257 (exit 0)
+PASS chunks-8-kernel-2-length-5000 (exit 0)
+PASS chunks-8-kernel-2-length-1000003 (exit 0)
+PASS chunks-8-kernel-2-length-1000004 (exit 0)
+PASS chunks-64-kernel-2-length-1 (exit 0)
+PASS chunks-64-kernel-2-length-5 (exit 0)
+PASS chunks-64-kernel-2-length-257 (exit 0)
+PASS chunks-64-kernel-2-length-5000 (exit 0)
+PASS chunks-64-kernel-2-length-1000003 (exit 0)
+PASS chunks-64-kernel-2-length-1000004 (exit 0)
+PASS kernel-2-large (exit 0)
+PASS kernel-2-mult-2047 (exit 0)
+PASS tuning-chunks-0 (exit 2)
+PASS tuning-chunks-65 (exit 2)
+PASS tuning-chunks-text (exit 2)
+PASS tuning-kernel-3 (exit 2)
+PASS tuning-kernel-negative (exit 2)
+PASS drop-last-mutant-kernel-0-chunks-1-1000000 (exit 1)
+PASS drop-last-mutant-kernel-0-chunks-1-1000003 (exit 1)
+PASS drop-last-mutant-kernel-0-chunks-8-1000000 (exit 1)
+PASS drop-last-mutant-kernel-0-chunks-8-1000003 (exit 1)
+PASS drop-last-mutant-kernel-0-chunks-64-1000000 (exit 1)
+PASS drop-last-mutant-kernel-0-chunks-64-1000003 (exit 1)
+PASS drop-last-mutant-kernel-1-chunks-1-1000000 (exit 1)
+PASS drop-last-mutant-kernel-1-chunks-1-1000003 (exit 1)
+PASS drop-last-mutant-kernel-1-chunks-8-1000000 (exit 1)
+PASS drop-last-mutant-kernel-1-chunks-8-1000003 (exit 1)
+PASS drop-last-mutant-kernel-1-chunks-64-1000000 (exit 1)
+PASS drop-last-mutant-kernel-1-chunks-64-1000003 (exit 1)
+PASS drop-last-mutant-kernel-2-chunks-1-1000000 (exit 1)
+PASS drop-last-mutant-kernel-2-chunks-1-1000003 (exit 1)
+PASS drop-last-mutant-kernel-2-chunks-8-1000000 (exit 1)
+PASS drop-last-mutant-kernel-2-chunks-8-1000003 (exit 1)
+PASS drop-last-mutant-kernel-2-chunks-64-1000000 (exit 1)
+PASS drop-last-mutant-kernel-2-chunks-64-1000003 (exit 1)
+PASS drop-last-mutant-64-chunks (exit 1)
+PASS drop-last-mutant-drops-only-the-last-element
+PASS skip-upload-mutant-chunks-1 (exit 1)
+PASS skip-download-mutant-chunks-1 (exit 1)
+PASS skip-upload-mutant-chunks-4 (exit 1)
+PASS skip-download-mutant-chunks-4 (exit 1)
+PASS skip-upload-mutant-chunks-64 (exit 1)
+PASS skip-download-mutant-chunks-64 (exit 1)
+PASS skip-upload-mutant-large (exit 1)
+PASS skip-download-mutant-large (exit 1)
+PASS no-join-mutant-direct (exit 1)
+PASS no-join-mutant-graph (exit 70)
+PASS memcheck-chunks-1 (exit 0)
+PASS memcheck-chunks-3 (exit 0)
+PASS memcheck-chunks-64 (exit 0)
+PASS memcheck-length-5 (exit 0)
+PASS bench-direct (exit 0)
+PASS bench-graph (exit 0)
+PASS bench-record-names-variant
+GPU tests passed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_memory'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_MUTANT=1  \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant1
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_MUTANT=2  \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant2
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_MUTANT=3  \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant3
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_MUTANT=4  \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant4
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_TEST_SLOW_WARMUP \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_slow_warmup
+/home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/test_host
+lanes over one 256-record period: 8165 wrap, 8219 do not
+host tests passed
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/tests/run_gpu_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/test-output baseline
+PASS records-1 (exit 0)
+PASS records-2 (exit 0)
+PASS records-3 (exit 0)
+PASS records-7 (exit 0)
+PASS records-63 (exit 0)
+PASS records-64 (exit 0)
+PASS records-255 (exit 0)
+PASS records-256 (exit 0)
+PASS records-257 (exit 0)
+PASS records-1000 (exit 0)
+PASS records-4097 (exit 0)
+PASS records-65537 (exit 0)
+PASS records-1000003 (exit 0)
+PASS records-257-direct (exit 0)
+PASS records-257-graph (exit 0)
+PASS records-1000-json (exit 0)
+PASS result-record
+PASS check-reports-canary
+PASS mutant1-saturating (exit 1)
+PASS mutant1-reports-mismatch
+PASS mutant2-overrun (exit 1)
+PASS mutant2-reports-canary
+PASS mutant3-neighbour-slot (exit 1)
+PASS mutant4-skipped-slots (exit 1)
+PASS mutant4-skipped-slot-is-record-255
+PASS mutant4-below-first-skip (exit 0)
+PASS memcheck-1000 (exit 0)
+PASS memcheck-65537 (exit 0)
+PASS asset-missing (exit 3)
+PASS asset-truncated (exit 3)
+PASS asset-extended (exit 3)
+PASS asset-corrupt (exit 3)
+PASS asset-corrupt-message
+PASS reference-corrupt (exit 3)
+PASS zero-records (exit 2)
+PASS negative-records (exit 2)
+PASS too-many-records (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+PASS bench-direct (exit 0)
+PASS bench-graph (exit 0)
+PASS bench-record-unvalidated
+PASS slow-warmup-3 (exit 0)
+PASS slow-warmup-0 (exit 0)
+PASS warmups-outside-timed-interval (batch 24.9566727 ms with warmups, 924.947205 ms without)
+GPU tests passed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product'
+make: Entering directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=1 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant1_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=2 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant2_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=3 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant3_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=4 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant4_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=5 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant5_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=6 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant6_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=7 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant7_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_tuning_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_TEST_SLOW_WARMUP \
+  /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_slow_warmup_optimized
+/home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/test_host
+lanes over one 256-record period: 8165 wrap, 8219 do not
+host tests passed
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product/tests/run_gpu_tests.sh /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/vecadd_product_optimized /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build /home/ankai/cuda-worktrees/lp-optimize/rtx3090/loom_private/vecadd_product/build/test-output_optimized optimized
+PASS records-1 (exit 0)
+PASS records-2 (exit 0)
+PASS records-3 (exit 0)
+PASS records-7 (exit 0)
+PASS records-63 (exit 0)
+PASS records-64 (exit 0)
+PASS records-255 (exit 0)
+PASS records-256 (exit 0)
+PASS records-257 (exit 0)
+PASS records-1000 (exit 0)
+PASS records-4097 (exit 0)
+PASS records-65537 (exit 0)
+PASS records-1000003 (exit 0)
+PASS records-257-direct (exit 0)
+PASS records-257-graph (exit 0)
+PASS records-1000-json (exit 0)
+PASS result-record
+PASS check-reports-canary
+PASS mutant1-saturating (exit 1)
+PASS mutant1-reports-mismatch
+PASS mutant2-overrun (exit 1)
+PASS mutant2-reports-canary
+PASS mutant3-neighbour-slot (exit 1)
+PASS mutant4-skipped-slots (exit 1)
+PASS mutant4-skipped-slot-is-record-255
+PASS mutant4-below-first-skip (exit 0)
+PASS memcheck-1000 (exit 0)
+PASS memcheck-65537 (exit 0)
+PASS asset-missing (exit 3)
+PASS asset-truncated (exit 3)
+PASS asset-extended (exit 3)
+PASS asset-corrupt (exit 3)
+PASS asset-corrupt-message
+PASS reference-corrupt (exit 3)
+PASS zero-records (exit 2)
+PASS negative-records (exit 2)
+PASS too-many-records (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+PASS bench-direct (exit 0)
+PASS bench-graph (exit 0)
+PASS bench-record-unvalidated
+PASS slow-warmup-3 (exit 0)
+PASS slow-warmup-0 (exit 0)
+PASS warmups-outside-timed-interval (batch 18.0236168 ms with warmups, 918.402039 ms without)
+PASS suite-binary-ignores-tuning-env (exit 0)
+PASS chunks-1-records-1 (exit 0)
+PASS chunks-1-records-2 (exit 0)
+PASS chunks-1-records-3 (exit 0)
+PASS chunks-1-records-7 (exit 0)
+PASS chunks-1-records-255 (exit 0)
+PASS chunks-1-records-257 (exit 0)
+PASS chunks-1-records-1000 (exit 0)
+PASS chunks-1-records-65537 (exit 0)
+PASS chunks-1-records-1000003 (exit 0)
+PASS chunks-2-records-1 (exit 0)
+PASS chunks-2-records-2 (exit 0)
+PASS chunks-2-records-3 (exit 0)
+PASS chunks-2-records-7 (exit 0)
+PASS chunks-2-records-255 (exit 0)
+PASS chunks-2-records-257 (exit 0)
+PASS chunks-2-records-1000 (exit 0)
+PASS chunks-2-records-65537 (exit 0)
+PASS chunks-2-records-1000003 (exit 0)
+PASS chunks-3-records-1 (exit 0)
+PASS chunks-3-records-2 (exit 0)
+PASS chunks-3-records-3 (exit 0)
+PASS chunks-3-records-7 (exit 0)
+PASS chunks-3-records-255 (exit 0)
+PASS chunks-3-records-257 (exit 0)
+PASS chunks-3-records-1000 (exit 0)
+PASS chunks-3-records-65537 (exit 0)
+PASS chunks-3-records-1000003 (exit 0)
+PASS chunks-5-records-1 (exit 0)
+PASS chunks-5-records-2 (exit 0)
+PASS chunks-5-records-3 (exit 0)
+PASS chunks-5-records-7 (exit 0)
+PASS chunks-5-records-255 (exit 0)
+PASS chunks-5-records-257 (exit 0)
+PASS chunks-5-records-1000 (exit 0)
+PASS chunks-5-records-65537 (exit 0)
+PASS chunks-5-records-1000003 (exit 0)
+PASS chunks-16-records-1 (exit 0)
+PASS chunks-16-records-2 (exit 0)
+PASS chunks-16-records-3 (exit 0)
+PASS chunks-16-records-7 (exit 0)
+PASS chunks-16-records-255 (exit 0)
+PASS chunks-16-records-257 (exit 0)
+PASS chunks-16-records-1000 (exit 0)
+PASS chunks-16-records-65537 (exit 0)
+PASS chunks-16-records-1000003 (exit 0)
+PASS chunks-64-records-1 (exit 0)
+PASS chunks-64-records-2 (exit 0)
+PASS chunks-64-records-3 (exit 0)
+PASS chunks-64-records-7 (exit 0)
+PASS chunks-64-records-255 (exit 0)
+PASS chunks-64-records-257 (exit 0)
+PASS chunks-64-records-1000 (exit 0)
+PASS chunks-64-records-65537 (exit 0)
+PASS chunks-64-records-1000003 (exit 0)
+PASS tuning-chunks-0 (exit 2)
+PASS tuning-chunks-65 (exit 2)
+PASS tuning-chunks-text (exit 2)
+PASS mutant5-skip-upload-chunks-1 (exit 1)
+PASS mutant6-skip-download-chunks-1 (exit 1)
+PASS mutant5-skip-upload-chunks-4 (exit 1)
+PASS mutant6-skip-download-chunks-4 (exit 1)
+PASS mutant5-skip-upload-chunks-64 (exit 1)
+PASS mutant6-skip-download-chunks-64 (exit 1)
+PASS mutant5-large (exit 1)
+PASS mutant6-large (exit 1)
+PASS mutant7-no-join-direct (exit 1)
+PASS mutant7-no-join-graph (exit 70)
+PASS mutant1-chunked (exit 1)
+PASS mutant2-chunked (exit 1)
+PASS mutant3-chunked (exit 1)
+PASS mutant4-chunked (exit 1)
+PASS memcheck-chunks-64 (exit 0)
+PASS memcheck-chunks-3 (exit 0)
+PASS bench-record-names-variant
+GPU tests passed
+make: Leaving directory '/home/ankai/cuda-worktrees/lp-optimize/applications/loom_private/vecadd_product'

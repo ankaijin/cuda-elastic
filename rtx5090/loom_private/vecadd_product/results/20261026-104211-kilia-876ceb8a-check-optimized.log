@@ -1,0 +1,15 @@
+$ make -C /home/ankai/lp-record/applications/loom_private/vecadd_product VARIANT=optimized check-large CHECK_JSON=/home/ankai/lp-record/rtx5090/loom_private/vecadd_product/results/20261026-104211-kilia-876ceb8a-check-optimized.json
+make: Entering directory '/home/ankai/lp-record/applications/loom_private/vecadd_product'
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/lp-record/rtx5090/loom_private/vecadd_product/build/vecadd_product_optimized --preset large --action check --launch both --json-out /home/ankai/lp-record/rtx5090/loom_private/vecadd_product/results/20261026-104211-kilia-876ceb8a-check-optimized.json
+vecadd_product: setup 0.05 s
+vecadd_product: CPU oracle 0.01 s
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: direct invocation 1: PASS, digest 835827d0e01d0383 (0.00 s, untimed)
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: direct invocation 2: PASS, digest 835827d0e01d0383 (0.00 s, untimed)
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: graph invocation 1: PASS, digest 835827d0e01d0383 (0.00 s, untimed)
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: graph invocation 2: PASS, digest 835827d0e01d0383 (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/vecadd-product", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae", "preset": "large", "overrides": {}, "dimensions": {"records": 1048576, "operand_bytes": 64, "input_bytes": 134217728, "output_bytes": 67108864}, "asset_sha256": {"vecadd-product-operands": "89712b453849a8d420cce0c7a5afff97c7c5f5a84509abef8fd47b67075815fb", "vecadd-product-upstream-expected-smoke": "39a9a7849bacd718ad79ac23efb85bdc6dcd7a1e18fcf0a5302ccf04a914b39b"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 5090", "cc": "12.0", "cuda_runtime": 13040, "cuda_driver": 13040}, "timing_scope": {"application": "upload of the 128-byte-per-record inputs from pinned host memory, the lane-wise byte-sum kernel over all records, and the download of the 64-byte-per-record outputs to pinned host memory", "compute": "the lane-wise byte-sum kernel over all records with the inputs resident; no transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "835827d0e01d0383"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "835827d0e01d0383"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "835827d0e01d0383"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "835827d0e01d0383"}], "outputs_agree": true, "timing": null, "status": "pass"}
+make: Leaving directory '/home/ankai/lp-record/applications/loom_private/vecadd_product'

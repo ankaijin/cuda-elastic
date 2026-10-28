@@ -1,0 +1,5 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+99.9,19489499,1,19489499.0,19489499.0,19489499,19489499,0.0,"<unnamed>::attention_kernel(const float4 *, const float4 *, int, float4 *)"
+0.1,10752,1,10752.0,10752.0,10752,10752,0.0,"<unnamed>::residual_statistics_kernel(const float *, const float *, int, float *, float *)"
+0.0,1792,1,1792.0,1792.0,1792,1792,0.0,"<unnamed>::project_imu_kernel(const float *, int, float4 *)"
+0.0,672,1,672.0,672.0,672,672,0.0,"<unnamed>::project_audio_kernel(const float *, int, float4 *)"

@@ -5,30 +5,45 @@
 
 Writes results/loom_private/README.md and results/loom_private/loom_private_v1.xlsx.
 Inputs are pinned in results/loom_private/inputs/<gpu>.json, independently of
-the legacy results/inputs manifests. Each application has three selections:
-`check` (a `--action check` record), `bench_direct` and `bench_graph` (`--action
-bench` records). Paths are relative to that GPU's folder. Null means pending.
-Missing files, unsafe paths, records of another workload, records of another
-action or launch (a check must cover both launch modes), records that
-validated an older contract, records whose integer dimensions differ from the
-contract's `large` values, and records from a GPU other than the folder's are
-errors.
+the legacy results/inputs manifests. Each application has these selections,
+with paths relative to that GPU's folder (null means pending):
+
+- `check` and `check_optimized`: `--action check` records of the baseline and
+  the optimized variant.
+- `bench_direct`, `bench_graph` (baseline) and `bench_optimized` (optimized
+  variant, CUDA Graph launches): lists of `--action bench` records, one per
+  recorded repetition, all with the same iterations and warmup. Times are the
+  median over the list. A variant's bench needs that variant's passing check.
+- `profiles`: `nsys` and `ncu` reports for `direct`, `graph` and `optimized`
+  (the same three versions), written by applications/loom_private/tools/
+  profile.py with CSV exports beside them, so reading them needs no Nsight
+  tools. Each report holds exactly one end-to-end invocation.
+
+Missing files, unsafe paths, records of another workload, variant, action or
+launch (a check must cover both launch modes), records that validated an older
+contract, records whose integer dimensions differ from the contract's `large`
+values, records from a GPU other than the folder's, repeated or inconsistent
+repetitions, benches without a passing check of their variant, and profiles of
+another application, version, or GPU are errors.
 
 Timing cells come only from bench records, so a correctness check never
 appears as a performance measurement. The workbook uses the layout and styling
-of results/cuda_performance.xlsx: per-GPU summary and Latency sheets, then
-Sources, Correctness, Environment, and Contracts. Its links point at GitHub,
-pinned to the latest origin/main commit that has each file. The test-machine table comes from the
-recorder metadata (<gpu>/runs/<run-id>/metadata.json) of the selected records,
-except the source revision, which the manifest states (`source_revision`, a
-full commit hash): bench runs start from commits that only add earlier runs'
-results, so their recorded commits need not stay in the history.
+of results/cuda_performance.xlsx: per-GPU summary, Latency and Kernels sheets,
+then Sources, GPU analysis, the ncu sheets, Correctness, Environment, and
+Contracts. Its links point at GitHub, pinned to the latest origin/main commit
+that has each file. The test-machine table comes from the recorder metadata
+(<gpu>/runs/<run-id>/metadata.json) of the selected runs, except the source
+revision, which the manifest states (`source_revision`, a full commit hash):
+measurement runs start from commits that only add earlier runs' results, so
+their recorded commits need not stay in the history.
 Nothing is rerun. Requires openpyxl, and git for the workbook's links.
 """
 
+import csv
 import hashlib
 import json
 import re
+import statistics
 from pathlib import Path
 import subprocess
 
@@ -40,8 +55,19 @@ MD_OUT = HERE / "README.md"
 XLSX_OUT = HERE / f"loom_private_{VERSION}.xlsx"
 GPUS = ["rtx3090", "rtx4090", "rtx5090"]
 APPS = ["pagerank", "attention", "decoder", "anomaly", "vecadd_memory", "vecadd_product"]
-SELECTIONS = {"check": ("check", "both"), "bench_direct": ("bench", "direct"),
-              "bench_graph": ("bench", "graph")}
+# Selection key -> (action, launch, variant) its records must have.
+SELECTIONS = {"check": ("check", "both", "baseline"),
+              "check_optimized": ("check", "both", "optimized"),
+              "bench_direct": ("bench", "direct", "baseline"),
+              "bench_graph": ("bench", "graph", "baseline"),
+              "bench_optimized": ("bench", "graph", "optimized")}
+CHECKS = ["check", "check_optimized"]
+BENCHES = ["bench_direct", "bench_graph", "bench_optimized"]
+# Profiled versions, in the order of BENCHES, and the file name each one ends with
+# (tools/profile.py).
+PROFILE_VERSIONS = {"direct": "baseline-direct", "graph": "baseline-graph",
+                    "optimized": "optimized-graph"}
+PROFILE_SUFFIXES = {"nsys": (".nsys-rep",), "ncu": (".ncu-rep", ".ncu-repz")}
 PENDING = "pending"
 # Display name and a format string over the contract's `large` values.
 PROBLEMS = {
@@ -57,8 +83,28 @@ PROBLEMS = {
     "vecadd_product": ("Vecadd product", "{records:,} pairs of {operand_bytes}-byte operands, "
                        "added byte by byte"),
 }
+# What each optimized variant changes, in one sentence; its README section has
+# the design and the reasons for each GPU's parameters.
+OPTIMIZATIONS = {
+    "pagerank": "One persistent cooperative kernel runs all sweeps. Per-node sweep tags replace "
+                "the per-level launches, and the ordered Gauss–Seidel updates stay bit for bit "
+                "the same, over a level-ordered layout of the same graph.",
+    "attention": "Blocks of 64 queries share key tiles staged in shared memory, which removes "
+                 "the L2 bottleneck behind the baseline's slow RTX 5090 time. A bound replaces "
+                 "the row-maximum pass, and the context upload overlaps the computation.",
+    "decoder": "A register-tiled classifier with a stream-K tail keeps each logit's sequential "
+               "sum, so its output matches the baseline bit for bit.",
+    "anomaly": "Int8 tensor-core tiles of 16 samples run all ten layers on chip. Requantization "
+               "uses binary32 paths proven equal to the baseline's, and chunked uploads overlap "
+               "inference and downloads.",
+    "vecadd_memory": "Chunked uploads, kernels, and downloads on several streams overlap the two "
+                     "copy directions, with chunk counts and vector widths chosen per GPU.",
+    "vecadd_product": "The same chunked multi-stream pipeline around the baseline kernel, which "
+                      "already runs near DRAM bandwidth.",
+}
 # Integer `large` entries that are not problem extents (left out of the size column).
 NON_EXTENT_KEYS = {"expected_checksum"}
+RUN_ID = re.compile(r"\d{8}-\d{6}-.+?-[0-9a-f]{8}(?=-)")
 
 
 def sha256(path):
@@ -107,7 +153,7 @@ def load_record(folder, app, key, value, spec):
     path = resolve(folder, value)
     if path is None:
         return None
-    action, launch = SELECTIONS[key]
+    action, launch, variant = SELECTIONS[key]
     record = json.loads(path.read_text())
     where = f"{folder}/{value}"
     if record.get("schema") != "loom_private.result/1":
@@ -115,9 +161,10 @@ def load_record(folder, app, key, value, spec):
     if spec is None or record.get("identity") != spec.get("identity"):
         raise ValueError(f"{where}: record identity {record.get('identity')!r} "
                          f"is not application {app}")
-    if record.get("action") != action or record.get("launch") != launch:
-        raise ValueError(f"{where}: selected as {key} but records "
-                         f"{record.get('action')}/{record.get('launch')}")
+    # Records from before variants existed are baselines.
+    recorded = (record.get("action"), record.get("launch"), record.get("variant", "baseline"))
+    if recorded != (action, launch, variant):
+        raise ValueError(f"{where}: selected as {key} but records {'/'.join(recorded)}")
     if record.get("contract_sha256") != spec["_sha256"]:
         raise ValueError(f"{where}: record validated contract {record.get('contract_sha256')}, "
                          f"current contract is {spec['_sha256']}")
@@ -138,6 +185,49 @@ def load_record(folder, app, key, value, spec):
     return record
 
 
+def load_benches(folder, app, key, value, spec):
+    """A bench selection: one path or a list of repetitions; None when pending."""
+    if value is None:
+        return None
+    values = value if isinstance(value, list) else [value]
+    where = f"inputs/{folder}.json: {app} {key}"
+    if not values:
+        raise ValueError(f"{where} is an empty list; use null")
+    if len(set(values)) != len(values):
+        raise ValueError(f"{where} lists a record more than once")
+    records = [load_record(folder, app, key, v, spec) for v in values]
+    if len({(r.get("iterations"), r.get("warmup")) for r in records}) != 1:
+        raise ValueError(f"{where}: repetitions differ in iterations or warmup")
+    return records
+
+
+def load_profile(folder, app, kind, version, value):
+    """A selected profile and the CSV export tools/profile.py wrote beside it."""
+    path = resolve(folder, value)
+    if path is None:
+        return None
+    suffix = next((s for s in PROFILE_SUFFIXES[kind] if path.name.endswith(s)), None)
+    stem = path.name.removesuffix(suffix) if suffix else ""
+    expected = PROFILE_VERSIONS[version]
+    if (suffix is None or not stem.endswith(f"-{expected}")
+            or Path(value).parts[:2] != ("loom_private", app)):
+        raise ValueError(f"{folder}/{value}: not a {kind} report of {app} {expected}")
+    export = path.with_name(f"{stem}_cuda_gpu_kern_sum.csv" if kind == "nsys"
+                            else f"{stem}-ncu-raw.csv")
+    if not export.is_file():
+        raise ValueError(f"{folder}/{value}: its export {export.name} is missing")
+    with open(export, newline="") as stream:
+        # nsys: a header and a row per kernel; ncu raw: a header, units, a row per launch.
+        if sum(1 for _ in csv.reader(stream)) < (2 if kind == "nsys" else 3):
+            raise ValueError(f"{folder}/{value}: its export {export.name} lists no kernels")
+    meta = run_metadata(f"{folder}/{value}")
+    gpu = ((meta or {}).get("gpu") or {}).get("name")
+    if meta and not device_matches(folder, gpu):
+        raise ValueError(f"{folder}/{value}: profiled on {gpu!r}, not the {folder} folder's GPU")
+    return {"_path": f"{folder}/{value}",
+            "csv": f"{folder}/{Path(value).with_name(export.name)}"}
+
+
 def load_gpu(folder):
     manifest = json.loads((HERE / "inputs" / f"{folder}.json").read_text())
     if manifest.get("folder") != folder or manifest.get("suite_version") != VERSION:
@@ -148,19 +238,50 @@ def load_gpu(folder):
     for app in APPS:
         spec = contract(app)
         selected = manifest["applications"][app]
-        if sorted(selected) != sorted(SELECTIONS):
-            raise ValueError(f"inputs/{folder}.json: {app} needs keys {sorted(SELECTIONS)}")
-        records = {key: load_record(folder, app, key, selected[key], spec)
-                   for key in SELECTIONS}
-        rows.append({"app": app, "contract": spec, **records})
+        if sorted(selected) != sorted([*SELECTIONS, "profiles"]):
+            raise ValueError(f"inputs/{folder}.json: {app} needs keys "
+                             f"{sorted([*SELECTIONS, 'profiles'])}")
+        row = {"app": app, "contract": spec}
+        for key in CHECKS:
+            row[key] = load_record(folder, app, key, selected[key], spec)
+        for key in BENCHES:
+            row[key] = load_benches(folder, app, key, selected[key], spec)
+            check = row["check_optimized" if key == "bench_optimized" else "check"]
+            if row[key] and not (check and check_passed(check)):
+                raise ValueError(f"inputs/{folder}.json: {app} {key} needs a passing "
+                                 f"{'check_optimized' if key == 'bench_optimized' else 'check'}")
+        profiles = selected["profiles"]
+        if sorted(profiles) != sorted(PROFILE_SUFFIXES) or any(
+                sorted(profiles[kind]) != sorted(PROFILE_VERSIONS) for kind in profiles):
+            raise ValueError(f"inputs/{folder}.json: {app} profiles need nsys and ncu, each "
+                             f"with {sorted(PROFILE_VERSIONS)}")
+        row["profiles"] = {(kind, version): load_profile(folder, app, kind, version,
+                                                         profiles[kind][version])
+                           for kind in PROFILE_SUFFIXES for version in PROFILE_VERSIONS}
+        rows.append(row)
     return manifest, rows
 
 
-def timing(record, scope):
-    """Batch per-iteration microseconds from a bench record, else pending."""
-    if record is None:
+def selected_records(row):
+    """Every selected record of an application row."""
+    found = [row[key] for key in CHECKS if row[key]]
+    for key in BENCHES:
+        found += row[key] or []
+    return found
+
+
+def timing(records, scope, field="batch_per_iteration_us"):
+    """Median over the repetitions of a bench selection, else pending."""
+    if not records:
         return PENDING
-    return record["timing"][scope]["batch_per_iteration_us"]
+    return statistics.median(r["timing"][scope][field] for r in records)
+
+
+def median_record(records, scope, field="batch_per_iteration_us"):
+    """The repetition holding the (lower) median of a field, for links. With an
+    odd count it holds the displayed median exactly."""
+    ranked = sorted(records, key=lambda r: r["timing"][scope][field])
+    return ranked[(len(ranked) - 1) // 2]
 
 
 def size_text(spec):
@@ -195,61 +316,146 @@ def problem_text(app, spec):
     return PROBLEMS[app][1].format(**spec["large"])
 
 
+def check_passed(record):
+    """True only when every invocation passed and Direct and Graph agree."""
+    return (record["status"] == "pass" and record["outputs_agree"]
+            and all(c["pass"] for c in record["checks"]))
+
+
 def check_summary(record):
-    """pass only when every invocation passed and Direct and Graph agree."""
     if record is None:
         return PENDING
-    passed = (record["status"] == "pass" and record["outputs_agree"]
-              and all(c["pass"] for c in record["checks"]))
-    return f"[{'pass' if passed else 'FAIL'}](../../{record['_path']})"
+    return f"[{'pass' if check_passed(record) else 'FAIL'}](../../{record['_path']})"
 
 
-def run_metadata(record):
-    """The recorder's metadata for the run that produced a selected record, if any."""
-    folder, _, name = record["_path"].partition("/")
-    run_id = re.sub(r"-(check|bench-direct|bench-graph)\.json$", "", Path(name).name)
-    path = REPO / folder / "runs" / run_id / "metadata.json"
-    return json.loads(path.read_text()) if path.is_file() else None
+def run_metadata(path):
+    """The recorder's metadata for the run that wrote a selected file, if any."""
+    folder, _, name = path.partition("/")
+    match = RUN_ID.match(Path(name).name)
+    meta = REPO / folder / "runs" / match.group(0) / "metadata.json" if match else None
+    return json.loads(meta.read_text()) if meta and meta.is_file() else None
+
+
+def selected_runs(rows):
+    """{run id or path: (kinds, metadata or None)} over every selected file."""
+    runs = {}
+    for row in rows:
+        files = [(r["_path"], r["action"]) for r in selected_records(row)]
+        files += [(p["_path"], "profile") for p in row["profiles"].values() if p]
+        for path, kind in files:
+            meta = run_metadata(path)
+            kinds, _ = runs.setdefault(meta["run_id"] if meta else path, (set(), meta))
+            kinds.add(kind)
+    return runs
+
+
+def cuda_release(meta):
+    match = re.search(r"release ([\d.]+)", meta.get("installed_tools", {}).get("nvcc") or "")
+    return f"CUDA {match.group(1)}" if match else "unknown"
 
 
 def environment(manifest, rows):
     """GPU, host, driver, CUDA release, and source revision of the selected runs."""
-    runs = {}
-    for row in rows:
-        for key in SELECTIONS:
-            if row[key] is not None:
-                meta = run_metadata(row[key])
-                runs[meta["run_id"] if meta else row[key]["_path"]] = meta
+    runs = selected_runs(rows)
     if not runs:
         return [manifest["label"], PENDING, PENDING, PENDING, PENDING]
     def values(get):
-        found = sorted({get(m) if m else "unrecorded" for m in runs.values()})
-        return ", ".join(found)
-    def cuda(meta):
-        match = re.search(r"release ([\d.]+)", meta.get("installed_tools", {}).get("nvcc") or "")
-        return f"CUDA {match.group(1)}" if match else "unknown"
+        return ", ".join(sorted({get(m) if m else "unrecorded" for _, m in runs.values()}))
     revision = manifest.get("source_revision")
     if not isinstance(revision, str) or not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise ValueError(f"inputs/{manifest['folder']}.json: selected runs need a full "
                          f"source_revision commit hash")
     return [manifest["label"], values(lambda m: m["host"]), values(lambda m: m["gpu"]["driver"]),
-            values(cuda), revision[:7]]
+            values(cuda_release), revision[:7]]
+
+
+def short_kernel(name):
+    """`void <unnamed>::foo<(int)8, 4>(float *, int)` -> `foo<(int)8, 4>`."""
+    for prefix in ("<unnamed>::", "(anonymous namespace)::"):
+        name = name.replace(prefix, "")
+    name = name.removeprefix("void ")
+    depth = 0
+    for i, c in enumerate(name):
+        depth += {"<": 1, ">": -1}.get(c, 0)
+        if c == "(" and depth == 0:
+            name = name[:i]
+            break
+    base, bracket, rest = name.partition("<")
+    return base.split("::")[-1] + bracket + rest
+
+
+def nsys_kernels(profile):
+    """[(kernel, us, launches)] of the one end-to-end invocation an nsys report
+    captures (tools/profile.py), from its kernel summary."""
+    with open(REPO / profile["csv"]) as stream:
+        return [(short_kernel(row["Name"]), float(row["Total Time (ns)"]) / 1e3,
+                 int(row["Instances"])) for row in csv.DictReader(stream)]
+
+
+def ncu_rows(profile):
+    """All profiled launches of an ncu raw export, as {metric: (value, unit)} dicts."""
+    with open(REPO / profile["csv"], newline="") as stream:
+        rows = list(csv.reader(stream))
+    header, units = rows[0], rows[1]
+    return [{h: (v, u) for h, u, v in zip(header, units, row)} for row in rows[2:]]
+
+
+def number(value):
+    return float(value.replace(",", ""))
+
+
+TIME_SCALE_TO_US = {"ns": 1e-3, "nsecond": 1e-3, "us": 1.0, "usecond": 1.0,
+                    "ms": 1e3, "msecond": 1e3, "s": 1e6, "second": 1e6}
+
+
+def launch_us(launch):
+    value, unit = launch["gpu__time_duration.sum"]
+    return number(value) * TIME_SCALE_TO_US[unit]
+
+
+def ncu_metric_median(launches, metric):
+    """Median within a configuration; missing or incompatible metrics stay blank."""
+    samples = [launch.get(metric) for launch in launches]
+    if any(sample is None or not sample[0] for sample in samples):
+        return None
+    if len({sample[1] for sample in samples}) != 1:
+        return None
+    try:
+        return statistics.median(number(sample[0]) for sample in samples)
+    except ValueError:
+        return None
+
+
+def ncu_dimensions(launch, kind):
+    dims = [launch.get(f"launch__{kind}_dim_{axis}", ("", ""))[0] for axis in "xyz"]
+    if all(dims):
+        return " x ".join(dims)
+    return launch.get(f"launch__{kind}_size", ("", ""))[0]
+
+
+def repetitions(gpus):
+    """The number of bench repetitions per selection, when all selections agree."""
+    counts = {len(row[key]) for _, rows in gpus for row in rows for key in BENCHES if row[key]}
+    return counts.pop() if len(counts) == 1 else None
 
 
 def markdown(gpus):
     labels = [m["label"].split(" (")[0] for m, _ in gpus]
+    runs = repetitions(gpus)
     lines = [
         f"# Private Loom CUDA workloads: results {VERSION}",
         "",
-        "Baseline timings and correctness checks for the six workloads in "
+        "Timings and correctness checks for the six workloads in "
         "[`applications/loom_private`](../../applications/loom_private), ported from private "
-        "Loom commit `4a75f8d`. These are the first, unoptimized implementations. The older "
+        "Loom commit `4a75f8d`. Each workload has a baseline, the first direct port, and an "
+        "optimized version of the same contract, which passes the same check. The older "
         "workloads have their own [results page](../README.md).",
         "",
-        "- Times are microseconds per iteration, averaged over a back-to-back batch. "
-        "Lower is better.",
+        "- Times are microseconds per iteration, averaged over a back-to-back batch"
+        + (f", then the median of {runs} recorded runs" if runs and runs > 1 else "")
+        + ". Lower is better.",
         "- **Direct** launches every kernel on each iteration. **Graph** replays a CUDA Graph "
-        "captured once.",
+        "captured once. **Optimized** is the optimized version, replayed as a CUDA Graph.",
         "- *pending* means no run has been selected yet.",
         "",
         "## Workloads",
@@ -268,24 +474,45 @@ def markdown(gpus):
     ]
     for title, note, scope in scopes:
         lines += ["", f"## {title}", "", note, "",
-                  "| Workload | " + " | ".join(f"{g} Direct | {g} Graph" for g in labels) + " |",
-                  "|---|" + "--:|--:|" * len(labels)]
+                  "| Workload | " + " | ".join(f"{g} Direct | {g} Graph | {g} Optimized"
+                                             for g in labels) + " |",
+                  "|---|" + "--:|--:|--:|" * len(labels)]
         for index, app in enumerate(APPS):
             cells = []
             for _, rows in gpus:
-                cells += [fmt(timing(rows[index]["bench_direct"], scope)),
-                          fmt(timing(rows[index]["bench_graph"], scope))]
+                cells += [fmt(timing(rows[index][key], scope)) for key in BENCHES]
             lines.append(f"| {PROBLEMS[app][0]} | " + " | ".join(cells) + " |")
+    lines += ["", "## Optimized speedup", "",
+              "Graph time divided by Optimized time, so both replay a CUDA Graph and only the "
+              "implementation differs.", "",
+              "| Workload | " + " | ".join(f"{g} end to end | {g} kernel only"
+                                         for g in labels) + " |",
+              "|---|" + "--:|--:|" * len(labels)]
+    for index, app in enumerate(APPS):
+        cells = []
+        for _, rows in gpus:
+            for scope in ("application", "compute"):
+                graph = timing(rows[index]["bench_graph"], scope)
+                optimized = timing(rows[index]["bench_optimized"], scope)
+                cells.append(f"{graph / optimized:,.1f}×" if PENDING not in (graph, optimized)
+                             else PENDING)
+        lines.append(f"| {PROBLEMS[app][0]} | " + " | ".join(cells) + " |")
+    lines += ["", "## Optimized versions", "",
+              "Each workload's README explains its optimized version and the parameters chosen "
+              "for each GPU.", ""]
+    lines += [f"- **{PROBLEMS[app][0]}** ([details](../../applications/loom_private/{app}/"
+              f"README.md#optimized-variant)): {OPTIMIZATIONS[app]}" for app in APPS]
     lines += ["", "## Correctness", "",
               "Each check compares every output with an independent CPU reference. The GPU runs "
               "twice with direct launches and twice with a graph, each time starting from "
               "poisoned buffers, and all four outputs must be identical. Checks are not "
               "timed. Each cell links to its record.", "",
-              "| Workload | " + " | ".join(labels) + " |",
-              "|---|" + "---|" * len(labels)]
+              "| Workload | " + " | ".join(f"{g} baseline | {g} optimized" for g in labels)
+              + " |",
+              "|---|" + "---|---|" * len(labels)]
     for index, app in enumerate(APPS):
-        lines.append(f"| {PROBLEMS[app][0]} | "
-                     + " | ".join(check_summary(rows[index]["check"]) for _, rows in gpus) + " |")
+        lines.append(f"| {PROBLEMS[app][0]} | " + " | ".join(
+            check_summary(rows[index][key]) for _, rows in gpus for key in CHECKS) + " |")
     lines += ["", "## Test machines", "",
               "Taken from the recorder metadata (`<gpu>/runs/<run>/metadata.json`) of the "
               "selected runs. Source revision is the code the runs were built from, as stated in "
@@ -295,7 +522,8 @@ def markdown(gpus):
     lines += ["", "Generated by `results/loom_private/build_report.py` from the runs selected in "
               "`results/loom_private/inputs/<gpu>.json`. The workbook "
               f"[`loom_private_{VERSION}.xlsx`](loom_private_{VERSION}.xlsx) has the same data "
-              "plus contract hashes and per-invocation check results."]
+              "plus single-iteration latencies, per-kernel times and Nsight Compute metrics from "
+              "the selected profiles, contract hashes, and per-invocation check results."]
     return "\n".join(lines)
 
 
@@ -310,8 +538,8 @@ VERSIONS = ["Direct", "Graph", "Optimized"]
 STAGES = [("application", "Application (end to end)"), ("compute", "Kernel only (no transfers)")]
 METRIC = "CUDA events (batched)"
 BENCH_PENDING = "pending (no bench run selected)"
-OPTIMIZED_PENDING = "pending (no optimized version yet)"
-PROFILE_PENDING = "pending (not profiled yet)"
+NSYS_PENDING = "pending (no Nsight Systems profile selected)"
+NCU_PENDING = "pending (no Nsight Compute profile selected)"
 # Short visible note per application and stage; the contract's full timing
 # scope goes in the cell comment.
 SHORT_NOTES = {
@@ -323,6 +551,22 @@ SHORT_NOTES = {
 }
 DEFAULT_NOTES = {"application": "Includes input upload and output download (pinned host memory).",
                  "compute": "Kernels only; inputs already on the GPU."}
+# Per-launch ncu metrics on the NCU launches sheets (metric, column label).
+NCU_DETAIL_METRICS = [
+    ("gpu__time_duration.sum", "Duration"),
+    ("sm__throughput.avg.pct_of_peak_sustained_elapsed", "SM throughput %"),
+    ("gpu__compute_memory_throughput.avg.pct_of_peak_sustained_elapsed", "Memory throughput %"),
+    ("gpu__dram_throughput.avg.pct_of_peak_sustained_elapsed", "DRAM throughput %"),
+    ("sm__warps_active.avg.pct_of_peak_sustained_active", "Achieved occupancy %"),
+    ("sm__maximum_warps_per_active_cycle_pct", "Theoretical occupancy %"),
+    ("launch__registers_per_thread", "Registers / thread"),
+    ("launch__grid_size", "Grid"),
+    ("launch__block_size", "Block"),
+    ("launch__waves_per_multiprocessor", "Waves / SM"),
+]
+# Launch configuration: kernels with different values are separate rows.
+NCU_CONFIG_METRICS = ["launch__grid_size", "launch__block_size", "launch__registers_per_thread",
+                      "launch__shared_mem_per_block"]
 
 
 def link(path):
@@ -379,13 +623,18 @@ def workbook(gpus):
         ws.print_title_rows = "1:4"
         return ws
 
-    def finish_table(ws):
+    def finish_table(ws, height=58):
         ws.auto_filter.ref = f"A4:{get_column_letter(ws.max_column)}{ws.max_row}"
         for row in ws.iter_rows(min_row=5):
             for c in row:
                 c.alignment = wrap
                 c.border = box
-            ws.row_dimensions[row[0].row].height = 58
+            ws.row_dimensions[row[0].row].height = height
+
+    def nav(ws, targets):
+        for col, target in enumerate(targets, 1):
+            c = ws.cell(3, col, target)
+            c.hyperlink, c.font = f"#'{target}'!A1", blue
 
     def value(ws, row, col, data, source=None, speedup=False):
         """A number (linked to its source) or grey pending text with its reason."""
@@ -416,40 +665,94 @@ def workbook(gpus):
         numbers = isinstance(a, (int, float)) and isinstance(b, (int, float))
         return a / b if numbers and b else None
 
-    def bench(record, scope, field="batch_per_iteration_us"):
-        return BENCH_PENDING if record is None else record["timing"][scope][field]
+    def bench(records, scope, field="batch_per_iteration_us"):
+        return BENCH_PENDING if not records else timing(records, scope, field)
+
+    def bench_source(records, scope, field="batch_per_iteration_us"):
+        return median_record(records, scope, field)["_path"] if records else None
+
+    def kernel_time(profile):
+        return NSYS_PENDING if profile is None else sum(us for _, us, _ in nsys_kernels(profile))
+
+    def describe(row):
+        """Iterations per batch and run counts, per version."""
+        counts = {r["iterations"] for key in BENCHES for r in row[key] or []}
+        text = f" {counts.pop():,} iterations/batch." if len(counts) == 1 else ""
+        runs = {version: len(row[key]) for version, key in zip(VERSIONS, BENCHES) if row[key]}
+        if len(set(runs.values())) == 1:
+            n = next(iter(runs.values()))
+            return text + (" One run each." if n == 1 else f" Median of {n} runs each.")
+        return text + " Runs: " + ", ".join(f"{v} {n}" for v, n in runs.items()) + "."
 
     def stage_note(row, scope):
-        spec, records = row["contract"] or {}, [row["bench_direct"], row["bench_graph"]]
+        spec = row["contract"] or {}
         short = SHORT_NOTES[scope].get(row["app"], DEFAULT_NOTES[scope])
-        counts = {r["iterations"] for r in records if r}
-        if len(counts) == 1:
-            short += f" {counts.pop():,} iterations/batch. One run."
+        if any(row[key] for key in BENCHES):
+            short += describe(row)
         full = spec.get("timing_scope", {}).get(scope, "Contract pending.")
         return short, full[0].upper() + full[1:] + "."
 
+    def kernel_note(row):
+        parts, launches = [], {}
+        for version, key in zip(VERSIONS, PROFILE_VERSIONS):
+            profile = row["profiles"][("nsys", key)]
+            if profile is None:
+                continue
+            kernels = nsys_kernels(profile)
+            launches[version] = sum(count for _, _, count in kernels)
+            total = sum(us for _, us, _ in kernels) or 1
+            parts.append(f"{version}: " + ", ".join(
+                f"{name} ×{count} ({100 * us / total:.0f}%)"
+                for name, us, count in sorted(kernels, key=lambda k: -k[1])))
+        if not parts:
+            return "Not profiled yet.", "No Nsight Systems profile is selected."
+        short = "Every kernel of one end-to-end invocation; launches: " + ", ".join(
+            f"{v} {n:,}" for v, n in launches.items()) + "."
+        full = ("Kernel time of one end-to-end invocation from Nsight Systems, captured after "
+                "one warmup invocation; copies and setup are left out. " +
+                " ".join(f"{p}." for p in parts))
+        return short, full
+
     names = {m["folder"]: m["label"].split(" (")[0] for m, _ in gpus}
     base_rows = dict((m["folder"], rows) for m, rows in gpus)[BASELINE]
-    shared = ["Sources", "Correctness", "Environment", "Contracts"]
+    targets = [m["folder"] for m, _ in gpus if m["folder"] != BASELINE]
+    shared = ["Sources", "GPU analysis", "Correctness", "Environment", "Contracts"]
 
-    for manifest, rows in gpus:
-        folder, title = manifest["folder"], names[manifest["folder"]]
-        compare = folder != BASELINE
+    def summary_headers(folder, first):
+        title = names[folder]
         headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)", "Graph (us)",
                    "Optimized (us)", "Graph speedup\nDirect / Graph",
                    "Optimized speedup\nGraph / Optimized"]
-        if compare:
+        if folder != BASELINE:
             headers += [f"GPU speedup\n{names[BASELINE].removeprefix('RTX ')} / "
                         f"{title.removeprefix('RTX ')}\n(Graph)"]
-        headers += ["Notes"]
-        ws = table_sheet(title, headers,
-                         [24, 30, 30, 20, 15, 15, 15, 15, 17] + ([18] if compare else []) + [48],
+        widths = [24, first, 30, 20, 15, 15, 15, 15, 17] + ([18] if folder != BASELINE else [])
+        return headers + ["Notes"], widths + [48]
+
+    def speedup(a, b):
+        """a / b, else the pending reason of the missing value."""
+        if ratio(a, b) is not None:
+            return ratio(a, b)
+        return next((x for x in (b, a) if isinstance(x, str)), "n/a (zero time)")
+
+    def summary_values(ws, r, direct, graph, optimized, sources, base_graph=None, compare=False):
+        for col, (data, source, fill) in enumerate(zip((direct, graph, optimized), sources,
+                                                       fills), 5):
+            value(ws, r, col, data, source).fill = fill
+        value(ws, r, 8, speedup(direct, graph), speedup=True)
+        value(ws, r, 9, speedup(graph, optimized), speedup=True)
+        if compare:
+            value(ws, r, 10, speedup(base_graph, graph), speedup=True)
+
+    for manifest, rows in gpus:
+        folder, title = manifest["folder"], names[manifest["folder"]]
+        headers, widths = summary_headers(folder, 30)
+        ws = table_sheet(title, headers, widths,
                          f"{manifest['label']}; {manifest['toolkit']}. Large workloads: time per "
-                         "iteration in a back-to-back batch; lower is better. Times link to the "
-                         "bench records. Notes have full explanations in comments.")
-        for col, target in enumerate([f"Latency {title}"] + shared, 1):
-            c = ws.cell(3, col, target)
-            c.hyperlink, c.font = f"#'{target}'!A1", blue
+                         "iteration in a back-to-back batch; lower is better. Optimized is the "
+                         "optimized version of the same contract, replayed as a CUDA Graph. Times "
+                         "link to the bench records. Notes have full explanations in comments.")
+        nav(ws, [f"Latency {title}", f"Kernels {title}"] + shared)
         for index, row in enumerate(rows):
             for scope, stage in STAGES:
                 r = ws.max_row + 1
@@ -457,22 +760,14 @@ def workbook(gpus):
                                             problem_text(row["app"], row["contract"]), METRIC), 1):
                     ws.cell(r, col, text)
                 ws.cell(r, 1).font = bold
-                direct, graph = bench(row["bench_direct"], scope), bench(row["bench_graph"], scope)
-                sources = [(row["bench_direct"] or {}).get("_path"),
-                           (row["bench_graph"] or {}).get("_path"), None]
-                for col, (data, source, fill) in enumerate(
-                        zip((direct, graph, OPTIMIZED_PENDING), sources, fills), 5):
-                    value(ws, r, col, data, source).fill = fill
-                value(ws, r, 8, ratio(direct, graph) or BENCH_PENDING, speedup=True)
-                value(ws, r, 9, OPTIMIZED_PENDING, speedup=True)
-                if compare:
-                    base = bench(base_rows[index]["bench_graph"], scope)
-                    value(ws, r, 10, ratio(base, graph) or BENCH_PENDING, speedup=True)
+                summary_values(ws, r, *(bench(row[key], scope) for key in BENCHES),
+                               [bench_source(row[key], scope) for key in BENCHES],
+                               bench(base_rows[index]["bench_graph"], scope), folder != BASELINE)
                 note(ws, r, len(headers), *stage_note(row, scope))
         finish_table(ws)
 
     for manifest, rows in gpus:
-        title = names[manifest["folder"]]
+        folder, title = manifest["folder"], names[manifest["folder"]]
         headers = ["Workload", "Stage", "Problem size", "Version", "Batch iterations", "Runs",
                    "Full batch (ms)", "Batched (us/iteration)", "Single (us)", "Single / batched",
                    "Graph speedup (single)", "Optimized speedup (single)", "Notes"]
@@ -480,91 +775,248 @@ def workbook(gpus):
                          [24, 24, 30, 16, 14, 9, 16, 17, 15, 15, 17, 18, 48],
                          f"{manifest['label']}. Single = median of the isolated iterations that "
                          "follow the batch (as many as the batch has). Single/batched reflects "
-                         "scheduling and timing conditions, not pure launch overhead. Each "
-                         "version comes from one bench run; missing measurements stay pending.")
+                         "scheduling and timing conditions, not pure launch overhead. With "
+                         "several runs, each column is the median over the runs; missing "
+                         "measurements stay pending.")
+        nav(ws, [title, f"Kernels {title}"] + shared)
         for row in rows:
             for scope, stage in STAGES:
                 singles = {}
-                for version, key, fill in zip(VERSIONS, ("bench_direct", "bench_graph", None),
-                                              fills):
-                    record = row.get(key) if key else None
-                    pending = BENCH_PENDING if key else OPTIMIZED_PENDING
+                for version, key, fill in zip(VERSIONS, BENCHES, fills):
+                    records = row[key]
                     r = ws.max_row + 1
                     for col, text in enumerate((PROBLEMS[row["app"]][0], stage,
                                                 problem_text(row["app"], row["contract"]),
                                                 version), 1):
                         ws.cell(r, col, text)
                     ws.cell(r, 1).font = bold
-                    if record is None:
+                    if not records:
                         for col in range(5, 11):
-                            value(ws, r, col, pending, speedup=col == 10)
+                            value(ws, r, col, BENCH_PENDING, speedup=col == 10)
                     else:
-                        timing_ = record["timing"][scope]
-                        singles[version] = timing_["single_median_us"]
-                        ws.cell(r, 5, record["iterations"])
-                        ws.cell(r, 6, 1)
-                        for col, data in enumerate((timing_["batch_total_ms"],
-                                                    timing_["batch_per_iteration_us"],
-                                                    timing_["single_median_us"]), 7):
-                            value(ws, r, col, data, record["_path"])
-                        value(ws, r, 10, ratio(timing_["single_median_us"],
-                                               timing_["batch_per_iteration_us"]), speedup=True)
+                        singles[version] = timing(records, scope, "single_median_us")
+                        iterations = {rec["iterations"] for rec in records}
+                        ws.cell(r, 5, iterations.pop() if len(iterations) == 1 else "mixed")
+                        ws.cell(r, 6, len(records))
+                        for col, field in enumerate(("batch_total_ms", "batch_per_iteration_us",
+                                                     "single_median_us"), 7):
+                            value(ws, r, col, timing(records, scope, field),
+                                  bench_source(records, scope, field))
+                        value(ws, r, 10, ratio(singles[version],
+                                               timing(records, scope)), speedup=True)
                     if version == "Graph":
                         value(ws, r, 11, ratio(singles.get("Direct"), singles.get("Graph"))
-                              or pending, speedup=True)
+                              or BENCH_PENDING, speedup=True)
                     if version == "Optimized":
-                        value(ws, r, 12, OPTIMIZED_PENDING, speedup=True)
+                        value(ws, r, 12, ratio(singles.get("Graph"), singles.get("Optimized"))
+                              or BENCH_PENDING, speedup=True)
                     note(ws, r, 13, *stage_note(row, scope))
                     for col in range(1, len(headers) + 1):
                         ws.cell(r, col).fill = fill
         finish_table(ws)
 
+        headers, widths = summary_headers(folder, 26)
+        ws = table_sheet(f"Kernels {title}", headers, widths,
+                         f"{manifest['label']}; {manifest['toolkit']}. GPU kernel time per "
+                         "invocation from Nsight Systems: every kernel of one invocation summed, "
+                         "with the copies left out. Times link to the profiles; notes list the "
+                         "kernels and their shares.")
+        nav(ws, [title, f"Latency {title}"] + shared)
+        for index, row in enumerate(rows):
+            r = ws.max_row + 1
+            for col, text in enumerate((PROBLEMS[row["app"]][0], "All kernels, one invocation",
+                                        problem_text(row["app"], row["contract"]),
+                                        "Nsight Systems kernel sum"), 1):
+                ws.cell(r, col, text)
+            ws.cell(r, 1).font = bold
+            profiles = [row["profiles"][("nsys", v)] for v in PROFILE_VERSIONS]
+            summary_values(ws, r, *(kernel_time(p) for p in profiles),
+                           [p["_path"] if p else None for p in profiles],
+                           kernel_time(base_rows[index]["profiles"][("nsys", "graph")]),
+                           folder != BASELINE)
+            note(ws, r, len(headers), *kernel_note(row))
+        finish_table(ws)
+
     ws = table_sheet("Sources", ["GPU", "Workload", "Problem size", "Version", "Measurement",
                                  "Run metadata", "NCU report", "Nsight Systems", "Notes"],
-                     [15, 24, 30, 15, 44, 44, 30, 30, 48],
-                     "Source files for every timing. Filenames link to the original evidence. "
-                     "Profiles are pending until the workloads are profiled.")
+                     [15, 24, 30, 15, 44, 44, 44, 44, 48],
+                     "Source files for every timing. Filenames link to the original evidence: "
+                     "the bench record with the median end-to-end time, its run's metadata, and "
+                     "the selected profiles.")
+    nav(ws, [names[f] for f in GPUS if f in names] + shared[1:])
     for manifest, rows in gpus:
         for row in rows:
-            for version, key in zip(VERSIONS, ("bench_direct", "bench_graph", None)):
-                record = row.get(key) if key else None
+            for version, key, profile in zip(VERSIONS, BENCHES, PROFILE_VERSIONS):
+                records = row[key]
                 r = ws.max_row + 1
                 for col, text in enumerate((names[manifest["folder"]], PROBLEMS[row["app"]][0],
                                             problem_text(row["app"], row["contract"]), version), 1):
                     ws.cell(r, col, text)
-                if record is None:
-                    value(ws, r, 5, BENCH_PENDING if key else OPTIMIZED_PENDING)
+                if not records:
+                    value(ws, r, 5, BENCH_PENDING)
                 else:
-                    put_link(ws, r, 5, record["_path"], Path(record["_path"]).name)
-                    meta = run_metadata(record)
+                    record = median_record(records, "application")
+                    runs = f" (median of {len(records)})" if len(records) > 1 else ""
+                    put_link(ws, r, 5, record["_path"], Path(record["_path"]).name + runs)
+                    meta = run_metadata(record["_path"])
                     if meta:
                         path = f"{manifest['folder']}/runs/{meta['run_id']}/metadata.json"
                         put_link(ws, r, 6, path, f"{meta['run_id']}/metadata.json")
-                value(ws, r, 7, PROFILE_PENDING)
-                value(ws, r, 8, PROFILE_PENDING)
+                for col, kind, pending in ((7, "ncu", NCU_PENDING), (8, "nsys", NSYS_PENDING)):
+                    selected = row["profiles"][(kind, profile)]
+                    if selected:
+                        put_link(ws, r, col, selected["_path"], Path(selected["_path"]).name)
+                    else:
+                        value(ws, r, col, manifest.get(f"{kind}_pending", pending))
                 note(ws, r, 9, *stage_note(row, "application"))
+                for col in range(1, 10):
+                    ws.cell(r, col).fill = fills[VERSIONS.index(version)]
     finish_table(ws)
 
-    ws = table_sheet("Correctness", ["GPU", "Workload", "Contract SHA-256", "Status", "Direct",
-                                     "Graph", "Direct = Graph", "Record"],
-                     [15, 24, 30, 12, 12, 12, 14, 44],
+    ws = table_sheet("GPU analysis", ["GPU", "Workload", "Stage", "Problem size", "Version",
+                                      f"{names[BASELINE]} (us)", "GPU (us)", "Measured speedup",
+                                      "Notes"],
+                     [15, 24, 26, 30, 14, 15, 15, 16, 48],
+                     f"Large workloads only. Measured speedup = {names[BASELINE]} time / target "
+                     "GPU time for the same version, scope and source revision. No predictions: "
+                     "the hardware models of the legacy report do not describe these workloads.")
+    nav(ws, [names[f] for f in GPUS if f in names] + ["Sources"])
+    for manifest, rows in gpus:
+        if manifest["folder"] == BASELINE:
+            continue
+        for index, row in enumerate(rows):
+            for scope, stage in STAGES:
+                for version, key, fill in zip(VERSIONS[1:], BENCHES[1:], fills[1:]):
+                    r = ws.max_row + 1
+                    for col, text in enumerate((names[manifest["folder"]],
+                                                PROBLEMS[row["app"]][0], stage,
+                                                problem_text(row["app"], row["contract"]),
+                                                version), 1):
+                        ws.cell(r, col, text)
+                    ws.cell(r, 2).font = bold
+                    base, target = bench(base_rows[index][key], scope), bench(row[key], scope)
+                    value(ws, r, 6, base, bench_source(base_rows[index][key], scope))
+                    value(ws, r, 7, target, bench_source(row[key], scope))
+                    value(ws, r, 8, ratio(base, target) or BENCH_PENDING, speedup=True)
+                    note(ws, r, 9, *stage_note(row, scope))
+                    for col in range(1, 10):
+                        ws.cell(r, col).fill = fill
+    if not targets:
+        value(ws, 5, 1, "pending (only one GPU)")
+    finish_table(ws)
+
+    for manifest, rows in gpus:
+        title = names[manifest["folder"]]
+        metrics, raw_title = f"ncu metrics ({title})", f"NCU launches {title}"
+        headers = ["Workload", "Version", "Kernel", "Launches", "Median (us)", "Min (us)",
+                   "Max (us)", "SM throughput %\n(median)", "DRAM throughput %\n(median)",
+                   "Achieved occupancy %\n(median)", "Memory throughput %\n(median)",
+                   "Theoretical occupancy %\n(median)", "Grid (x y z)", "Block (x y z)",
+                   "Registers / thread", "Shared memory / block", "ncu report", "Launch details",
+                   "Problem size"]
+        ws = table_sheet(metrics, headers,
+                         [24, 14, 46, 11, 15, 15, 15, 17, 17, 18, 18, 19, 22, 22, 17, 22, 50, 20,
+                          30],
+                         "Large workloads; one row per report, kernel, and launch configuration. "
+                         "Each report covers one end-to-end invocation, after a warmup. "
+                         "Medians and min/max describe profiled launches, not application "
+                         "latency or total GPU utilization. Missing metrics stay blank.")
+        raw = table_sheet(raw_title, ["Workload", "Version", "ncu report", "Launch #", "Kernel"]
+                          + [label for _, label in NCU_DETAIL_METRICS],
+                          [24, 14, 50, 11, 46] + [18] * len(NCU_DETAIL_METRICS),
+                          "Every profiled launch in the selected reports, grouped by kernel and "
+                          "configuration; Launch # is the original report order (from zero). "
+                          "Durations and units are as Nsight Compute reports them.")
+        ws.freeze_panes = raw.freeze_panes = "D5"
+        nav(ws, [raw_title, title])
+        nav(raw, [metrics, title])
+        reports = [(row, version, row["profiles"][("ncu", key)])
+                   for row in rows for version, key in zip(VERSIONS, PROFILE_VERSIONS)
+                   if row["profiles"][("ncu", key)]]
+        if not reports:
+            for sheet in (ws, raw):
+                value(sheet, 5, 1, manifest.get("ncu_pending", NCU_PENDING))
+        for row, version, profile in reports:
+            fill = fills[VERSIONS.index(version)]
+            workload = PROBLEMS[row["app"]][0]
+            groups = {}
+            for i, launch in enumerate(ncu_rows(profile)):
+                key = (launch["Kernel Name"][0],
+                       tuple(launch.get(metric) for metric in NCU_CONFIG_METRICS))
+                groups.setdefault(key, []).append((i, launch))
+            for (kernel, _), indexed in groups.items():
+                launches = [launch for _, launch in indexed]
+                first = launches[0]
+                durations = [launch_us(launch) for launch in launches]
+                r, first_raw = ws.max_row + 1, raw.max_row + 1
+                values = [workload, version, short_kernel(kernel), len(launches),
+                          statistics.median(durations), min(durations), max(durations)]
+                values += [ncu_metric_median(launches, metric) for metric in (
+                    "sm__throughput.avg.pct_of_peak_sustained_elapsed",
+                    "gpu__dram_throughput.avg.pct_of_peak_sustained_elapsed",
+                    "sm__warps_active.avg.pct_of_peak_sustained_active",
+                    "gpu__compute_memory_throughput.avg.pct_of_peak_sustained_elapsed",
+                    "sm__maximum_warps_per_active_cycle_pct")]
+                values += [ncu_dimensions(first, "grid"), ncu_dimensions(first, "block"),
+                           ncu_metric_median(launches, "launch__registers_per_thread")]
+                shared_mem, unit = first.get("launch__shared_mem_per_block", ("", ""))
+                values += [f"{shared_mem} {unit}".strip()]
+                for col, data in enumerate(values, 1):
+                    if isinstance(data, (int, float)) and col > 4:
+                        value(ws, r, col, data)
+                    else:
+                        ws.cell(r, col, data)
+                ws.cell(r, 3).comment = Comment(kernel, "build_report.py", width=540, height=160)
+                put_link(ws, r, 17, profile["_path"], Path(profile["_path"]).name)
+                c = ws.cell(r, 18, f"{len(launches)} launches")
+                c.hyperlink, c.font = f"#'{raw_title}'!A{first_raw}", blue
+                ws.cell(r, 19, problem_text(row["app"], row["contract"]))
+                for col in range(1, len(headers) + 1):
+                    ws.cell(r, col).fill = fill
+                for i, launch in indexed:
+                    rr = raw.max_row + 1
+                    raw.cell(rr, 1, workload)
+                    raw.cell(rr, 2, version)
+                    put_link(raw, rr, 3, profile["_path"], Path(profile["_path"]).name)
+                    raw.cell(rr, 4, i)
+                    raw.cell(rr, 5, short_kernel(launch["Kernel Name"][0]))
+                    for col, (metric, _) in enumerate(NCU_DETAIL_METRICS, 6):
+                        if metric not in launch:
+                            continue
+                        data, unit = launch[metric]
+                        try:
+                            data = number(data)
+                        except ValueError:
+                            pass
+                        raw.cell(rr, col, f"{data} {unit}".strip() if unit and unit != "%"
+                                 else data)
+                    for col in range(1, raw.max_column + 1):
+                        raw.cell(rr, col).fill = fill
+        finish_table(ws)
+        finish_table(raw, height=30)
+
+    ws = table_sheet("Correctness", ["GPU", "Workload", "Version", "Contract SHA-256", "Status",
+                                     "Direct", "Graph", "Direct = Graph", "Record"],
+                     [15, 24, 14, 30, 12, 12, 12, 14, 44],
                      "Large-workload checks, not timings. Each runs the CPU reference once, then "
                      "two Direct and two Graph invocations from poisoned buffers; every output "
-                     "must match the reference and all four must be identical.")
+                     "must match the reference and all four must be identical. The baseline and "
+                     "the optimized version are checked separately against the same contract.")
     for manifest, rows in gpus:
         for row in rows:
-            r = ws.max_row + 1
-            spec, record = row["contract"] or {}, row["check"]
-            for col, text in enumerate((names[manifest["folder"]], PROBLEMS[row["app"]][0],
-                                        spec.get("_sha256", PENDING)), 1):
-                ws.cell(r, col, text)
-            for col, text in enumerate(check_cells(record), 4):
-                if text == PENDING:
-                    value(ws, r, col, "pending (no check run selected)")
-                else:
+            for version, key in (("Baseline", "check"), ("Optimized", "check_optimized")):
+                r = ws.max_row + 1
+                spec, record = row["contract"] or {}, row[key]
+                for col, text in enumerate((names[manifest["folder"]], PROBLEMS[row["app"]][0],
+                                            version, spec.get("_sha256", PENDING)), 1):
                     ws.cell(r, col, text)
-            if record:
-                put_link(ws, r, 8, record["_path"], Path(record["_path"]).name)
+                for col, text in enumerate(check_cells(record), 5):
+                    if text == PENDING:
+                        value(ws, r, col, "pending (no check run selected)")
+                    else:
+                        ws.cell(r, col, text)
+                if record:
+                    put_link(ws, r, 9, record["_path"], Path(record["_path"]).name)
     finish_table(ws)
 
     ws = table_sheet("Environment", ["GPU", "Run", "Measurement", "Host", "Driver", "CUDA",
@@ -573,19 +1025,14 @@ def workbook(gpus):
                      "Recorder metadata of every selected run. Source revision is the code the "
                      "runs were built from, as stated in results/loom_private/inputs/<gpu>.json.")
     for manifest, rows in gpus:
-        runs = {}
-        for row in rows:
-            for key in SELECTIONS:
-                if row[key] is not None and (meta := run_metadata(row[key])):
-                    runs[meta["run_id"]] = (key.replace("_", " "), meta)
-        for run_id, (kind, meta) in sorted(runs.items()):
+        for run_id, (kinds, meta) in sorted(selected_runs(rows).items()):
+            if meta is None:
+                continue
             r = ws.max_row + 1
             ws.cell(r, 1, names[manifest["folder"]])
             put_link(ws, r, 2, f"{manifest['folder']}/runs/{run_id}/metadata.json", run_id)
-            nvcc = meta.get("installed_tools", {}).get("nvcc") or ""
-            release = re.search(r"release ([\d.]+)", nvcc)
-            for col, text in enumerate((kind, meta["host"], meta["gpu"]["driver"],
-                                        f"CUDA {release.group(1)}" if release else "unknown",
+            for col, text in enumerate((", ".join(sorted(kinds)), meta["host"],
+                                        meta["gpu"]["driver"], cuda_release(meta),
                                         manifest["source_revision"][:7]), 3):
                 ws.cell(r, col, text)
     finish_table(ws)
@@ -595,7 +1042,7 @@ def workbook(gpus):
                      [24, 44, 30, 30, 60],
                      "Each workload's contract.json fixes its dimensions, inputs, outputs, "
                      "tolerances, and timing scopes. Every result record names the contract hash "
-                     "it validated.")
+                     "it validated; the baseline and the optimized version share it.")
     for app in APPS:
         spec = contract(app) or {}
         r = ws.max_row + 1
@@ -607,6 +1054,16 @@ def workbook(gpus):
         extension = spec.get("extension_of_upstream", PENDING)
         ws.cell(r, 5, "No (direct port)" if extension is False else str(extension))
     finish_table(ws)
+
+    # Legacy order: summaries, then Latency and Kernels per GPU, Sources, GPU
+    # analysis, and the ncu sheets; this report's own sheets come last.
+    order = [names[f] for f in GPUS if f in names]
+    order += [f"{kind} {names[f]}" for f in GPUS if f in names for kind in ("Latency", "Kernels")]
+    order += ["Sources", "GPU analysis"]
+    order += [s for f in GPUS if f in names
+              for s in (f"ncu metrics ({names[f]})", f"NCU launches {names[f]}")]
+    order += ["Correctness", "Environment", "Contracts"]
+    book._sheets = [book[title] for title in order]
     return book
 
 

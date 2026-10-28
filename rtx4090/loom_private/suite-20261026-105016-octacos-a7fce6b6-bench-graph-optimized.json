@@ -1,0 +1,212 @@
+{
+ "schema": "loom_private.suite/1",
+ "suite_version": "v1",
+ "stamp": "20261026-105016-octacos-a7fce6b6",
+ "source_commit": "7ee1df5c23adfbad48057d2f6eb6f6cb6cd6ece5",
+ "gpu_folder": "rtx4090",
+ "action": "bench",
+ "launch": "graph",
+ "variant": "optimized",
+ "repeat": 3,
+ "preset": "large",
+ "applications": [
+  {
+   "application": "pagerank",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.log",
+   "log_sha256": "393e292c6f5515bd947485936df1cd60070dfb9822abb4309f566eb5046b0809",
+   "record": "rtx4090/loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
+   "record_sha256": "03b095edfe1d8db8b33e9991aa17a5dcae6e814ca1fd8c7ac95faff0e8037f78",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "attention",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.log",
+   "log_sha256": "472412b8a8af6e4665563b8b151ce74e090056d666fb5b916d2d81ac87f5dc47",
+   "record": "rtx4090/loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
+   "record_sha256": "0fd8d21d3478d40f4509f7a9c9ce559fb893f4f096a3ae00eb47467e5ef2ef99",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "decoder",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.log",
+   "log_sha256": "48d27f27d1fe506af6462500e279164e58fc6d43767d14cffd3bcd4fefc32a15",
+   "record": "rtx4090/loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
+   "record_sha256": "00e79f1c146412156f9d4bd6a933887a183fade79d5a8bad13e383a031968097",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "anomaly",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.log",
+   "log_sha256": "ab7fa93d96a95b4691cd11434162e1285352cd82c83d65193b865259f47323e8",
+   "record": "rtx4090/loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
+   "record_sha256": "77d66bab7a3eb5f2d063cfd8426bc1b65e802ac6d1b710a6adf512c7f4bc5b3e",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.log",
+   "log_sha256": "13f877e992aca4ce5cc9c815452ed921695109d1672e39180a4c13c698ce4fea",
+   "record": "rtx4090/loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
+   "record_sha256": "e35ea1ed3b67dab4a68be06912618436720159ea36e74196fd1f1908c9ef39aa",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.log",
+   "log_sha256": "fc0239e7eb702a126c0fae1d8cdf8d39ef68606edf2825b7a9f9e23b48fd4c54",
+   "record": "rtx4090/loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r1.json",
+   "record_sha256": "1af96793463373da2c2d93b0d0f33ea81e0883d1f5c4568f111ce587b49ba605",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "pagerank",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.log",
+   "log_sha256": "b5b4e85f5602d2f440b50ce4626dd9d71ca49b60a6dea68ee18eac51191d576d",
+   "record": "rtx4090/loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
+   "record_sha256": "84a1ce404c1f470d37a1c253d076b372d9961ea83cc55fd5119612bec7db7900",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "attention",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.log",
+   "log_sha256": "e93871dfd22d0853d6788f31f23798c32e05eca59d9fd65c15c7c0660db10b72",
+   "record": "rtx4090/loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
+   "record_sha256": "d31e28aa56c7c0fb562985e221dd0852fc692669d7c6c6c0412314f3bab1951d",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "decoder",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.log",
+   "log_sha256": "e7dbdd00b3e63bb62dc4e95540d3a36163c08bf2d3cd09745d78a0180b829a6b",
+   "record": "rtx4090/loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
+   "record_sha256": "07ce2d939be05350b929d57be0110fd2d66841aff5cea329a1db773259044b63",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "anomaly",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.log",
+   "log_sha256": "0156045bed2a288f53462d6f808a5077dd7e69c0e40f42afa61777f72e22c3f7",
+   "record": "rtx4090/loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
+   "record_sha256": "fdcb85b3c51d6882ed0bb3f3469f5d466519d2ea3d6713ad9676ae336d077644",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.log",
+   "log_sha256": "52e33df7f02779fedc5d0140fb3c23d152e7a5a2741c44e00ed4624a9c4e42d8",
+   "record": "rtx4090/loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
+   "record_sha256": "fb0e6c627a9977c3b03b4f9e7fc119dfa467df613fb21636efd3b6d098bb5680",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.log",
+   "log_sha256": "6e94c89f1118d57aaa937da6c05f9f0227af43fb32016731a6be489053373314",
+   "record": "rtx4090/loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r2.json",
+   "record_sha256": "facfd5b842e8937c5de0f501c909dce2f9799ac39e381ddb8c11ded7d27d7dca",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "pagerank",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.log",
+   "log_sha256": "bd745b6c50fb6ea3cf4f274a8f01273ff4cee9f6b09a64c79dcd68fe56a79cb9",
+   "record": "rtx4090/loom_private/pagerank/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json",
+   "record_sha256": "546dce4fb084602905c25ded13abbfd310209acf7b3abe57f29036bceff1a1a8",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "attention",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.log",
+   "log_sha256": "6fcc968398976b2f01a616560f0a75d84eb44c8d303857353e58c035ae9da64f",
+   "record": "rtx4090/loom_private/attention/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json",
+   "record_sha256": "9d279e30afe7290ac9470f372b1754c9cf644e73d641a7950460743ef69fa4e2",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "decoder",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.log",
+   "log_sha256": "2fcc0a6ac4221840367a5f8bf3910915c9769a53ac8385eb339cc8c912ed9487",
+   "record": "rtx4090/loom_private/decoder/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json",
+   "record_sha256": "e01bd026ed7c0850f2108beeb759b2a6e446823b68cab4575fdfc31af9e52484",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "anomaly",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.log",
+   "log_sha256": "8b9e216f365395f4fd537528360a37d00a8650ef12a7fa2873a05d3242709dd1",
+   "record": "rtx4090/loom_private/anomaly/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json",
+   "record_sha256": "491c5c44c31c3019d29c0d62d4694d0fc2f2e2d32d674383ef92d9fafed67213",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.log",
+   "log_sha256": "b1c801a5b8160aae26ecda28553bbe618db9d2faccffe1e4d89ac251402ded13",
+   "record": "rtx4090/loom_private/vecadd_memory/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json",
+   "record_sha256": "520fe826886de32f55ca5479977dc12cd218e422d0ab82e8fba5df683613bafa",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx4090/loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.log",
+   "log_sha256": "ddaabf1df3a28e7f1517f3eb4f46c37637ab600cbd9efafc2beb5e52ac409326",
+   "record": "rtx4090/loom_private/vecadd_product/results/20261026-105016-octacos-a7fce6b6-bench-graph-optimized-r3.json",
+   "record_sha256": "d159601db856452855eca41e57807b6920acf43b665a33ad54b10b3dcc8191aa",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  }
+ ]
+}

@@ -78,6 +78,8 @@ runs them.
 make -C applications/loom_private/anomaly build
 make -C applications/loom_private/anomaly check-large CHECK_JSON=/tmp/lp-anomaly-check.json
 make -C applications/loom_private/anomaly test
+make -C applications/loom_private/anomaly check-large VARIANT=optimized
+make -C applications/loom_private/anomaly test VARIANT=optimized
 ```
 
 The binary accepts `--set samples=N` with $1 \le N \le 2^{20}$, for tests
@@ -133,9 +135,92 @@ warmups, the oracle, and checking. No timings are claimed here.
 
 - The kernel is a correctness baseline. A faster variant might stage the
   weights in shared memory, process several samples per block, or use
-  `dp4a`. It must keep the exact integer sums and the same sequence of double
-  operations to stay bitwise equal to the oracle.
+  `dp4a`. It must keep the exact integer sums and stay bitwise equal to the
+  oracle. The baseline does this by replaying the contract's sequence of
+  double operations. The optimized variant (below) departs from that
+  sequence: its binary32 fast paths are proven, and exhaustively tested, to
+  give the same codes, and they fall back to the baseline sequence
+  otherwise.
 - The dataset has only 40 unique samples. Any variant must still infer every
   sample and must not cache results across samples.
 - Non-finite inputs are rejected at setup. A variant that streams
   unvalidated inputs would need a device-side status output.
+
+## Optimized variant
+
+[`anomaly_optimized.cu`](anomaly_optimized.cu) implements the same contract
+(`make ... VARIANT=optimized`). It has the same inputs, outputs, oracle,
+check, `--set` and `--asset` handling, and scopes. Its output is bitwise
+equal to the baseline's, so the check passes on every byte.
+
+In the baseline, the inference kernel was all of the GPU time, and it ran at
+a small fraction of the GPUs' int8 throughput. The variant changes four
+things.
+
+- **Tiles of samples on int8 tensor cores.** A 256-thread block infers 16
+  samples. Each layer is an int8 GEMM over the tile using
+  `mma.sync.m16n8k32.s8` with int32 accumulation, and the activations stay in
+  shared memory. Layer 1 streams its quantized inputs through two 64-column
+  staging buffers, and layer 10 writes its codes straight to the output. The
+  tensor cores multiply the raw codes $a$, so the zero point is applied after
+  the GEMM: $\sum (a - z) w = \sum a w - z \sum w$, with the row sums of the
+  weights packed at setup. Every term is an integer with magnitude at most
+  $128 \cdot 128 \cdot 640$, so the int32 result equals the baseline's
+  accumulator exactly.
+- **Binary32 fast paths that prove their code.** Once the GEMMs ran on tensor
+  cores, the binary64 requantization limited throughput. On these GPUs the
+  FP64 pipe is a small fraction of FP32, and in a first tensor-core version
+  on the 3090 it was the busiest pipe (66%). [`requant.cuh`](requant.cuh) computes each code in
+  binary32 instead: $f = \mathrm{fma}(acc, \kappa, \beta)$ for a layer
+  output, and $x \cdot (1/s_0)$ for an input. It accepts the code only when
+  $f$ lies farther from every half-integer than a margin. The margin is
+  about 4× (requantization) and 5× (input) the proven error bound of the
+  binary32 value, and it also covers the binary64 path's own rounding. So the
+  accepted code is exactly the code that the contract's sequence produces. The header gives the derivation.
+  Otherwise the code comes from the baseline's `requantize()` or input
+  quantization, unchanged. The baseline's `__fdiv_rn` division and binary64
+  `saturate_int8` are those fallbacks. On the large workload the kernel
+  executes about 1% of the first version's FP64 instructions.
+- **Exhaustive check of the fast paths.** `tests/test_requant.cu` compares
+  every accepted code with a direct call of the baseline function. For the
+  input, it covers every finite binary32 value. For requantization, it
+  covers every accumulator within the contract's bound
+  $|acc| \le 20{,}889{,}600$ for each of the 1,672 layer outputs of the
+  pinned model. It also checks that it visited exactly that many arguments.
+- **Pipelined transfers.** The application scope splits the samples into
+  chunks of whole tiles. Chunk $c$ is uploaded on a side stream, inferred on
+  the harness stream after its upload event, and downloaded on a second side
+  stream after its kernel event. Both side streams fork from the harness
+  stream and join back to it with events, so Direct and Graph launches have
+  the same dependencies. The upload is then busy for about 96–98% of an
+  invocation, and the time is bound by the PCIe upload of the float32 inputs.
+  The compute scope is one launch over all samples.
+
+### Per-GPU choices
+
+| GPU | Samples per block | Pipeline chunks | Reason |
+|---|--:|--:|---|
+| RTX 3090 (cc 8.6) | 16 | 32 | PCIe 4: the upload rate does not drop while a download runs, so more chunks shorten the pipeline's fill and drain |
+| RTX 4090 (cc 8.9) | 16 | 32 | as the 3090 |
+| RTX 5090 (cc 12.0) | 16 | 16 | PCIe 5: an upload runs about 15% slower while a download runs, so fewer, larger chunks overlap fewer downloads |
+
+The chunk count is chosen at setup from `cudaDeviceProp` (`major >= 12`
+selects 16). Tiles of 32 and 64 samples were slower on all three GPUs. They
+reuse each weight fragment across more samples, but they need more shared
+memory and registers per block. The lower occupancy cost more than the
+reuse saved, because the kernel is latency bound: about 65% occupancy, IPC
+about 1.7 on the 3090, and most stalls wait on L1/L2 weight loads.
+
+### Tests
+
+`make test VARIANT=optimized` runs the host tests and every
+`tests/run_tests.sh` case on the optimized binary and its skip-last-sample
+mutant. It then runs [`tests/run_optimized_tests.sh`](tests/run_optimized_tests.sh):
+
+- the exhaustive fast-path test above, and a mutant without the margin,
+  which both of its halves must reject;
+- sample counts at tile edges (1, 16, 33, 4,099);
+- a build that uses the baseline arithmetic for every code (the fallback
+  paths) on 1,003 samples;
+- builds with forced chunk counts 1, 3, 16 and 32 (both GPU choices), on
+  4,099 and 17 samples, in Direct and Graph modes.

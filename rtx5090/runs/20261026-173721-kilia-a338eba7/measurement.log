@@ -1,0 +1,14 @@
+pagerank        pass                 exit 0  rtx5090/loom_private/pagerank/results/20261026-173721-kilia-a338eba7-check.log
+attention       pass                 exit 0  rtx5090/loom_private/attention/results/20261026-173721-kilia-a338eba7-check.log
+decoder         pass                 exit 0  rtx5090/loom_private/decoder/results/20261026-173721-kilia-a338eba7-check.log
+anomaly         pass                 exit 0  rtx5090/loom_private/anomaly/results/20261026-173721-kilia-a338eba7-check.log
+vecadd_memory   pass                 exit 0  rtx5090/loom_private/vecadd_memory/results/20261026-173721-kilia-a338eba7-check.log
+vecadd_product  pass                 exit 0  rtx5090/loom_private/vecadd_product/results/20261026-173721-kilia-a338eba7-check.log
+PASS: rtx5090/loom_private/suite-20261026-173721-kilia-a338eba7-check.json
+pagerank        pass                 exit 0  rtx5090/loom_private/pagerank/results/20261026-173721-kilia-a338eba7-check-optimized.log
+attention       pass                 exit 0  rtx5090/loom_private/attention/results/20261026-173721-kilia-a338eba7-check-optimized.log
+decoder         pass                 exit 0  rtx5090/loom_private/decoder/results/20261026-173721-kilia-a338eba7-check-optimized.log
+anomaly         pass                 exit 0  rtx5090/loom_private/anomaly/results/20261026-173721-kilia-a338eba7-check-optimized.log
+vecadd_memory   pass                 exit 0  rtx5090/loom_private/vecadd_memory/results/20261026-173721-kilia-a338eba7-check-optimized.log
+vecadd_product  pass                 exit 0  rtx5090/loom_private/vecadd_product/results/20261026-173721-kilia-a338eba7-check-optimized.log
+PASS: rtx5090/loom_private/suite-20261026-173721-kilia-a338eba7-check-optimized.json

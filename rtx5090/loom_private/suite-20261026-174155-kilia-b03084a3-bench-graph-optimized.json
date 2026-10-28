@@ -1,0 +1,212 @@
+{
+ "schema": "loom_private.suite/1",
+ "suite_version": "v1",
+ "stamp": "20261026-174155-kilia-b03084a3",
+ "source_commit": "02fad05ce1985af2bcf105c942a954ae83928f0f",
+ "gpu_folder": "rtx5090",
+ "action": "bench",
+ "launch": "graph",
+ "variant": "optimized",
+ "repeat": 3,
+ "preset": "large",
+ "applications": [
+  {
+   "application": "pagerank",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/pagerank/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.log",
+   "log_sha256": "68c720a4612942808d48318ec0bdb2ffea4b7b8b6fd81869d8eaf4abde020c73",
+   "record": "rtx5090/loom_private/pagerank/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.json",
+   "record_sha256": "54df935924c0be5f99ff0c7b1d7bd0d52fe0a1436949dd568ecfe4d1a82178e3",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "attention",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/attention/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.log",
+   "log_sha256": "00be6582847cbe81b212bf4c3da3f07fee583caa49a74f3bf5f0dd0833a67d62",
+   "record": "rtx5090/loom_private/attention/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.json",
+   "record_sha256": "09c75196b6ad8d7a08f1158cc1ec5cac4e4f3e7c6d8dfc4cfd99812663ea5801",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "decoder",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/decoder/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.log",
+   "log_sha256": "62dee65c4bb419012e753f1ece51a3c77ce4cd9891b51cde3203097688fa381b",
+   "record": "rtx5090/loom_private/decoder/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.json",
+   "record_sha256": "5bdb2e5d3c2fa833bfc2014db3889c445280b28e882786f9bc3154c9c1b91f0c",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "anomaly",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/anomaly/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.log",
+   "log_sha256": "c52648e4db8fe30af3a884b9d2e1b39abb1726cde906bc2b192af4a5625a978e",
+   "record": "rtx5090/loom_private/anomaly/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.json",
+   "record_sha256": "93e895a2e4af69eb796ee17aedf0b148892b52a232f79d0380b84376fbb8edc5",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/vecadd_memory/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.log",
+   "log_sha256": "8f48dc28b1e2ce100fd1a4db167ecdccdb8cad2e421d53349c20dc5fec473d24",
+   "record": "rtx5090/loom_private/vecadd_memory/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.json",
+   "record_sha256": "7fd2804d9596901de71c37a91f6b8fff82d5b5374eaeee198fbda67b69159002",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/vecadd_product/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.log",
+   "log_sha256": "1db9e40c7669c5ec0e3f5fd52459c1cb17bd22a9dde8b109ef27794813b5dc52",
+   "record": "rtx5090/loom_private/vecadd_product/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r1.json",
+   "record_sha256": "272400bdb3e35ec12fe809adf12d3b6a63206bf059048b98cb57b034f2f7a11b",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "pagerank",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/pagerank/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.log",
+   "log_sha256": "0245a57ce52779db38e8d26cc8db1ed479f6381de5f7fdeecc9286db53e80cc9",
+   "record": "rtx5090/loom_private/pagerank/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.json",
+   "record_sha256": "34db4ca2cd90edbf812d23872182e0412bda3a0d1b411bf81c2a70c245aa95e4",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "attention",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/attention/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.log",
+   "log_sha256": "38740a2d49cd31fcb4512de773c09995dd19f6c0d4293578ce4c998ee83a5d14",
+   "record": "rtx5090/loom_private/attention/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.json",
+   "record_sha256": "f62ba132ddb3b6ef5963d404c7254b0c3d0f24fde6e33b34b0a5bc83fdc3bf27",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "decoder",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/decoder/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.log",
+   "log_sha256": "2cdd4f4e2551774be9d90eca40e6bcc8f2963ba4a039a9daef59c3f29773f395",
+   "record": "rtx5090/loom_private/decoder/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.json",
+   "record_sha256": "1a421fe3058d4d50dfd525d776c9e6d39c20f8c434b6e3b655911989cf3a1134",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "anomaly",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/anomaly/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.log",
+   "log_sha256": "794341e73097237b38e74aec4fd259dcac4dfd85e14cb80562ca9851d83f957e",
+   "record": "rtx5090/loom_private/anomaly/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.json",
+   "record_sha256": "78bfdcae8fe878e7a03cce695eaf7c97fc2e376615e04d051770c9168cc1972c",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/vecadd_memory/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.log",
+   "log_sha256": "6059664e615e21939be25fdf9560647ad7d2f2574eca086886a65385269d20ba",
+   "record": "rtx5090/loom_private/vecadd_memory/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.json",
+   "record_sha256": "9dfe2b19d2ab5fcc383bddfa616fac399af7cf54554dfe81619e1829d244b554",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/vecadd_product/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.log",
+   "log_sha256": "a06b842d97bcc5e2da42e87f2f49988a14a794d4432ecb903fba561ae4b970c0",
+   "record": "rtx5090/loom_private/vecadd_product/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r2.json",
+   "record_sha256": "2f2a664aa925433a622f8b06ae706c41b1f058cdc485c001ed6681063a8714e6",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "pagerank",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/pagerank/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.log",
+   "log_sha256": "ce9adbd621b0d3d38d396b870b4fbc5312e6eb199b163fc6c4a226246af0fba3",
+   "record": "rtx5090/loom_private/pagerank/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.json",
+   "record_sha256": "06e3ae9a71698e7766a5dac3a682fc51594e98dfc5fbd9357b21ba995c04631b",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "attention",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/attention/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.log",
+   "log_sha256": "a46443769b8457af8d4a7517ca3deab442aa229117014c2d91ac99c843a219e1",
+   "record": "rtx5090/loom_private/attention/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.json",
+   "record_sha256": "86cc25c9a95a04441c9e51980ba0543cf2e9dfa48d38dc004515826f4113921d",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "decoder",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/decoder/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.log",
+   "log_sha256": "cb323dd9a0399fd92b5f48c4e233b34311d7c49ac3d77085f89e853845143d97",
+   "record": "rtx5090/loom_private/decoder/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.json",
+   "record_sha256": "acfaf6a20c1657a36c88aa19934e5e838a107d24c9ad7d842ad664b9e073f3b2",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "anomaly",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/anomaly/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.log",
+   "log_sha256": "cb662d4cce07b34f1d177d52e649ab96c7286a9d3ad876da9c58af3d0e494ea8",
+   "record": "rtx5090/loom_private/anomaly/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.json",
+   "record_sha256": "0aa7da3d779baea1be3ff6aaff348bdde67106ed6fee2090a9e77fc13ade89f5",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/vecadd_memory/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.log",
+   "log_sha256": "2f07d9ef58f570be6013a1e9e2a6dbdeacdd0db6939e67e846f23acbfbd6eb3a",
+   "record": "rtx5090/loom_private/vecadd_memory/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.json",
+   "record_sha256": "82c1a2599ce02d8edaa4105adc2d7116bd47602e8765715458b84f2fd59bd4f4",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "optimized",
+   "exit_code": 0,
+   "log": "rtx5090/loom_private/vecadd_product/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.log",
+   "log_sha256": "28ba14afb8371eab10ecfb7ff9489cc6797bb26ae24087eb0b5fc4287d318421",
+   "record": "rtx5090/loom_private/vecadd_product/results/20261026-174155-kilia-b03084a3-bench-graph-optimized-r3.json",
+   "record_sha256": "be2fc29102d20fbce62e391707c652664f0a992b59284a4983a743ac73e234c3",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  }
+ ]
+}

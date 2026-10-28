@@ -1,0 +1,212 @@
+{
+ "schema": "loom_private.suite/1",
+ "suite_version": "v1",
+ "stamp": "20261026-174153-mono-a2aa3dac",
+ "source_commit": "e1042029b1614a8fe3eeb927e47d9c34a6af0920",
+ "gpu_folder": "rtx3090",
+ "action": "bench",
+ "launch": "graph",
+ "variant": "baseline",
+ "repeat": 3,
+ "preset": "large",
+ "applications": [
+  {
+   "application": "pagerank",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/pagerank/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.log",
+   "log_sha256": "b46850737178fef9d6b33ebf2774a92bbe08bb935505b5900513c229d749d560",
+   "record": "rtx3090/loom_private/pagerank/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.json",
+   "record_sha256": "f64d5b95673bee40a48e609488ad52e892155fda8c2c9ed3c52f30b5b6d55051",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "attention",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/attention/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.log",
+   "log_sha256": "f89470cb4277b3a6c706b964d97c6d3953a5dc40d5f38f91094985f820a081ed",
+   "record": "rtx3090/loom_private/attention/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.json",
+   "record_sha256": "2b9f1834a19ad64bf91f847fd083aa70396e0a4b0aa8a7ed7b67d49d5d10f29f",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "decoder",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/decoder/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.log",
+   "log_sha256": "30d15f1c939a63ce75ceb29e11f4a9b561ff7e854f5d055c72e53e7a6d502e3e",
+   "record": "rtx3090/loom_private/decoder/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.json",
+   "record_sha256": "6fc534d45d18be6d6496ef887aa2f9866cf9fc02d54c5fe73edbde0b2488f1a4",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "anomaly",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/anomaly/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.log",
+   "log_sha256": "4b026dafc21d43c4f6b29b852e3a5b1d23f433219632ac8ed74e67e4d5e30595",
+   "record": "rtx3090/loom_private/anomaly/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.json",
+   "record_sha256": "ada6b28f15b4250fda839d6cdd5ef16c41f83654556d8020d4ffcf8cf8e2e393",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/vecadd_memory/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.log",
+   "log_sha256": "fcfcffd54c48c537d1fc37c5268c11e9f10ac98f3974a471f88d29d3645e5d82",
+   "record": "rtx3090/loom_private/vecadd_memory/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.json",
+   "record_sha256": "453edd1ac219ea162958dae8d97460a9502546a807e8923947d53bd1bb6ec744",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/vecadd_product/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.log",
+   "log_sha256": "793fa1e58b503cf8d11ed5e046ab4a08f4d91d2697d6ceb0b0dfc62d45e5b406",
+   "record": "rtx3090/loom_private/vecadd_product/results/20261026-174153-mono-a2aa3dac-bench-graph-r1.json",
+   "record_sha256": "3eb9b4a416094149833774604223ee625bbb883cd95ae717820a9d7a910f3030",
+   "status": "unvalidated_bench",
+   "repetition": 1
+  },
+  {
+   "application": "pagerank",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/pagerank/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.log",
+   "log_sha256": "36cac53e59f0dd575ff193f891cc6dbeb9bb7cd36bc4678ac554561b886ab724",
+   "record": "rtx3090/loom_private/pagerank/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.json",
+   "record_sha256": "dff27c566790a4fe3ae6a832fd5bc460d4cd13bb2ee770261092bf2b3faee1c9",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "attention",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/attention/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.log",
+   "log_sha256": "03fba0e2ac0786f5d4625f24f32e1d2bf83ce64bd464c35386d80b6b035e486a",
+   "record": "rtx3090/loom_private/attention/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.json",
+   "record_sha256": "80e58f92a4dc1b18618ed9fc62876c3ab966f8680579e35f631d0ac3f66c8697",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "decoder",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/decoder/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.log",
+   "log_sha256": "9f6e6c5c07f136677fd3607057b2b1ee5a1ee139dc20b8ec6d9b2c63edec60c5",
+   "record": "rtx3090/loom_private/decoder/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.json",
+   "record_sha256": "46b8728f063c7c6f2507de15586e0877de4c5bd54c565a6366b5125d5fc25aea",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "anomaly",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/anomaly/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.log",
+   "log_sha256": "4641e6f8b7de6566999c7f8dcbaa7d13d0c61e729186a01838404f47b8dfb50d",
+   "record": "rtx3090/loom_private/anomaly/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.json",
+   "record_sha256": "3737c92153f010d6dc77df0ba92c6d81c599cbfaf094c3d12ba203fa9310c012",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/vecadd_memory/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.log",
+   "log_sha256": "1922a820e7d5b5e0775616446650c819f4861f97d01f5a414739840e0e0c550e",
+   "record": "rtx3090/loom_private/vecadd_memory/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.json",
+   "record_sha256": "24f8a9a35812a40eeb70978dfb0dac2e857b5d57083041e7fefe6acfa40f8eda",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/vecadd_product/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.log",
+   "log_sha256": "6119fef1a0d23b81707342ab670d98a36131939fa34c076688abe6114b899f0a",
+   "record": "rtx3090/loom_private/vecadd_product/results/20261026-174153-mono-a2aa3dac-bench-graph-r2.json",
+   "record_sha256": "cc3deb56042f5d895d8b010cfc789f7f4837ac8e8b8e3f6f1a79a5f94469730d",
+   "status": "unvalidated_bench",
+   "repetition": 2
+  },
+  {
+   "application": "pagerank",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/pagerank/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.log",
+   "log_sha256": "d01ceeef762c2e41313fe57d07bb519c62ce8120f0d442903980ee69538ff5f6",
+   "record": "rtx3090/loom_private/pagerank/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.json",
+   "record_sha256": "c7619d1e6d189ccc24baf1af99be6f3fb6bbd08a0f8eb0693418bdd939127293",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "attention",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/attention/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.log",
+   "log_sha256": "3ef35be4f211a976b02680fa4ad33250fed6653e2b5195055dcf46118c11bb37",
+   "record": "rtx3090/loom_private/attention/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.json",
+   "record_sha256": "e93209466164ed3bb70c16b46ad64f944d4c57de31a2f79251d7efcfa7e990a1",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "decoder",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/decoder/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.log",
+   "log_sha256": "55f1291499c09d06296b51e4b54d683b821388798249ef72379634e779fea5da",
+   "record": "rtx3090/loom_private/decoder/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.json",
+   "record_sha256": "73c590fb2fff8831a780e07f42b6ec5ca630f0f6be20e2cedfb38180daa8bbc4",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "anomaly",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/anomaly/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.log",
+   "log_sha256": "19bb19d3ed722d5d68fb7f8c66e639aaaf139045f88ee0c3c704c84bc6384e41",
+   "record": "rtx3090/loom_private/anomaly/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.json",
+   "record_sha256": "df8c5d7d8bbee6a3a32e7f0e24b42cbb6d768b85c864e2db1ded13fa0f7a70b5",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "vecadd_memory",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/vecadd_memory/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.log",
+   "log_sha256": "0ad430902e26519e32fc3434f8cf3932c1c1bb518dcab3a7ee34969a837d13d4",
+   "record": "rtx3090/loom_private/vecadd_memory/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.json",
+   "record_sha256": "d1aaca006e1c3ab074bb8ff2cd4a41de730359858207436fc7a81465db636f94",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  },
+  {
+   "application": "vecadd_product",
+   "variant": "baseline",
+   "exit_code": 0,
+   "log": "rtx3090/loom_private/vecadd_product/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.log",
+   "log_sha256": "1cca55150a4a87874492ba08712e91b3e6074eec4d514db1750f29d887b52937",
+   "record": "rtx3090/loom_private/vecadd_product/results/20261026-174153-mono-a2aa3dac-bench-graph-r3.json",
+   "record_sha256": "3d261d5209fdaa1b204c73028ac2998e1540eb47e1dd50b80af34e54394cd942",
+   "status": "unvalidated_bench",
+   "repetition": 3
+  }
+ ]
+}

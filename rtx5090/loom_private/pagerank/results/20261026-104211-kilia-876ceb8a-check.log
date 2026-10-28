@@ -1,0 +1,16 @@
+$ make -C /home/ankai/lp-record/applications/loom_private/pagerank VARIANT=baseline check-large CHECK_JSON=/home/ankai/lp-record/rtx5090/loom_private/pagerank/results/20261026-104211-kilia-876ceb8a-check.json
+make: Entering directory '/home/ankai/lp-record/applications/loom_private/pagerank'
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/lp-record/rtx5090/loom_private/pagerank/build/pagerank --preset large --action check --launch both --json-out /home/ankai/lp-record/rtx5090/loom_private/pagerank/results/20261026-104211-kilia-876ceb8a-check.json
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.02 s
+pagerank: CPU oracle 0.09 s
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 1: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 2: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 1: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 2: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/pagerank", "variant": "baseline", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb", "preset": "large", "overrides": {}, "dimensions": {"nodes": 1048576, "iterations": 20, "edges": 2097151, "damping": 0.850000024, "epsilon": 0, "schedule_levels": 16}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 5090", "cc": "12.0", "cuda_runtime": 13040, "cuda_driver": 13040}, "timing_scope": {"application": "upload of the incoming CSR (offsets and sources), out-degrees and level schedule from pinned host memory, score and contribution initialization, all ordered Gauss-Seidel sweeps (one launch per dependency level per sweep), and the score download to pinned host memory", "compute": "score and contribution initialization and all ordered Gauss-Seidel sweeps with the graph and schedule resident; no transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}], "outputs_agree": true, "timing": null, "status": "pass"}
+make: Leaving directory '/home/ankai/lp-record/applications/loom_private/pagerank'

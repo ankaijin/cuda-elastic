@@ -1,12 +1,15 @@
 // Shared harness for the loom_private CUDA applications.
 //
 // Every application implements lp::Workload and calls lp::run_main from main().
+// An application may also have an optimized implementation of the same
+// contract (common.mk VARIANT=optimized); the record names the variant.
 // The harness owns the common command line, the Direct and CUDA Graph
 // executors, the correctness protocol, timing, and the JSON result record.
 //
 //   --preset large            the only preset outside tests (default)
 //   --launch direct|graph|both  both is the default and only valid for check
-//   --action check|bench      check is the default; bench must be explicit
+//   --action check|bench|profile  check is the default; bench and profile
+//                             must be explicit
 //   --iterations N --warmup W bench only (defaults 20 and 3)
 //   --set key=value           dimension override, check only, for tests
 //   --asset name=path         application asset path override (the factory
@@ -29,8 +32,15 @@
 // resident. Allocation, graph construction, warmups, the CPU oracle, and
 // output checking stay outside every timed interval. Bench does not run the
 // oracle; a recorded run validates with check first.
+//
+// Profile protocol: setup, one untimed warmup invocation at application
+// scope, then exactly one more between cudaProfilerStart and cudaProfilerStop,
+// so a profiler started with a capture range (nsys --capture-range
+// cudaProfilerApi, ncu --profile-from-start off) sees one complete end-to-end
+// invocation and nothing from setup. Nothing is timed or checked.
 #pragma once
 
+#include <cuda_profiler_api.h>
 #include <cuda_runtime.h>
 
 #include <algorithm>
@@ -52,6 +62,9 @@
 #endif
 #ifndef LP_APP
 #error "build with -DLP_APP=\"<application directory name>\" (see common.mk)"
+#endif
+#ifndef LP_VARIANT
+#error "build with -DLP_VARIANT=\"baseline\" or \"optimized\" (see common.mk)"
 #endif
 
 #define LP_SUITE_VERSION "v1"
@@ -152,7 +165,7 @@ inline std::string render(const JsonObject &object) {
 }
 
 enum class Launch { Direct, Graph, Both };
-enum class Action { Check, Bench };
+enum class Action { Check, Bench, Profile };
 
 inline const char *name(Launch launch) {
   return launch == Launch::Direct ? "direct"
@@ -305,10 +318,10 @@ private:
   std::fprintf(
       code ? stderr : stdout,
       "usage: %s [--preset large] [--launch direct|graph|both]\n"
-      "          [--action check|bench] [--iterations N] [--warmup W]\n"
+      "          [--action check|bench|profile] [--iterations N] [--warmup W]\n"
       "          [--set key=value]... [--asset name=path]... [--json-out PATH]\n"
       "Defaults: --preset large --action check --launch both.\n"
-      "bench needs an explicit --launch direct or --launch graph.\n",
+      "bench and profile need an explicit --launch direct or --launch graph.\n",
       LP_APP);
   std::exit(code);
 }
@@ -348,7 +361,8 @@ inline Options parse(int argc, char **argv) {
     } else if (flag == "--action") {
       if (value == "check") options.action = Action::Check;
       else if (value == "bench") options.action = Action::Bench;
-      else fail(kExitUsage, "--action must be check or bench");
+      else if (value == "profile") options.action = Action::Profile;
+      else fail(kExitUsage, "--action must be check, bench or profile");
     } else if (flag == "--iterations") {
       options.iterations = parse_count("--iterations", value, 1);
     } else if (flag == "--warmup") {
@@ -365,9 +379,10 @@ inline Options parse(int argc, char **argv) {
       fail(kExitUsage, "unknown option %s (see --help)", flag.c_str());
     }
   }
-  if (options.action == Action::Bench) {
+  if (options.action != Action::Check) {
+    const char *action = options.action == Action::Bench ? "bench" : "profile";
     if (!options.launch_given || options.launch == Launch::Both)
-      fail(kExitUsage, "bench needs --launch direct or --launch graph");
+      fail(kExitUsage, "%s needs --launch direct or --launch graph", action);
     if (!options.overrides.empty())
       fail(kExitUsage, "--set is only valid with --action check");
   }
@@ -473,13 +488,16 @@ inline int run_main(int argc, char **argv, Factory factory) {
       {"schema", Json::quote("loom_private.result/1")},
       {"suite_version", Json::quote(LP_SUITE_VERSION)},
       {"identity", Json::quote(workload->identity())},
+      {"variant", Json::quote(LP_VARIANT)},
       {"loom_commit", Json::quote(LP_LOOM_COMMIT)},
       {"contract_sha256", Json::quote(LP_CONTRACT_SHA256)},
       {"preset", Json::quote(options.preset)},
       {"overrides", overrides},
       {"dimensions", render(workload->dimensions())},
       {"asset_sha256", render(workload->asset_hashes())},
-      {"action", Json::quote(options.action == Action::Check ? "check" : "bench")},
+      {"action", Json::quote(options.action == Action::Check   ? "check"
+                             : options.action == Action::Bench ? "bench"
+                                                               : "profile")},
       {"launch", Json::quote(name(options.launch))},
       {"device", render({{"name", Json::quote(properties.name)},
                          {"cc", Json::quote(std::to_string(properties.major) +
@@ -536,6 +554,19 @@ inline int run_main(int argc, char **argv, Factory factory) {
     record.push_back({"timing", "null"});
     record.push_back({"status", Json::quote(all_pass ? "pass" : "fail")});
     code = all_pass ? kExitPass : kExitMismatch;
+  } else if (options.action == Action::Profile) {
+    Executor executor(options.launch, stream, *workload, false);
+    executor.launch();
+    LP_CUDA(cudaStreamSynchronize(stream));
+    LP_CUDA(cudaProfilerStart());
+    executor.launch();
+    LP_CUDA(cudaStreamSynchronize(stream));
+    LP_CUDA(cudaProfilerStop());
+    record.push_back({"profiled", Json::quote("one application-scope invocation after one "
+                                              "warmup invocation")});
+    record.push_back({"timing", "null"});
+    record.push_back({"output_digest", Json::quote(hex64(workload->output_digest()))});
+    record.push_back({"status", Json::quote("profile")});
   } else {
     const Timing application =
         time_scope(options.launch, stream, *workload, false, options);
