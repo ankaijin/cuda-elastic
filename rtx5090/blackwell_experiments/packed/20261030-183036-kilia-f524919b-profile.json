@@ -1,0 +1,155 @@
+{
+ "schema": "blackwell_experiments.summary/1",
+ "experiment": "packed",
+ "question": "Does native packed byte addition reduce instructions or kernel time while preserving exact results?",
+ "stamp": "20261030-183036-kilia-f524919b",
+ "action": "profile",
+ "source": {
+  "commit": "353359f73c15fe57c0d7afa0a21a11461c8325f5",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "cases": [
+  "control",
+  "add_u8x4"
+ ],
+ "settings": null,
+ "status": "pass",
+ "records": [
+  {
+   "kind": "profile",
+   "case": "control",
+   "launch": "graph",
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-control-graph.log",
+   "files": [
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-control-graph-ncu-details.csv",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-control-graph-ncu-raw.csv",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-control-graph.log",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-control-graph.ncu-repz",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-control-graph.nsys-rep",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-control-graph_cuda_gpu_kern_sum.csv",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-control-graph_cuda_gpu_mem_time_sum.csv"
+   ],
+   "build": {
+    "schema": "blackwell_experiments.build/1",
+    "experiment": "packed",
+    "case": "control",
+    "binary": "rtx5090/blackwell_experiments/packed/build/control",
+    "binary_sha256": "301ea2fd6613a84de466df6da75ffdce2612b5a2c040e1a99a2023df4a0abcb7",
+    "built_utc": "2026-10-30T18:30:38.217837+00:00",
+    "arch": "sm_120f",
+    "command": [
+     "nvcc",
+     "-O3",
+     "-lineinfo",
+     "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/vecadd_product",
+     "-std=c++17",
+     "--fmad=false",
+     "-Xcompiler",
+     "-ffp-contract=off",
+     "-gencode",
+     "arch=compute_120f,code=sm_120f",
+     "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common",
+     "-DLP_APP=\"vecadd_product\"",
+     "-DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\"",
+     "-DLP_VARIANT=\"packed/control\"",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/vecadd_product/vecadd_product_optimized.cu",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/vecadd_product/fixtures.cpp",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/vecadd_product/oracle.cpp",
+     "-o",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/packed/build/control"
+    ],
+    "compiler_version": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0",
+    "source_commit": "353359f73c15fe57c0d7afa0a21a11461c8325f5",
+    "source_dirty": false,
+    "spec": "applications/loom_private/vecadd_product/contract.json",
+    "spec_sha256": "d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae",
+    "sources": {
+     "applications/loom_private/vecadd_product/vecadd_product_optimized.cu": "503831cfceac58e73edab8453918a650041616a1d8cd59d85476f77ba17f46ee",
+     "applications/loom_private/vecadd_product/fixtures.cpp": "e79958d66f544ed526a8607a1d3b2e6125e4017f7ee101d666210e907f503ec1",
+     "applications/loom_private/vecadd_product/oracle.cpp": "7c19d7e9bbf407bdee410d8ca52db09ab430e1f22538d625b7afebf1cad7b66c",
+     "applications/loom_private/vecadd_product/fixtures.h": "da62b9f82b86c43c27cf11a5795c76144fbcabdd6b3179417c46d4d9cab907aa",
+     "applications/loom_private/vecadd_product/oracle.h": "0a0410b55377dcbb821e22f39adbd5cf3e53c73c1b71a77d1f545fc7dcbe9511"
+    },
+    "external_includes": {}
+   },
+   "gpu": {
+    "folder": "rtx5090",
+    "name": "NVIDIA GeForce RTX 5090",
+    "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+    "driver": "615.71.10"
+   }
+  },
+  {
+   "kind": "profile",
+   "case": "add_u8x4",
+   "launch": "graph",
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-add_u8x4-graph.log",
+   "files": [
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-add_u8x4-graph-ncu-details.csv",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-add_u8x4-graph-ncu-raw.csv",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-add_u8x4-graph.log",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-add_u8x4-graph.ncu-repz",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-add_u8x4-graph.nsys-rep",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-add_u8x4-graph_cuda_gpu_kern_sum.csv",
+    "rtx5090/blackwell_experiments/packed/profiles/20261030-183036-kilia-f524919b-add_u8x4-graph_cuda_gpu_mem_time_sum.csv"
+   ],
+   "build": {
+    "schema": "blackwell_experiments.build/1",
+    "experiment": "packed",
+    "case": "add_u8x4",
+    "binary": "rtx5090/blackwell_experiments/packed/build/add_u8x4",
+    "binary_sha256": "8f05bee42d08548cae8c4036f998886a6b19e8928442c53fc28e0634f38c6632",
+    "built_utc": "2026-10-30T18:30:40.307165+00:00",
+    "arch": "sm_120f",
+    "command": [
+     "nvcc",
+     "-O3",
+     "-lineinfo",
+     "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/vecadd_product",
+     "-std=c++17",
+     "--fmad=false",
+     "-Xcompiler",
+     "-ffp-contract=off",
+     "-gencode",
+     "arch=compute_120f,code=sm_120f",
+     "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common",
+     "-DLP_APP=\"vecadd_product\"",
+     "-DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\"",
+     "-DLP_VARIANT=\"packed/add_u8x4\"",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/packed/vecadd_product_packed.cu",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/vecadd_product/fixtures.cpp",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/vecadd_product/oracle.cpp",
+     "-o",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/packed/build/add_u8x4"
+    ],
+    "compiler_version": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0",
+    "source_commit": "353359f73c15fe57c0d7afa0a21a11461c8325f5",
+    "source_dirty": false,
+    "spec": "applications/loom_private/vecadd_product/contract.json",
+    "spec_sha256": "d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae",
+    "sources": {
+     "experiments/blackwell/packed/vecadd_product_packed.cu": "fa3ef4522e3319ba5ee2ad6551bb1fc91afd9c9f16429e8ca54d931ae0cb462f",
+     "applications/loom_private/vecadd_product/fixtures.cpp": "e79958d66f544ed526a8607a1d3b2e6125e4017f7ee101d666210e907f503ec1",
+     "applications/loom_private/vecadd_product/oracle.cpp": "7c19d7e9bbf407bdee410d8ca52db09ab430e1f22538d625b7afebf1cad7b66c",
+     "applications/loom_private/vecadd_product/fixtures.h": "da62b9f82b86c43c27cf11a5795c76144fbcabdd6b3179417c46d4d9cab907aa",
+     "applications/loom_private/vecadd_product/oracle.h": "0a0410b55377dcbb821e22f39adbd5cf3e53c73c1b71a77d1f545fc7dcbe9511"
+    },
+    "external_includes": {}
+   },
+   "gpu": {
+    "folder": "rtx5090",
+    "name": "NVIDIA GeForce RTX 5090",
+    "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+    "driver": "615.71.10"
+   }
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+make build                               exit 0  rtx5090/blackwell_experiments/packed/results/20261030-183036-kilia-f524919b-make-build.log
+make test                                exit 0  rtx5090/blackwell_experiments/packed/results/20261030-183036-kilia-f524919b-make-test.log
+control              control-check                          pass               exit 0
+control              sass 1 kernel(s): VIADD.U8x4 0, LOP3 7, IADD 2
+add_u8x4             add_u8x4-check                         pass               exit 0
+add_u8x4             sass 1 kernel(s): VIADD.U8x4 1, LOP3 3, IADD 1
+output digests agree across cases                            True
+PASS: rtx5090/blackwell_experiments/packed/20261030-183036-kilia-f524919b-check.json

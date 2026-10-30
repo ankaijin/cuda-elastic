@@ -1,0 +1,2 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+100.0,74849,16,4678.1,4656.0,3968,5216,354.1,"<unnamed>::add_records(const unsigned int *, unsigned int *, unsigned long, unsigned long)"
