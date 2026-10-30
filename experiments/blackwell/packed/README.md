@@ -48,8 +48,8 @@ requires every output digest to equal the control's.
 
 ## Results on kilia's RTX 5090
 
-Source `b2f0601` (benches) and `353359f` (profile; it changed only the
-runner), CUDA 13.4, driver 615.71.10, GPU
+Runs at `b2f0601` (five pairs), `68379ec` (ten pairs; it adds only recorded
+evidence), and `353359f` (profile; it changes only the runner). CUDA 13.4, driver 615.71.10, GPU
 `GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b`. Runs live under
 `rtx5090/blackwell_experiments/packed/`.
 
