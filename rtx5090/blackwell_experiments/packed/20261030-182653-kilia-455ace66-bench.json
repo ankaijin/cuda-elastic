@@ -1,0 +1,420 @@
+{
+ "schema": "blackwell_experiments.summary/1",
+ "experiment": "packed",
+ "question": "Does native packed byte addition reduce instructions or kernel time while preserving exact results?",
+ "stamp": "20261030-182653-kilia-455ace66",
+ "action": "bench",
+ "source": {
+  "commit": "b2f060104b284050210f548ba7acf47ff96d3341",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "cases": [
+  "control",
+  "add_u8x4"
+ ],
+ "settings": {
+  "pairs": 5,
+  "iterations": 20,
+  "warmup": 3,
+  "launch": "both"
+ },
+ "status": "pass",
+ "records": [
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-control-bench-direct-p01.json",
+   "record_sha256": "2adf3dbf653d8460fd39b93b51319b7f816b6b78534624112c9aee96cd6fef51",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-direct-p01.json",
+   "record_sha256": "59107223b22ebce01ee24c5b869fb69451cc1f96f1a14562e92dd05ed2857dab",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-control-bench-graph-p01.json",
+   "record_sha256": "49933c37b9230116c5bfbdb4b37467ab84adffffb9e7218a484aa11cdfed251f",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-graph-p01.json",
+   "record_sha256": "2f469abf51f5617327e2c17bcb505ad37712e9bfbb9f4bb5d177360f3f9ce276",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-direct-p02.json",
+   "record_sha256": "d8815bd7b6fd7b8097f9be67d80e5245be4124b1ca6b2b2332b22745e329e994",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-control-bench-direct-p02.json",
+   "record_sha256": "bd045c556c97ec0e86d1121d3a213ef5bdfb23ff267daa33fd2f8b20d789d54a",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-graph-p02.json",
+   "record_sha256": "bf29f6c83e6b2379ca30cd15655d4c596effbb1991fd7faf9f8d7d0a49124aa1",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-control-bench-graph-p02.json",
+   "record_sha256": "72235ccf6bfb3309ddeefd4c92eb52ec65f6b349ec727f6ac4be10d68db381f3",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-control-bench-direct-p03.json",
+   "record_sha256": "d9865a8fd7c4b12a0f9c8b922a4a31d9f6aa3c41a0fc63ad6510eb6037e21be0",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-direct-p03.json",
+   "record_sha256": "55fdf69d4560ca7f406dcfb42fac7c5f3697bfa576ad3257e0812e838f9b78ca",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-control-bench-graph-p03.json",
+   "record_sha256": "04e9ccbc86327f43737d74d1b28db8214ce068d94ce18cfb510bbf8dd0935bd4",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-graph-p03.json",
+   "record_sha256": "7c160af4abeb55861449e51b8f87ce6cbee5e0ef762acb61d9ab22b8ee6368ab",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-direct-p04.json",
+   "record_sha256": "48e5304ff41c6c4beaeaa8af6d595ea4980bd07f0ac75abeddfa584f56ee7947",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-control-bench-direct-p04.json",
+   "record_sha256": "cdef32c36e76fbb156e45dee524a04bdbb22de9236e051ff6e640cdf19236df3",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-graph-p04.json",
+   "record_sha256": "35f246406bbd4db31c6825b963aa5cefe1c9585e15d7fd6a8702437a1ec2eb8f",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-control-bench-graph-p04.json",
+   "record_sha256": "3cfdd3fe5a00e5ceca77dc95d8bf514dd20feff3df13d31d1006523cc6c0be75",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-control-bench-direct-p05.json",
+   "record_sha256": "719c127cd7646e5be593baec9cdde774e0acd77d1ab8e5b6a37d78b427ed950e",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-direct-p05.json",
+   "record_sha256": "0e5242017e3e35239bfe45e1a78a81523316c0c6c82273498e3e9710c0734236",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-control-bench-graph-p05.json",
+   "record_sha256": "1000def62a265c467cf83705987980ceb394d460346ea60bae644d3a5f23b17a",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-graph-p05.json",
+   "record_sha256": "598e0fdcd8abc050c7126830a607d9d69384866d53c95eb196219cab062ef55e",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 1
+  }
+ ],
+ "timing": {
+  "direct/application/batch_per_iteration_us": {
+   "control": {
+    "median": 4723.18726,
+    "min": 4635.78224,
+    "max": 4794.43359,
+    "n": 5
+   },
+   "add_u8x4": {
+    "median": 4637.75215,
+    "min": 4614.19373,
+    "max": 4852.57912,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.9942845423992501,
+     "min": 0.9673201355157368,
+     "max": 1.046765975789234,
+     "below_one": 4,
+     "n": 5
+    }
+   }
+  },
+  "direct/application/single_median_us": {
+   "control": {
+    "median": 4638.78393,
+    "min": 4617.35988,
+    "max": 4686.656,
+    "n": 5
+   },
+   "add_u8x4": {
+    "median": 4615.3121,
+    "min": 4602.15998,
+    "max": 4748.49606,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.9955108611349458,
+     "min": 0.9847772270889948,
+     "max": 1.0254620129154246,
+     "below_one": 4,
+     "n": 5
+    }
+   }
+  },
+  "direct/compute/batch_per_iteration_us": {
+   "control": {
+    "median": 117.007995,
+    "min": 116.942406,
+    "max": 117.249596,
+    "n": 5
+   },
+   "add_u8x4": {
+    "median": 117.284799,
+    "min": 117.259204,
+    "max": 117.702401,
+    "n": 5,
+    "paired_ratio": {
+     "median": 1.0027075927589393,
+     "min": 1.0003002398404854,
+     "max": 1.0041222172497715,
+     "below_one": 0,
+     "n": 5
+    }
+   }
+  },
+  "direct/compute/single_median_us": {
+   "control": {
+    "median": 119.456001,
+    "min": 119.119998,
+    "max": 120.560002,
+    "n": 5
+   },
+   "add_u8x4": {
+    "median": 120.544001,
+    "min": 118.88,
+    "max": 121.199999,
+    "n": 5,
+    "paired_ratio": {
+     "median": 1.0097842196086315,
+     "min": 0.9860650135025711,
+     "max": 1.017461392166914,
+     "below_one": 2,
+     "n": 5
+    }
+   }
+  },
+  "graph/application/batch_per_iteration_us": {
+   "control": {
+    "median": 4617.08488,
+    "min": 4592.09747,
+    "max": 4763.5601,
+    "n": 5
+   },
+   "add_u8x4": {
+    "median": 4732.79686,
+    "min": 4613.00163,
+    "max": 4754.93927,
+    "n": 5,
+    "paired_ratio": {
+     "median": 1.0045205450067445,
+     "min": 0.9926673968461205,
+     "max": 1.030639460708137,
+     "below_one": 2,
+     "n": 5
+    }
+   }
+  },
+  "graph/application/single_median_us": {
+   "control": {
+    "median": 4612.19192,
+    "min": 4593.29605,
+    "max": 4715.40809,
+    "n": 5
+   },
+   "add_u8x4": {
+    "median": 4709.42402,
+    "min": 4585.88791,
+    "max": 4720.49594,
+    "n": 5,
+    "paired_ratio": {
+     "median": 1.0024937743988611,
+     "min": 0.9942036769061114,
+     "max": 1.0252820564439777,
+     "below_one": 1,
+     "n": 5
+    }
+   }
+  },
+  "graph/compute/batch_per_iteration_us": {
+   "control": {
+    "median": 117.436802,
+    "min": 117.304003,
+    "max": 117.721605,
+    "n": 5
+   },
+   "add_u8x4": {
+    "median": 117.572796,
+    "min": 117.297602,
+    "max": 117.6368,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.999986385801344,
+     "min": 0.9980667825497227,
+     "max": 1.002291422228788,
+     "below_one": 3,
+     "n": 5
+    }
+   }
+  },
+  "graph/compute/single_median_us": {
+   "control": {
+    "median": 120.352,
+    "min": 119.808,
+    "max": 121.007998,
+    "n": 5
+   },
+   "add_u8x4": {
+    "median": 118.927997,
+    "min": 118.576001,
+    "max": 120.432001,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.9902951259638394,
+     "min": 0.985243294668971,
+     "max": 0.9952400088463574,
+     "below_one": 5,
+     "n": 5
+    }
+   }
+  }
+ }
+}

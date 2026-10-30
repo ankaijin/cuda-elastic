@@ -1,0 +1,177 @@
+{
+ "schema": "blackwell_experiments.result/1",
+ "experiment": "packed",
+ "case": "add_u8x4",
+ "role": "candidate",
+ "action": "bench",
+ "stamp": "20261030-182653-kilia-455ace66",
+ "source": {
+  "commit": "b2f060104b284050210f548ba7acf47ff96d3341",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "build": {
+  "schema": "blackwell_experiments.build/1",
+  "experiment": "packed",
+  "case": "add_u8x4",
+  "binary": "rtx5090/blackwell_experiments/packed/build/add_u8x4",
+  "binary_sha256": "a45f8ccc28049d617b80f60272ad4568e9c195666eff953e57256416926f269e",
+  "built_utc": "2026-10-30T18:26:57.177761+00:00",
+  "arch": "sm_120f",
+  "command": [
+   "nvcc",
+   "-O3",
+   "-lineinfo",
+   "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/vecadd_product",
+   "-std=c++17",
+   "--fmad=false",
+   "-Xcompiler",
+   "-ffp-contract=off",
+   "-gencode",
+   "arch=compute_120f,code=sm_120f",
+   "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common",
+   "-DLP_APP=\"vecadd_product\"",
+   "-DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\"",
+   "-DLP_VARIANT=\"packed/add_u8x4\"",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/packed/vecadd_product_packed.cu",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/vecadd_product/fixtures.cpp",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/vecadd_product/oracle.cpp",
+   "-o",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/packed/build/add_u8x4"
+  ],
+  "compiler_version": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0",
+  "source_commit": "b2f060104b284050210f548ba7acf47ff96d3341",
+  "source_dirty": false,
+  "spec": "applications/loom_private/vecadd_product/contract.json",
+  "spec_sha256": "d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae",
+  "sources": {
+   "experiments/blackwell/packed/vecadd_product_packed.cu": "fa3ef4522e3319ba5ee2ad6551bb1fc91afd9c9f16429e8ca54d931ae0cb462f",
+   "applications/loom_private/vecadd_product/fixtures.cpp": "e79958d66f544ed526a8607a1d3b2e6125e4017f7ee101d666210e907f503ec1",
+   "applications/loom_private/vecadd_product/oracle.cpp": "7c19d7e9bbf407bdee410d8ca52db09ab430e1f22538d625b7afebf1cad7b66c",
+   "applications/loom_private/vecadd_product/fixtures.h": "da62b9f82b86c43c27cf11a5795c76144fbcabdd6b3179417c46d4d9cab907aa",
+   "applications/loom_private/vecadd_product/oracle.h": "0a0410b55377dcbb821e22f39adbd5cf3e53c73c1b71a77d1f545fc7dcbe9511"
+  },
+  "external_includes": {}
+ },
+ "command": [
+  "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/packed/build/add_u8x4",
+  "--preset",
+  "large",
+  "--action",
+  "bench",
+  "--launch",
+  "direct",
+  "--iterations",
+  "20",
+  "--warmup",
+  "3",
+  "--json-out",
+  "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-direct-p05.raw.json"
+ ],
+ "exit_code": 0,
+ "log": "rtx5090/blackwell_experiments/packed/results/20261030-182653-kilia-455ace66-add_u8x4-bench-direct-p05.log",
+ "log_sha256": "67265a6ffde29a7f10a62ae375579b4c99abe08535c469bd96c46d32ce21c252",
+ "result": {
+  "schema": "loom_private.result/1",
+  "suite_version": "v1",
+  "identity": "loom-private/vecadd-product",
+  "variant": "packed/add_u8x4",
+  "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+  "contract_sha256": "d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae",
+  "preset": "large",
+  "overrides": {},
+  "dimensions": {
+   "records": 1048576,
+   "operand_bytes": 64,
+   "input_bytes": 134217728,
+   "output_bytes": 67108864
+  },
+  "asset_sha256": {
+   "vecadd-product-operands": "89712b453849a8d420cce0c7a5afff97c7c5f5a84509abef8fd47b67075815fb",
+   "vecadd-product-upstream-expected-smoke": "39a9a7849bacd718ad79ac23efb85bdc6dcd7a1e18fcf0a5302ccf04a914b39b"
+  },
+  "action": "bench",
+  "launch": "direct",
+  "device": {
+   "name": "NVIDIA GeForce RTX 5090",
+   "cc": "12.0",
+   "cuda_runtime": 13040,
+   "cuda_driver": 13040
+  },
+  "timing_scope": {
+   "application": "upload of the 128-byte-per-record inputs from pinned host memory, the lane-wise byte-sum kernel over all records, and the download of the 64-byte-per-record outputs to pinned host memory",
+   "compute": "the lane-wise byte-sum kernel over all records with the inputs resident; no transfers"
+  },
+  "iterations": 20,
+  "warmup": 3,
+  "timing": {
+   "application": {
+    "scope": "upload of the 128-byte-per-record inputs from pinned host memory, the lane-wise byte-sum kernel over all records, and the download of the 64-byte-per-record outputs to pinned host memory",
+    "batch_total_ms": 92.2838745,
+    "batch_per_iteration_us": 4614.19373,
+    "single_median_us": 4602.15998,
+    "single_us": [
+     4622.75219,
+     4602.97585,
+     4605.21603,
+     4595.74413,
+     4586.17592,
+     4688.99202,
+     4601.34411,
+     4674.27206,
+     4695.96815,
+     4611.29618,
+     4597.31197,
+     4608.38413,
+     4599.84016,
+     4583.00781,
+     4582.75223,
+     4645.72811,
+     4593.69612,
+     4600.44813,
+     4577.21615,
+     4612.6399
+    ]
+   },
+   "compute": {
+    "scope": "the lane-wise byte-sum kernel over all records with the inputs resident; no transfers",
+    "batch_total_ms": 2.34518409,
+    "batch_per_iteration_us": 117.259204,
+    "single_median_us": 121.199999,
+    "single_us": [
+     119.231999,
+     119.199999,
+     119.167998,
+     119.616002,
+     118.464001,
+     121.183999,
+     118.303999,
+     119.263999,
+     124.512002,
+     121.215999,
+     122.784004,
+     120.991997,
+     120.927997,
+     121.247999,
+     122.336,
+     121.568002,
+     123.007998,
+     123.071998,
+     122.336,
+     121.919997
+    ]
+   }
+  },
+  "output_digest": "835827d0e01d0383",
+  "status": "unvalidated_bench"
+ },
+ "pair": 5,
+ "position": 1,
+ "launch": "direct",
+ "digest_matches_check": true
+}
