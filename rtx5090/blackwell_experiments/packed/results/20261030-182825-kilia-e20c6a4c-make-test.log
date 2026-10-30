@@ -1,0 +1,43 @@
+$ make -C /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/packed test
+make: Entering directory '/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/packed'
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/packed/tests/run_tests.sh /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/packed/build /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/packed/build/test-output
+PASS lanes-control (exit 0)
+PASS control-records-1 (exit 0)
+PASS control-records-2 (exit 0)
+PASS control-records-3 (exit 0)
+PASS control-records-7 (exit 0)
+PASS control-records-63 (exit 0)
+PASS control-records-64 (exit 0)
+PASS control-records-255 (exit 0)
+PASS control-records-256 (exit 0)
+PASS control-records-257 (exit 0)
+PASS control-records-1000 (exit 0)
+PASS control-records-4097 (exit 0)
+PASS control-records-65537 (exit 0)
+PASS control-records-1000003 (exit 0)
+PASS control-records-257-direct (exit 0)
+PASS control-records-257-graph (exit 0)
+PASS control-canary-reported
+PASS lanes-add_u8x4 (exit 0)
+PASS add_u8x4-records-1 (exit 0)
+PASS add_u8x4-records-2 (exit 0)
+PASS add_u8x4-records-3 (exit 0)
+PASS add_u8x4-records-7 (exit 0)
+PASS add_u8x4-records-63 (exit 0)
+PASS add_u8x4-records-64 (exit 0)
+PASS add_u8x4-records-255 (exit 0)
+PASS add_u8x4-records-256 (exit 0)
+PASS add_u8x4-records-257 (exit 0)
+PASS add_u8x4-records-1000 (exit 0)
+PASS add_u8x4-records-4097 (exit 0)
+PASS add_u8x4-records-65537 (exit 0)
+PASS add_u8x4-records-1000003 (exit 0)
+PASS add_u8x4-records-257-direct (exit 0)
+PASS add_u8x4-records-257-graph (exit 0)
+PASS add_u8x4-canary-reported
+PASS lanes-mutant-saturate (exit 1)
+PASS mutant-saturate-records-1000 (exit 1)
+PASS memcheck-add_u8x4-1000 (exit 0)
+PASS memcheck-add_u8x4-65537 (exit 0)
+packed tests: 38 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/packed'
