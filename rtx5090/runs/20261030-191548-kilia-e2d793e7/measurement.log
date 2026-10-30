@@ -1,0 +1,5 @@
+fp32                 profile graph  exit 0  7 files
+bf16                 profile graph  exit 0  7 files
+mxfp6                profile graph  exit 0  7 files
+nvfp4                profile graph  exit 0  7 files
+PASS: rtx5090/blackwell_experiments/lowprec/20261030-191548-kilia-e2d793e7-profile.json

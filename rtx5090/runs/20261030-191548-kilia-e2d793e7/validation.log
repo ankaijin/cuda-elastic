@@ -1,0 +1,15 @@
+make build                               exit 0  rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-make-build.log
+make test                                exit 0  rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-make-test.log
+fp32                 fp32-check                             pass               exit 0
+fp32                 fp32-accuracy                          accuracy           exit 0
+fp32                 sass 5 kernel(s): FFMA 0, FMUL 2560, FADD 2560, HMMA.BF16 0, QMMA.SF.E3M2 0, OMMA.SF.E2M1 0, F2FP 2
+bf16                 bf16-check                             pass               exit 0
+bf16                 bf16-accuracy                          accuracy           exit 0
+bf16                 sass 6 kernel(s): FFMA 0, FMUL 2944, FADD 2688, HMMA.BF16 64, QMMA.SF.E3M2 0, OMMA.SF.E2M1 0, F2FP 2
+mxfp6                mxfp6-check                            pass               exit 0
+mxfp6                mxfp6-accuracy                         accuracy           exit 0
+mxfp6                sass 7 kernel(s): FFMA 0, FMUL 2720, FADD 2624, HMMA.BF16 0, QMMA.SF.E3M2 128, OMMA.SF.E2M1 0, F2FP 18
+nvfp4                nvfp4-check                            pass               exit 0
+nvfp4                nvfp4-accuracy                         accuracy           exit 0
+nvfp4                sass 7 kernel(s): FFMA 109, FMUL 2707, FADD 2629, HMMA.BF16 0, QMMA.SF.E3M2 0, OMMA.SF.E2M1 64, F2FP 11
+PASS: rtx5090/blackwell_experiments/lowprec/20261030-191548-kilia-e2d793e7-check.json

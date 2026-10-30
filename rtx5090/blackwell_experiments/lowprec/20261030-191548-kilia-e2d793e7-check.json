@@ -1,0 +1,167 @@
+{
+ "schema": "blackwell_experiments.summary/1",
+ "experiment": "lowprec",
+ "question": "What accuracy-speed tradeoff results from replacing only the dense classifier multiplication?",
+ "stamp": "20261030-191548-kilia-e2d793e7",
+ "action": "check",
+ "source": {
+  "commit": "3c8de04a3cce137da430ff9147eb62bb6f7327a9",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "cases": [
+  "fp32",
+  "bf16",
+  "mxfp6",
+  "nvfp4"
+ ],
+ "settings": null,
+ "status": "pass",
+ "records": [
+  {
+   "kind": "make",
+   "targets": [
+    "build"
+   ],
+   "force": true,
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-make-build.log",
+   "log_sha256": "4e7b704fffcf182e5fae492053e17ca37f69dd0aefc9d07e08dbdf5859451ee7"
+  },
+  {
+   "kind": "make",
+   "targets": [
+    "test"
+   ],
+   "force": false,
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-make-test.log",
+   "log_sha256": "f2b2475f61d01a4b7d8fcdfa90c8bc73992d993c33575ce146ecf918f372c37e"
+  },
+  {
+   "kind": "check",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-fp32-check.json",
+   "record_sha256": "4411acec0bbd31615aa976ecf90c9bb45fd083c2c0a73737f74e6907dabf6768",
+   "status": "pass",
+   "exit_code": 0
+  },
+  {
+   "kind": "accuracy",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-fp32-accuracy.json",
+   "record_sha256": "24be4dd259ea13e5d875ed3ec20f6f0bb2468d45dea5413fb0deab29f1ecda5e",
+   "status": "accuracy",
+   "exit_code": 0
+  },
+  {
+   "kind": "sass",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-fp32-sass.json",
+   "features": {
+    "FFMA": 0,
+    "FMUL": 2560,
+    "FADD": 2560,
+    "HMMA.BF16": 0,
+    "QMMA.SF.E3M2": 0,
+    "OMMA.SF.E2M1": 0,
+    "F2FP": 2
+   }
+  },
+  {
+   "kind": "check",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-bf16-check.json",
+   "record_sha256": "26b9c4c9e5f88f6ba4b484cd55105d7649b1df3981a8f53e52a8371accd5f11d",
+   "status": "pass",
+   "exit_code": 0
+  },
+  {
+   "kind": "accuracy",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-bf16-accuracy.json",
+   "record_sha256": "e76c94497f1a01b9ae00ee5e4a6cd98c75baf4d6be6dece096f8b7d0010d482d",
+   "status": "accuracy",
+   "exit_code": 0
+  },
+  {
+   "kind": "sass",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-bf16-sass.json",
+   "features": {
+    "FFMA": 0,
+    "FMUL": 2944,
+    "FADD": 2688,
+    "HMMA.BF16": 64,
+    "QMMA.SF.E3M2": 0,
+    "OMMA.SF.E2M1": 0,
+    "F2FP": 2
+   }
+  },
+  {
+   "kind": "check",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-mxfp6-check.json",
+   "record_sha256": "461e55ce76cb923f9873355753ebeb96507685d69044bc23b1aa559994765938",
+   "status": "pass",
+   "exit_code": 0
+  },
+  {
+   "kind": "accuracy",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-mxfp6-accuracy.json",
+   "record_sha256": "b61cc665f46957d2def1275c8dffcf526852a06b569d5e39ab67ba8300631814",
+   "status": "accuracy",
+   "exit_code": 0
+  },
+  {
+   "kind": "sass",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-mxfp6-sass.json",
+   "features": {
+    "FFMA": 0,
+    "FMUL": 2720,
+    "FADD": 2624,
+    "HMMA.BF16": 0,
+    "QMMA.SF.E3M2": 128,
+    "OMMA.SF.E2M1": 0,
+    "F2FP": 18
+   }
+  },
+  {
+   "kind": "check",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-nvfp4-check.json",
+   "record_sha256": "c8841c2e3bb93491844dd35972ea120c2ba49998b50e7ede3aa6e5b1124a8bcf",
+   "status": "pass",
+   "exit_code": 0
+  },
+  {
+   "kind": "accuracy",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-nvfp4-accuracy.json",
+   "record_sha256": "2c825bb197c02e5520ae242f5ba799601479f5cff50df043f299a85403f20d5d",
+   "status": "accuracy",
+   "exit_code": 0
+  },
+  {
+   "kind": "sass",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-nvfp4-sass.json",
+   "features": {
+    "FFMA": 109,
+    "FMUL": 2707,
+    "FADD": 2629,
+    "HMMA.BF16": 0,
+    "QMMA.SF.E3M2": 0,
+    "OMMA.SF.E2M1": 64,
+    "F2FP": 11
+   }
+  }
+ ]
+}

@@ -1,0 +1,30 @@
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/nvfp4 --preset large --action check --launch both --json-out /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/results/20261030-191548-kilia-e2d793e7-nvfp4-check.raw.json
+decoder_lowprec: case nvfp4, fixture 0, weight conversion 0.729 ms (setup)
+decoder: setup 0.00 s
+decoder_lowprec: weights (8192 rows): 0 code and 0 scale mismatches
+decoder: CPU oracle 0.27 s
+decoder_lowprec: activations step 0 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 1 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 2 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 3 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: implementation check PASS: normalized 0 mismatches (worst 0.0149 of the bound), 0 tokens out of range; converted weights exact, activations exact; logits 0 mismatches over 8 sequences x 4 steps (worst |error| / sum|terms| 2.31e-08, bound 0.00196); probabilities 0 mismatches; tokens 0 not the first largest probability
+decoder: direct invocation 1: PASS, digest a3cc782bc43282b3 (0.00 s, untimed)
+decoder_lowprec: activations step 0 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 1 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 2 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 3 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: implementation check PASS: normalized 0 mismatches (worst 0.0149 of the bound), 0 tokens out of range; converted weights exact, activations exact; logits 0 mismatches over 8 sequences x 4 steps (worst |error| / sum|terms| 2.31e-08, bound 0.00196); probabilities 0 mismatches; tokens 0 not the first largest probability
+decoder: direct invocation 2: PASS, digest a3cc782bc43282b3 (0.00 s, untimed)
+decoder_lowprec: activations step 0 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 1 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 2 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 3 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: implementation check PASS: normalized 0 mismatches (worst 0.0149 of the bound), 0 tokens out of range; converted weights exact, activations exact; logits 0 mismatches over 8 sequences x 4 steps (worst |error| / sum|terms| 2.31e-08, bound 0.00196); probabilities 0 mismatches; tokens 0 not the first largest probability
+decoder: graph invocation 1: PASS, digest a3cc782bc43282b3 (0.00 s, untimed)
+decoder_lowprec: activations step 0 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 1 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 2 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: activations step 3 (1024 rows): 0 code and 0 scale mismatches
+decoder_lowprec: implementation check PASS: normalized 0 mismatches (worst 0.0149 of the bound), 0 tokens out of range; converted weights exact, activations exact; logits 0 mismatches over 8 sequences x 4 steps (worst |error| / sum|terms| 2.31e-08, bound 0.00196); probabilities 0 mismatches; tokens 0 not the first largest probability
+decoder: graph invocation 2: PASS, digest a3cc782bc43282b3 (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "blackwell-experiments/lowprec-decoder-classifier/nvfp4", "variant": "lowprec/nvfp4", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c", "preset": "large", "overrides": {}, "dimensions": {"batch": 1024, "width": 16384, "vocab": 8192, "steps": 4, "fixture": 0, "case": "nvfp4", "generated_tokens": 4096, "classifier_macs_per_step": 137438953472}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 5090", "cc": "12.0", "cuda_runtime": 13040, "cuda_driver": 13040}, "timing_scope": {"application": "prompt upload (pinned H2D), token reset, every step (rmsnorm, activation conversion with scale generation and layout, classifier GEMM, softmax+argmax with on-device token feedback), generated-token download; converted weights resident from setup", "compute": "token reset and every step (rmsnorm, activation conversion, classifier GEMM, softmax+argmax)"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "a3cc782bc43282b3"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "a3cc782bc43282b3"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "a3cc782bc43282b3"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "a3cc782bc43282b3"}], "outputs_agree": true, "timing": null, "status": "pass"}
