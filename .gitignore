@@ -25,3 +25,6 @@ __pycache__/
 
 # loom_private application builds
 /*/loom_private/*/build/
+
+# Feature experiment builds (experiments/blackwell)
+/*/blackwell_experiments/*/build/
