@@ -1,0 +1,39 @@
+--- applications/loom_private/vecadd_product/vecadd_product_optimized.cu
++++ experiments/blackwell/packed/vecadd_product_packed.cu
+@@ -1,11 +1,9 @@
+-// loom-private/vecadd-product, optimized variant: the same contract as
+-// vecadd_product.cu (see contract.json and the README's "Optimized variant").
+-// The application scope splits the records into chunks, each on its own stream,
+-// so the upload of later chunks overlaps the kernel and the download of earlier
+-// ones (the two copy directions use separate copy engines). The kernel is the
+-// baseline's, which already runs at about 93% of DRAM peak on the RTX 3090. The
+-// workload class (setup, poison, oracle call, check, digest) is copied
+-// unchanged from the baseline.
++// Experiment A (experiments/blackwell/packed), candidate add_u8x4: the
++// production optimized variant (applications/loom_private/vecadd_product/
++// vecadd_product_optimized.cu) with one change, add_bytes as the native packed
++// byte add (PTX add.u8x4, which needs sm_120f or sm_120a). Everything else,
++// including the chunked pipeline and the mutants, is the production code;
++// add_u8x4.diff is the exact difference.
+ #include "lp_harness.cuh"
+ 
+ #include "fixtures.h"
+@@ -68,13 +66,15 @@
+ #define LP_VECADD_MUTANT 0
+ #endif
+ 
+-// Byte-lane sum modulo 256 of four packed bytes: add the low seven bits of
+-// each lane (no carry can leave a lane), then fix up each lane's top bit.
++// Byte-lane sum modulo 256 of four packed bytes: one native packed add,
++// which wraps within each lane (no carry leaves a lane).
+ __device__ __forceinline__ uint32_t add_bytes(uint32_t a, uint32_t b) {
+ #if LP_VECADD_MUTANT == 1
+   return __vaddus4(a, b);
+ #else
+-  return ((a & 0x7f7f7f7fu) + (b & 0x7f7f7f7fu)) ^ ((a ^ b) & 0x80808080u);
++  uint32_t sum;
++  asm("add.u8x4 %0, %1, %2;" : "=r"(sum) : "r"(a), "r"(b));
++  return sum;
+ #endif
+ }
+ 
