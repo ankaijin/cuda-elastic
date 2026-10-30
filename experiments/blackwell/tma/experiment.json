@@ -1,0 +1,21 @@
+{
+ "experiment": "tma",
+ "title": "TMA tile loads and warp specialization",
+ "question": "Can changing tile loading reduce instruction overhead without changing attention arithmetic?",
+ "workload": "loom-private/multisensor-attention, optimized variant: 25,000 queries over 250,000 context tokens, 64 query rows per block, 1,024-key tiles, two shared buffers, 12 context splits",
+ "spec_kind": "contract",
+ "cases": [
+  {"name": "control", "role": "control",
+   "description": "applications/loom_private/attention/attention_optimized.cu unchanged: double-buffered cp.async tiles (16-byte copies by all 256 threads), block barriers before and after each tile"},
+  {"name": "tma", "role": "candidate",
+   "description": "attention_tma.cu, mode 1: thread 0 issues one cp.async.bulk per tile; all threads wait on the tile's mbarrier; a block barrier after each tile guards reuse"},
+  {"name": "tma_producer", "role": "candidate",
+   "description": "attention_tma.cu, mode 2: a ninth warp issues the bulk copies; compute warps wait on full mbarriers and release empty mbarriers; no block barrier inside the stream; two blocks per SM kept with __launch_bounds__(288, 2)"}
+ ],
+ "check": {"args": ["--preset", "large", "--action", "check", "--launch", "both"],
+           "digests_must_match": true},
+ "sass": {"kernels": "attention_partial_kernel<\\(int\\)8, \\(int\\)8, \\(int\\)1024>",
+          "features": {"UBLKCP": "UBLKCP", "LDGSTS": "LDGSTS", "SYNCS": "SYNCS",
+                       "BAR.SYNC": "BAR\\.SYNC", "MUFU.EX2": "MUFU\\.EX2"}},
+ "profile_launch": "graph"
+}

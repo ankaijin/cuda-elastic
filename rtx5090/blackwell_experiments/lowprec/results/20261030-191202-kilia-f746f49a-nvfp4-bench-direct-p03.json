@@ -1,0 +1,199 @@
+{
+ "schema": "blackwell_experiments.result/1",
+ "experiment": "lowprec",
+ "case": "nvfp4",
+ "role": "candidate",
+ "action": "bench",
+ "stamp": "20261030-191202-kilia-f746f49a",
+ "source": {
+  "commit": "17de016182cbfbd64aa72ec28372fafb4dc41cdd",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "build": {
+  "schema": "blackwell_experiments.build/1",
+  "experiment": "lowprec",
+  "case": "nvfp4",
+  "binary": "rtx5090/blackwell_experiments/lowprec/build/nvfp4",
+  "binary_sha256": "240d49d82579400766bdb6588e3474607548b2c68180971d81e5f03daa6e22ea",
+  "built_utc": "2026-10-30T19:13:07.708424+00:00",
+  "arch": "sm_120f",
+  "command": [
+   "nvcc",
+   "-O3",
+   "-lineinfo",
+   "-Xcompiler",
+   "-pthread",
+   "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder",
+   "-I/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec",
+   "-I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include",
+   "-I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/tools/util/include",
+   "--expt-relaxed-constexpr",
+   "-DLP_LOWPREC_CASE=3",
+   "-std=c++17",
+   "--fmad=false",
+   "-Xcompiler",
+   "-ffp-contract=off",
+   "-gencode",
+   "arch=compute_120f,code=sm_120f",
+   "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common",
+   "-DLP_APP=\"decoder\"",
+   "-DLP_CONTRACT_SHA256=\"1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c\"",
+   "-DLP_VARIANT=\"lowprec/nvfp4\"",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp",
+   "-o",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/nvfp4"
+  ],
+  "compiler_version": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0",
+  "source_commit": "17de016182cbfbd64aa72ec28372fafb4dc41cdd",
+  "source_dirty": false,
+  "spec": "experiments/blackwell/lowprec/spec.json",
+  "spec_sha256": "1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c",
+  "sources": {
+   "experiments/blackwell/lowprec/decoder_lowprec.cu": "1028e0754e76a6bc337697be4b1e503619b66e047afe077e8998df4b59488dae",
+   "experiments/blackwell/lowprec/reference.cpp": "9597de16433cb4f7c95a488afd0d707f0ae841d97912997cd292415339aea28d",
+   "applications/loom_private/decoder/oracle.cpp": "908ddff3f64b94e57d724c97b9e5816e4072ccdc938073f78a53918f7872a095",
+   "experiments/blackwell/lowprec/reference.h": "3d8d922a348125ee679015fe3db54559219b37db97bf686bcd33773d1552b195",
+   "applications/loom_private/decoder/decoder_optimized.cu": "ede1eef225aed1cae04623dc8117713d308eea2af6e94f82bbe70a048f9cd1a0",
+   "applications/loom_private/decoder/oracle.h": "faeb371c72211ebb1da00ad32a1e4b665d90e9fe4df06fe70d4383aa090e8a67"
+  },
+  "external_includes": {
+   "/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include": {
+    "git_toplevel": "/home/ankai/.cache/cuda-elastic/cutlass-4.8.0",
+    "git_commit": "098de2a652cf8f00fd70b2df54051c7eccbb855a",
+    "git_describe": "v4.8.0",
+    "dirty": false
+   },
+   "/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/tools/util/include": {
+    "git_toplevel": "/home/ankai/.cache/cuda-elastic/cutlass-4.8.0",
+    "git_commit": "098de2a652cf8f00fd70b2df54051c7eccbb855a",
+    "git_describe": "v4.8.0",
+    "dirty": false
+   }
+  }
+ },
+ "command": [
+  "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/nvfp4",
+  "--preset",
+  "large",
+  "--action",
+  "bench",
+  "--launch",
+  "direct",
+  "--iterations",
+  "20",
+  "--warmup",
+  "3",
+  "--json-out",
+  "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p03.raw.json"
+ ],
+ "exit_code": 0,
+ "log": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p03.log",
+ "log_sha256": "40c9494f268958f9a681b741bef74eb13b9b371fcb59170995abf9db1120e510",
+ "result": {
+  "schema": "loom_private.result/1",
+  "suite_version": "v1",
+  "identity": "blackwell-experiments/lowprec-decoder-classifier/nvfp4",
+  "variant": "lowprec/nvfp4",
+  "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+  "contract_sha256": "1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c",
+  "preset": "large",
+  "overrides": {},
+  "dimensions": {
+   "batch": 1024,
+   "width": 16384,
+   "vocab": 8192,
+   "steps": 4,
+   "fixture": 0,
+   "case": "nvfp4",
+   "generated_tokens": 4096,
+   "classifier_macs_per_step": 137438953472
+  },
+  "asset_sha256": {},
+  "action": "bench",
+  "launch": "direct",
+  "device": {
+   "name": "NVIDIA GeForce RTX 5090",
+   "cc": "12.0",
+   "cuda_runtime": 13040,
+   "cuda_driver": 13040
+  },
+  "timing_scope": {
+   "application": "prompt upload (pinned H2D), token reset, every step (rmsnorm, activation conversion with scale generation and layout, classifier GEMM, softmax+argmax with on-device token feedback), generated-token download; converted weights resident from setup",
+   "compute": "token reset and every step (rmsnorm, activation conversion, classifier GEMM, softmax+argmax)"
+  },
+  "iterations": 20,
+  "warmup": 3,
+  "timing": {
+   "application": {
+    "scope": "prompt upload (pinned H2D), token reset, every step (rmsnorm, activation conversion with scale generation and layout, classifier GEMM, softmax+argmax with on-device token feedback), generated-token download; converted weights resident from setup",
+    "batch_total_ms": 33.7456627,
+    "batch_per_iteration_us": 1687.28313,
+    "single_median_us": 1684.71998,
+    "single_us": [
+     1682.62398,
+     1684.64005,
+     1683.64799,
+     1684.51202,
+     1685.05597,
+     1684.73601,
+     1685.05597,
+     1684.76796,
+     1684.99196,
+     1685.08804,
+     1684.96001,
+     1673.31195,
+     1683.10404,
+     1684.31997,
+     1685.34398,
+     1676.89598,
+     1696.28799,
+     1677.66404,
+     1684.70395,
+     1684.86404
+    ]
+   },
+   "compute": {
+    "scope": "token reset and every step (rmsnorm, activation conversion, classifier GEMM, softmax+argmax)",
+    "batch_total_ms": 33.510273,
+    "batch_per_iteration_us": 1675.51365,
+    "single_median_us": 1679.58403,
+    "single_us": [
+     1679.74401,
+     1683.96795,
+     1678.75195,
+     1680.86398,
+     1682.04796,
+     1671.58401,
+     1678.97606,
+     1679.58403,
+     1681.05602,
+     1681.82397,
+     1686.17594,
+     1681.66399,
+     1671.83995,
+     1679.58403,
+     1675.80795,
+     1675.74406,
+     1674.94404,
+     1689.152,
+     1676.92804,
+     1677.88804
+    ]
+   }
+  },
+  "output_digest": "a3cc782bc43282b3",
+  "status": "unvalidated_bench"
+ },
+ "pair": 3,
+ "position": 3,
+ "launch": "direct",
+ "digest_matches_check": true
+}

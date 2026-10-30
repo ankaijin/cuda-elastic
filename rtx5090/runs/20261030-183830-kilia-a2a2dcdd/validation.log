@@ -1,0 +1,10 @@
+make build                               exit 0  rtx5090/blackwell_experiments/tma/results/20261030-183830-kilia-a2a2dcdd-make-build.log
+make test                                exit 0  rtx5090/blackwell_experiments/tma/results/20261030-183830-kilia-a2a2dcdd-make-test.log
+control              control-check                          pass               exit 0
+control              sass 1 kernel(s): UBLKCP 0, LDGSTS 20, SYNCS 0, BAR.SYNC 4, MUFU.EX2 264
+tma                  tma-check                              pass               exit 0
+tma                  sass 1 kernel(s): UBLKCP 4, LDGSTS 0, SYNCS 12, BAR.SYNC 2, MUFU.EX2 264
+tma_producer         tma_producer-check                     pass               exit 0
+tma_producer         sass 1 kernel(s): UBLKCP 2, LDGSTS 0, SYNCS 16, BAR.SYNC 0, MUFU.EX2 264
+output digests agree across cases                            True
+PASS: rtx5090/blackwell_experiments/tma/20261030-183830-kilia-a2a2dcdd-check.json

@@ -1,0 +1,183 @@
+$ make -C /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec -B build
+make: Entering directory '/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec'
+mkdir -p /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/
+python3 /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tools/build_info.py --output /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/fp32 --case fp32 --experiment lowprec --arch sm_120f --spec /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/spec.json --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.h --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/decoder_optimized.cu --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.h -- nvcc -O3 -lineinfo -Xcompiler -pthread -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder -I/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/tools/util/include --expt-relaxed-constexpr -DLP_LOWPREC_CASE=0  -std=c++17 --fmad=false -Xcompiler -ffp-contract=off -gencode arch=compute_120f,code=sm_120f -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c\" -DLP_VARIANT=\"lowprec/fp32\" /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/fp32
+nvcc -O3 -lineinfo -Xcompiler -pthread -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder -I/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/tools/util/include --expt-relaxed-constexpr -DLP_LOWPREC_CASE=0 -std=c++17 --fmad=false -Xcompiler -ffp-contract=off -gencode arch=compute_120f,code=sm_120f -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common -DLP_APP="decoder" -DLP_CONTRACT_SHA256="1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c" -DLP_VARIANT="lowprec/fp32" /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/fp32
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(642): warning #177-D: variable "values" was declared but never referenced
+      const long long values = (long long)rows * W_;
+                      ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(145): warning #177-D: function "<unnamed>::e2m1x8" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) uint32_t e2m1x8(const float *v) {
+                                                                             ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(164): warning #177-D: function "<unnamed>::e3m2x2" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) uint32_t e3m2x2(float lo, float hi) {
+                                                                             ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(178): warning #177-D: function "<unnamed>::ue4m3" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) uint32_t ue4m3(float v) {
+                                                                             ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(183): warning #177-D: function "<unnamed>::ue4m3_value" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) float ue4m3_value(uint32_t code) {
+                                                                          ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(203): warning #177-D: function "<unnamed>::tensor_amax_kernel" was declared but never referenced
+  tensor_amax_kernel(const float4 *__restrict__ x, long long n4, unsigned *amax_bits) {
+  ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(223): warning #177-D: function "<unnamed>::to_bf16_kernel" was declared but never referenced
+  to_bf16_kernel(const float4 *__restrict__ x, long long n4, uint2 *__restrict__ out) {
+  ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(343): warning #177-D: function "<unnamed>::grid_for" was declared but never referenced
+  unsigned grid_for(long long items) {
+           ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(546): warning #177-D: function "<unnamed>::LowPrecisionDecoder::fixture" was declared but never referenced
+    int fixture() const { return fixture_; }
+        ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(635): warning #177-D: function "<unnamed>::LowPrecisionDecoder::layout_rows_weights" was declared but never referenced
+    int layout_rows_weights() const { return (int)V_; }
+        ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(638): warning #177-D: function "<unnamed>::LowPrecisionDecoder::make_operand" was declared but never referenced
+    Operand make_operand(int rows, bool weights) {
+            ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(664): warning #177-D: function "<unnamed>::LowPrecisionDecoder::convert" was declared but never referenced
+    void convert(const float *x, int rows, Operand &o, float *alpha, cudaStream_t stream) {
+         ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(792): warning #177-D: function "<unnamed>::LowPrecisionDecoder::quantize_on_host" was declared but never referenced
+    HostOperand quantize_on_host(const float *x, int rows) const {
+                ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(826): warning #177-D: function "<unnamed>::LowPrecisionDecoder::download" was declared but never referenced
+    HostOperand download(const Operand &o, int layout_rows) const {
+                ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(863): warning #177-D: function "<unnamed>::LowPrecisionDecoder::compare_operands" was declared but never referenced
+    bool compare_operands(const char *what, const HostOperand &expected, const HostOperand &actual,
+         ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(894): warning #177-D: function "<unnamed>::LowPrecisionDecoder::dequantize" was declared but never referenced
+    std::vector<float> dequantize(const HostOperand &h, int rows) const {
+                       ^
+
+mkdir -p /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/
+python3 /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tools/build_info.py --output /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/bf16 --case bf16 --experiment lowprec --arch sm_120f --spec /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/spec.json --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.h --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/decoder_optimized.cu --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.h -- nvcc -O3 -lineinfo -Xcompiler -pthread -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder -I/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/tools/util/include --expt-relaxed-constexpr -DLP_LOWPREC_CASE=1  -std=c++17 --fmad=false -Xcompiler -ffp-contract=off -gencode arch=compute_120f,code=sm_120f -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c\" -DLP_VARIANT=\"lowprec/bf16\" /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/bf16
+nvcc -O3 -lineinfo -Xcompiler -pthread -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder -I/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/tools/util/include --expt-relaxed-constexpr -DLP_LOWPREC_CASE=1 -std=c++17 --fmad=false -Xcompiler -ffp-contract=off -gencode arch=compute_120f,code=sm_120f -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common -DLP_APP="decoder" -DLP_CONTRACT_SHA256="1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c" -DLP_VARIANT="lowprec/bf16" /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/bf16
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(145): warning #177-D: function "<unnamed>::e2m1x8" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) uint32_t e2m1x8(const float *v) {
+                                                                             ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(164): warning #177-D: function "<unnamed>::e3m2x2" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) uint32_t e3m2x2(float lo, float hi) {
+                                                                             ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(178): warning #177-D: function "<unnamed>::ue4m3" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) uint32_t ue4m3(float v) {
+                                                                             ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(183): warning #177-D: function "<unnamed>::ue4m3_value" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) float ue4m3_value(uint32_t code) {
+                                                                          ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(203): warning #177-D: function "<unnamed>::tensor_amax_kernel" was declared but never referenced
+  tensor_amax_kernel(const float4 *__restrict__ x, long long n4, unsigned *amax_bits) {
+  ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(546): warning #177-D: function "<unnamed>::LowPrecisionDecoder::fixture" was declared but never referenced
+    int fixture() const { return fixture_; }
+        ^
+
+mkdir -p /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/
+python3 /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tools/build_info.py --output /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/mxfp6 --case mxfp6 --experiment lowprec --arch sm_120f --spec /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/spec.json --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.h --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/decoder_optimized.cu --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.h -- nvcc -O3 -lineinfo -Xcompiler -pthread -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder -I/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/tools/util/include --expt-relaxed-constexpr -DLP_LOWPREC_CASE=2  -std=c++17 --fmad=false -Xcompiler -ffp-contract=off -gencode arch=compute_120f,code=sm_120f -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c\" -DLP_VARIANT=\"lowprec/mxfp6\" /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/mxfp6
+nvcc -O3 -lineinfo -Xcompiler -pthread -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder -I/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/tools/util/include --expt-relaxed-constexpr -DLP_LOWPREC_CASE=2 -std=c++17 --fmad=false -Xcompiler -ffp-contract=off -gencode arch=compute_120f,code=sm_120f -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common -DLP_APP="decoder" -DLP_CONTRACT_SHA256="1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c" -DLP_VARIANT="lowprec/mxfp6" /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/mxfp6
+/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include/cutlass/gemm/kernel/sm100_static_tile_scheduler.hpp(53): warning #20012-D: __device__ annotation is ignored on a non-virtual function("StaticPersistentTileScheduler100") that is explicitly defaulted on its first declaration
+    __inline__ __attribute__((always_inline)) __attribute__((device)) __attribute__((host))
+                                                             ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include/cutlass/gemm/kernel/sm100_static_tile_scheduler.hpp(53): warning #20012-D: __host__ annotation is ignored on a non-virtual function("StaticPersistentTileScheduler100") that is explicitly defaulted on its first declaration
+    __inline__ __attribute__((always_inline)) __attribute__((device)) __attribute__((host))
+                                                                                     ^
+
+/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include/cutlass/gemm/kernel/sm100_static_tile_scheduler.hpp(53): warning #20012-D: __device__ annotation is ignored on a non-virtual function("StaticPersistentTileScheduler100") that is explicitly defaulted on its first declaration
+    __inline__ __attribute__((always_inline)) __attribute__((device)) __attribute__((host))
+                                                             ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include/cutlass/gemm/kernel/sm100_static_tile_scheduler.hpp(53): warning #20012-D: __host__ annotation is ignored on a non-virtual function("StaticPersistentTileScheduler100") that is explicitly defaulted on its first declaration
+    __inline__ __attribute__((always_inline)) __attribute__((device)) __attribute__((host))
+                                                                                     ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(145): warning #177-D: function "<unnamed>::e2m1x8" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) uint32_t e2m1x8(const float *v) {
+                                                                             ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(178): warning #177-D: function "<unnamed>::ue4m3" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) uint32_t ue4m3(float v) {
+                                                                             ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(183): warning #177-D: function "<unnamed>::ue4m3_value" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) float ue4m3_value(uint32_t code) {
+                                                                          ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(203): warning #177-D: function "<unnamed>::tensor_amax_kernel" was declared but never referenced
+  tensor_amax_kernel(const float4 *__restrict__ x, long long n4, unsigned *amax_bits) {
+  ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(223): warning #177-D: function "<unnamed>::to_bf16_kernel" was declared but never referenced
+  to_bf16_kernel(const float4 *__restrict__ x, long long n4, uint2 *__restrict__ out) {
+  ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(546): warning #177-D: function "<unnamed>::LowPrecisionDecoder::fixture" was declared but never referenced
+    int fixture() const { return fixture_; }
+        ^
+
+mkdir -p /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/
+python3 /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tools/build_info.py --output /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/nvfp4 --case nvfp4 --experiment lowprec --arch sm_120f --spec /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/spec.json --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp --source /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.h --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/decoder_optimized.cu --source /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.h -- nvcc -O3 -lineinfo -Xcompiler -pthread -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder -I/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/tools/util/include --expt-relaxed-constexpr -DLP_LOWPREC_CASE=3  -std=c++17 --fmad=false -Xcompiler -ffp-contract=off -gencode arch=compute_120f,code=sm_120f -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c\" -DLP_VARIANT=\"lowprec/nvfp4\" /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/nvfp4
+nvcc -O3 -lineinfo -Xcompiler -pthread -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder -I/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include -I/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/tools/util/include --expt-relaxed-constexpr -DLP_LOWPREC_CASE=3 -std=c++17 --fmad=false -Xcompiler -ffp-contract=off -gencode arch=compute_120f,code=sm_120f -I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common -DLP_APP="decoder" -DLP_CONTRACT_SHA256="1a56ed12366829cbf1b952d99267143f4d74f64411858cb6e7748e389616a64c" -DLP_VARIANT="lowprec/nvfp4" /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/reference.cpp /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/lowprec/build/nvfp4
+/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include/cutlass/gemm/kernel/sm100_static_tile_scheduler.hpp(53): warning #20012-D: __device__ annotation is ignored on a non-virtual function("StaticPersistentTileScheduler100") that is explicitly defaulted on its first declaration
+    __inline__ __attribute__((always_inline)) __attribute__((device)) __attribute__((host))
+                                                             ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include/cutlass/gemm/kernel/sm100_static_tile_scheduler.hpp(53): warning #20012-D: __host__ annotation is ignored on a non-virtual function("StaticPersistentTileScheduler100") that is explicitly defaulted on its first declaration
+    __inline__ __attribute__((always_inline)) __attribute__((device)) __attribute__((host))
+                                                                                     ^
+
+/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include/cutlass/gemm/kernel/sm100_static_tile_scheduler.hpp(53): warning #20012-D: __device__ annotation is ignored on a non-virtual function("StaticPersistentTileScheduler100") that is explicitly defaulted on its first declaration
+    __inline__ __attribute__((always_inline)) __attribute__((device)) __attribute__((host))
+                                                             ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ankai/.cache/cuda-elastic/cutlass-4.8.0/include/cutlass/gemm/kernel/sm100_static_tile_scheduler.hpp(53): warning #20012-D: __host__ annotation is ignored on a non-virtual function("StaticPersistentTileScheduler100") that is explicitly defaulted on its first declaration
+    __inline__ __attribute__((always_inline)) __attribute__((device)) __attribute__((host))
+                                                                                     ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(164): warning #177-D: function "<unnamed>::e3m2x2" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) uint32_t e3m2x2(float lo, float hi) {
+                                                                             ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(223): warning #177-D: function "<unnamed>::to_bf16_kernel" was declared but never referenced
+  to_bf16_kernel(const float4 *__restrict__ x, long long n4, uint2 *__restrict__ out) {
+  ^
+
+/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec/decoder_lowprec.cu(546): warning #177-D: function "<unnamed>::LowPrecisionDecoder::fixture" was declared but never referenced
+    int fixture() const { return fixture_; }
+        ^
+
+make: Leaving directory '/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/lowprec'

@@ -1,0 +1,21 @@
+control              control-bench-direct-p01               unvalidated_bench  exit 0
+add_u8x4             add_u8x4-bench-direct-p01              unvalidated_bench  exit 0
+control              control-bench-graph-p01                unvalidated_bench  exit 0
+add_u8x4             add_u8x4-bench-graph-p01               unvalidated_bench  exit 0
+add_u8x4             add_u8x4-bench-direct-p02              unvalidated_bench  exit 0
+control              control-bench-direct-p02               unvalidated_bench  exit 0
+add_u8x4             add_u8x4-bench-graph-p02               unvalidated_bench  exit 0
+control              control-bench-graph-p02                unvalidated_bench  exit 0
+control              control-bench-direct-p03               unvalidated_bench  exit 0
+add_u8x4             add_u8x4-bench-direct-p03              unvalidated_bench  exit 0
+control              control-bench-graph-p03                unvalidated_bench  exit 0
+add_u8x4             add_u8x4-bench-graph-p03               unvalidated_bench  exit 0
+add_u8x4             add_u8x4-bench-direct-p04              unvalidated_bench  exit 0
+control              control-bench-direct-p04               unvalidated_bench  exit 0
+add_u8x4             add_u8x4-bench-graph-p04               unvalidated_bench  exit 0
+control              control-bench-graph-p04                unvalidated_bench  exit 0
+control              control-bench-direct-p05               unvalidated_bench  exit 0
+add_u8x4             add_u8x4-bench-direct-p05              unvalidated_bench  exit 0
+control              control-bench-graph-p05                unvalidated_bench  exit 0
+add_u8x4             add_u8x4-bench-graph-p05               unvalidated_bench  exit 0
+PASS: rtx5090/blackwell_experiments/packed/20261030-182653-kilia-455ace66-bench.json

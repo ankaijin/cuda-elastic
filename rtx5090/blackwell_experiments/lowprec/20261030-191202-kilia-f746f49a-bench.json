@@ -1,0 +1,1290 @@
+{
+ "schema": "blackwell_experiments.summary/1",
+ "experiment": "lowprec",
+ "question": "What accuracy-speed tradeoff results from replacing only the dense classifier multiplication?",
+ "stamp": "20261030-191202-kilia-f746f49a",
+ "action": "bench",
+ "source": {
+  "commit": "17de016182cbfbd64aa72ec28372fafb4dc41cdd",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "cases": [
+  "fp32",
+  "bf16",
+  "mxfp6",
+  "nvfp4"
+ ],
+ "settings": {
+  "pairs": 10,
+  "iterations": 20,
+  "warmup": 3,
+  "launch": "both"
+ },
+ "status": "pass",
+ "records": [
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-direct-p01.json",
+   "record_sha256": "e0a212a986ac457a8ee183f8710d957228a6a8ddf86705ab039b2ffda1450dec",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-direct-p01.json",
+   "record_sha256": "c535394b3bfc26f830628a8a376e0db6c98d71c3efc898e8d2bb26c4a9a19432",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-direct-p01.json",
+   "record_sha256": "f6c405532e14f844a6b813dd0b31a0496fa7fce71a7ed963e2f1bb950ed16021",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p01.json",
+   "record_sha256": "676a7d0c777402e88be82a4070703a993d8e0e69aff23e27a0aca4d0e440b0a3",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-graph-p01.json",
+   "record_sha256": "7b1648e49f3ea5cd0db1a46a6e5eef98c928dfbf1a52d278665f9cf7a399e938",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-graph-p01.json",
+   "record_sha256": "22bca887f45b1e4e7bfc559e6879592ede9f9caf76eb3b72e2fa2ec93312a74e",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-graph-p01.json",
+   "record_sha256": "64610fcfcf407c52d5d63b1f2f952031ace6ca0e8f51cd6b9bea99d7b13feb3f",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-graph-p01.json",
+   "record_sha256": "0f2190b454e1c8dd777aab6aa0ac452fc8394875b5d9e72132e631bad2edd846",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p02.json",
+   "record_sha256": "1f16f70b9021837fd224acc7837c9da82a7985cb61e2ed9892489bc0851a1197",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-direct-p02.json",
+   "record_sha256": "f548ef0586e0d905ebba7e9ca76c76c674e78f4eb8ff7e5e777c419f0f6d48ec",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-direct-p02.json",
+   "record_sha256": "e4eb69037b2a0c72cad9b2a9ede46b4446e4b9fec887158910422b76dbdfd3b8",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-direct-p02.json",
+   "record_sha256": "f797e41bc8ad2902b1f59a9f57237214dcb5015dad27913d4ee302cfb0b20679",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-graph-p02.json",
+   "record_sha256": "fc297fcdc1768ee87fefa7fd09d3a3273e4eac47922d34ea734fb5ca502cd6e3",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-graph-p02.json",
+   "record_sha256": "f98a6c4a20f61e438a8dd736c066ab5cdc727e30a2f117d161986acc1a1e2c06",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-graph-p02.json",
+   "record_sha256": "b407fd91275169996f5e5c241150ac7f509b79ae5773264926f3cad1f55cb395",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-graph-p02.json",
+   "record_sha256": "936772a48178c03c216aef8d67d5984eb99ef7c2bd0a540fde64853ba958f305",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-direct-p03.json",
+   "record_sha256": "84b7cc42cfaa480a4571be9022ae8eed08cbe9558096a71990854301ebe5c2d0",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-direct-p03.json",
+   "record_sha256": "3df4c1418c91641b3abfcfe0acb5af16175efdd3cf4a886ecd4242ebecb3063a",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-direct-p03.json",
+   "record_sha256": "e166ad29a6f0f9a3670599f4ab6021a9c842bd6b0fc424bd57574dc019c55496",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p03.json",
+   "record_sha256": "42cbccf2878a9d6d30025873503d33c38dbde612aa67efc34822754515427ca4",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-graph-p03.json",
+   "record_sha256": "af765fcbb372aa8ed2e806acbcc8e5fe0cb4031fb50443a971b7f2ae3a8d3cba",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-graph-p03.json",
+   "record_sha256": "c0ebfb6fe08e0e9103e745defc868d62bb7e75ac75e22713c333f78f2d9255d5",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-graph-p03.json",
+   "record_sha256": "fc713fe8ccf84369081ae0bba25523709d8e5d41dac3f807f77e12f133a8f336",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-graph-p03.json",
+   "record_sha256": "cd988db72cfe2f40fbb2b43bdff986324f0240d35be885724cd3676924ae0ce3",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p04.json",
+   "record_sha256": "8605c455af4f7a47420773b199b15177acae20128613d2c702f1eef1e33d3996",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-direct-p04.json",
+   "record_sha256": "fcd1757c037a57c5a63ef726951b3d739e5b76c8b8c2d2691e6d3a384655fa0b",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-direct-p04.json",
+   "record_sha256": "5199795d398a88a90752dcb701f003d0c46080835e8601687b1a19eadbaeb31d",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-direct-p04.json",
+   "record_sha256": "6ebbb494a15c444913a706ae09f1fc8abeebe256808f561bc95dc0ca348ebdae",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-graph-p04.json",
+   "record_sha256": "febcb0dd110d0079cdf49841f2ae64c6593c57628e1628f63c9d1364d82eda80",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-graph-p04.json",
+   "record_sha256": "dc6ed5bfda46603c0441152d9aff39a8173851dfaed69c299d3cfcfad9c95c85",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-graph-p04.json",
+   "record_sha256": "a440b1296ab6788f1326c75b1ebd43cda6b24d7e65c244c8421987a118900eea",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-graph-p04.json",
+   "record_sha256": "f3bfc1277588aecae992625514ca40ff86f5730555dbb967ab9064ff6feb9501",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-direct-p05.json",
+   "record_sha256": "2d646c8509d47e15932f7531b8f6755ae132a9f603fefd2b71140c205a291cdd",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-direct-p05.json",
+   "record_sha256": "7ca224634b875b9fe22c93a11c4f3a3e286dfe60ff9c6c924fbadaf78d1bcf9a",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-direct-p05.json",
+   "record_sha256": "0c27f888718602f3ab3ce2dd93acfc1779b68f051d380ff1db6b068118f923a7",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p05.json",
+   "record_sha256": "5589590dc80c68a2f4554986aaa9eaa2d8c9dc97c23722ba153072dca8803085",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-graph-p05.json",
+   "record_sha256": "74728ae675baab8c56f6c865466df744a61f61ce9351a9e5a8a91064ef1a63fa",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-graph-p05.json",
+   "record_sha256": "0b924c7ff27a3c7d84e7013839a9b20aa80aa2797c878a34536e971d63b16842",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-graph-p05.json",
+   "record_sha256": "9368a902a1ae3bef1f3ccaf7b5bc359e130027f2aaa2e987a598f8a810e84dda",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-graph-p05.json",
+   "record_sha256": "5dc901b495bea9cc6c5b0a5af8ade7a8da4c19f6508cda0a088e5d067face2af",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p06.json",
+   "record_sha256": "d2fae93c52e266963bf32c6f20db5ee935de2aea47b9d7a070f09682df321e89",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-direct-p06.json",
+   "record_sha256": "6952c91c96f460f74d85297cdf885706efed8ddc4aaac62a19c35d951335a423",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-direct-p06.json",
+   "record_sha256": "fd6b54c0ba6571943e3932f74c61b473a9e848f4fb2534f822f444a8ec25d631",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-direct-p06.json",
+   "record_sha256": "85f76c936bd6b60bce6abd121c1f62b60f8ab2fcd1cab495339a3b86cc377380",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-graph-p06.json",
+   "record_sha256": "ffb473a303f53fe0aec7ddec0919e28da66cee1f98d18f3aff6ad51dab078946",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-graph-p06.json",
+   "record_sha256": "38f524db826ba0e332ae4fb5cc351341656770c26f02478ff0afb62d6012cbbe",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-graph-p06.json",
+   "record_sha256": "7cea06719bf3c5a8ee84a71ffc78e2ea55c02f9111b5a6200810d3e4c525a6ad",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-graph-p06.json",
+   "record_sha256": "3c781087a025416ac77a678ff4fd46467e074ad010d72c0da9008cad81e543d9",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-direct-p07.json",
+   "record_sha256": "c2fea2a558d16c4d729c59f3a75ab33c3aeb4303ea9fb74d68948b0ed4a1c375",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-direct-p07.json",
+   "record_sha256": "2bdd3cfc00214955451be770a11b0c7a4b29d80323e3752bc739325706ad3b92",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-direct-p07.json",
+   "record_sha256": "1d41ae69de5279e05df3e1901691eb2e40e203bf4d2bbc16ee386d07a6ea6624",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p07.json",
+   "record_sha256": "72e215047d30482102848bf1cd4b0d3fb352c3298dc0385cd563ae4c2d120b34",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-graph-p07.json",
+   "record_sha256": "56c9bb500978235dc98612f8462c2a513b0aed3183c4abeb9275e086e8c3d2a6",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-graph-p07.json",
+   "record_sha256": "a7998626f6c9c4b9fbf28c73d5b3e0b1fcc9048953966e25034547625e8ed2c8",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-graph-p07.json",
+   "record_sha256": "52c2cdc88f37efafa385b73af4a60db3efb163c2fdb3f88d8730caa581987917",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-graph-p07.json",
+   "record_sha256": "2bd04444ebe9e61ac46e01bcc2a2658d711f1cae82b0b8fed572fd7ca9e12dd6",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p08.json",
+   "record_sha256": "52f010ca7c0741eb4aefe8cf5e74f5b34e935a187bc67c446c458c2761350dc0",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-direct-p08.json",
+   "record_sha256": "8b14e444f653171e59da454b0b2c09c93a30ff9ca45ab3fcfd0f60bf760a2dc0",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-direct-p08.json",
+   "record_sha256": "870843fbe497aa752bfbd69bf94e9dcfb75a6f3fb7ca03649e2a0bb142596f9d",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-direct-p08.json",
+   "record_sha256": "b2fe0a5f58a4519574a86f6957db8c97d082c13ab3408ec616514b55acfd969a",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-graph-p08.json",
+   "record_sha256": "6d5df2f96d4bed99a6a223012efb1aa1c88a0f60db7396e450ad6c1ea6ab18f1",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-graph-p08.json",
+   "record_sha256": "39f6f138d8b62b5bf40d1f46e994fb05bac8d4fdadbc2bb293c818f77c69dc94",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-graph-p08.json",
+   "record_sha256": "7ac1f7563ad6c8a2e94f113c3e2e63f7c500ba2b9e26d5d763fa62947b978780",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-graph-p08.json",
+   "record_sha256": "5c66326e9f8d64c657218cd6ca9c9495f93063960eb454ab338047adeb8ff0be",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-direct-p09.json",
+   "record_sha256": "c3a5edf2f79a4cda7e7092a256fae5b738f6c9eb7cfea4ac5dbe59effaf1ca93",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-direct-p09.json",
+   "record_sha256": "2da43fe89426b7806d458bbab9dadc54799ba38a5ec8293cf04f681b2da0cfe8",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-direct-p09.json",
+   "record_sha256": "bb1ceed488445e56942728a7a97b525f5b2a3e71f391df70cadae14fae132318",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p09.json",
+   "record_sha256": "62912c88d8d80067df8ce033afff415d8155ab6ea3920b44cee9d461b326b4f5",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-graph-p09.json",
+   "record_sha256": "c93b9b2f9b23cda56f7d74081d193a1c80c51d082666af2eeaab5ed62f356023",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-graph-p09.json",
+   "record_sha256": "c89d78210e47685de501c728e0dde714ce94dac480e34eaf0b8050ec9c92c696",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-graph-p09.json",
+   "record_sha256": "ea59bdef530d09adb3286d4b4bbcbf03cae975fb7fe85d820b1e49525288791e",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-graph-p09.json",
+   "record_sha256": "c801f9f588a33502cdbcbb9beca3246d5bcadbf2aa340662efb738432ed67e85",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-direct-p10.json",
+   "record_sha256": "ca7c2324d0db40d9f0d9d7c639c65582a13e81f4c603a6a795d687e20db8fa9c",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-direct-p10.json",
+   "record_sha256": "018ac9b86bd1851b92cd8ce344e67531a95c99b87944ec520ea363cf719b7619",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-direct-p10.json",
+   "record_sha256": "961eebef3a89d73d985fb28a2097c0ab3c99d2d88bf92561b529173f0b8a6f24",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-direct-p10.json",
+   "record_sha256": "fc536acba83294db57818665a8227a867f730a27a7e4658281bbe70fd0fa97b7",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-nvfp4-bench-graph-p10.json",
+   "record_sha256": "bc403ada67ca3cfe2187bc62332b7c1551643787655a388ee8f093e8d518d00d",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-mxfp6-bench-graph-p10.json",
+   "record_sha256": "47c8d6640aacca6b412c68b4f488ef6fecc6e33906dc05837a9f98f4543ee5d7",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-bf16-bench-graph-p10.json",
+   "record_sha256": "3d0a0b8d88de04b296c5df36cca895f9195c14f1e57b613688477e47c854bbed",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-191202-kilia-f746f49a-fp32-bench-graph-p10.json",
+   "record_sha256": "fe94afbf8a666c705736d2b84c1872b1700d0868715c10c90737d35ba470c68e",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "graph",
+   "position": 3
+  }
+ ],
+ "timing": {
+  "direct/application/batch_per_iteration_us": {
+   "fp32": {
+    "median": 25263.3949,
+    "min": 25128.6865,
+    "max": 25411.5082,
+    "n": 10
+   },
+   "bf16": {
+    "median": 6806.25992,
+    "min": 6800.55847,
+    "max": 6815.3389,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.2695002873450705,
+     "min": 0.2681989139078333,
+     "max": 0.2708430291412168,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "mxfp6": {
+    "median": 3828.34091,
+    "min": 3823.76175,
+    "max": 3831.72302,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.15157867527821334,
+     "min": 0.1506923599284831,
+     "max": 0.15222099571340508,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "nvfp4": {
+    "median": 1687.1967300000001,
+    "min": 1682.75204,
+    "max": 1688.86871,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.06675006252633463,
+     "min": 0.06636896201976021,
+     "max": 0.0670467111036138,
+     "below_one": 10,
+     "n": 10
+    }
+   }
+  },
+  "direct/application/single_median_us": {
+   "fp32": {
+    "median": 25565.38435,
+    "min": 25185.8873,
+    "max": 25769.9041,
+    "n": 10
+   },
+   "bf16": {
+    "median": 6810.959935,
+    "min": 6798.65599,
+    "max": 6812.59203,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.2664302601356468,
+     "min": 0.26430831382100484,
+     "max": 0.2704212783482121,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "mxfp6": {
+    "median": 3826.631905,
+    "min": 3822.16001,
+    "max": 3830.01602,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.14976939524809252,
+     "min": 0.14851494577350793,
+     "max": 0.1519104701147456,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "nvfp4": {
+    "median": 1684.74397,
+    "min": 1679.07202,
+    "max": 1685.74399,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.06591162186173022,
+     "min": 0.06537175898920011,
+     "max": 0.06666717753477759,
+     "below_one": 10,
+     "n": 10
+    }
+   }
+  },
+  "direct/compute/batch_per_iteration_us": {
+   "fp32": {
+    "median": 25523.82435,
+    "min": 25126.7075,
+    "max": 25677.0905,
+    "n": 10
+   },
+   "bf16": {
+    "median": 6801.671215,
+    "min": 6789.50272,
+    "max": 6803.8414,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.26656180689074593,
+     "min": 0.2649004274841809,
+     "max": 0.27051788062562515,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "mxfp6": {
+    "median": 3820.14637,
+    "min": 3814.80942,
+    "max": 3824.80469,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.1497100149125869,
+     "min": 0.14877044071640438,
+     "max": 0.151927465227985,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "nvfp4": {
+    "median": 1676.816085,
+    "min": 1675.19207,
+    "max": 1679.1296,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.06571046927834862,
+     "min": 0.0653694690822631,
+     "max": 0.06666978035224073,
+     "below_one": 10,
+     "n": 10
+    }
+   }
+  },
+  "direct/compute/single_median_us": {
+   "fp32": {
+    "median": 25560.6804,
+    "min": 25360.0636,
+    "max": 25688.5595,
+    "n": 10
+   },
+   "bf16": {
+    "median": 6804.6720000000005,
+    "min": 6790.84802,
+    "max": 6806.73599,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.26601557522663083,
+     "min": 0.2648737080800502,
+     "max": 0.26814443517405057,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "mxfp6": {
+    "median": 3820.32001,
+    "min": 3815.37592,
+    "max": 3824.19193,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.14937217784825924,
+     "min": 0.14881220925673577,
+     "max": 0.15044819998006628,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "nvfp4": {
+    "median": 1679.568025,
+    "min": 1676.27203,
+    "max": 1683.00796,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.0657091250405872,
+     "min": 0.06547243832703713,
+     "max": 0.06609888904221833,
+     "below_one": 10,
+     "n": 10
+    }
+   }
+  },
+  "graph/application/batch_per_iteration_us": {
+   "fp32": {
+    "median": 25285.849000000002,
+    "min": 24991.5726,
+    "max": 25375.618,
+    "n": 10
+   },
+   "bf16": {
+    "median": 6802.468870000001,
+    "min": 6794.35501,
+    "max": 6807.62711,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.26913132374521,
+     "min": 0.2682456545491818,
+     "max": 0.2719328234670595,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "mxfp6": {
+    "median": 3816.576005,
+    "min": 3812.24174,
+    "max": 3821.74416,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.15104754892251038,
+     "min": 0.15060693930685748,
+     "max": 0.15268231259684714,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "nvfp4": {
+    "median": 1685.835265,
+    "min": 1683.00476,
+    "max": 1689.20479,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.0667486490149991,
+     "min": 0.06655327093905655,
+     "max": 0.06734391416408907,
+     "below_one": 10,
+     "n": 10
+    }
+   }
+  },
+  "graph/application/single_median_us": {
+   "fp32": {
+    "median": 25520.62415,
+    "min": 25343.9684,
+    "max": 25669.3602,
+    "n": 10
+   },
+   "bf16": {
+    "median": 6801.84007,
+    "min": 6788.28788,
+    "max": 6807.76,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.2665499350337889,
+     "min": 0.2650412802263767,
+     "max": 0.2682414992278794,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "mxfp6": {
+    "median": 3817.687985,
+    "min": 3813.32803,
+    "max": 3825.40798,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.14962423585443183,
+     "min": 0.14884072556486708,
+     "max": 0.15051344918817053,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "nvfp4": {
+    "median": 1682.45602,
+    "min": 1679.69596,
+    "max": 1683.35998,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.065924902806852,
+     "min": 0.06557857176354555,
+     "max": 0.06627596489585269,
+     "below_one": 10,
+     "n": 10
+    }
+   }
+  },
+  "graph/compute/batch_per_iteration_us": {
+   "fp32": {
+    "median": 25555.531349999997,
+    "min": 25369.1422,
+    "max": 25688.1622,
+    "n": 10
+   },
+   "bf16": {
+    "median": 6796.24748,
+    "min": 6783.17566,
+    "max": 6798.72284,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.26573303454429087,
+     "min": 0.26461310338502925,
+     "max": 0.2676667349044226,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "mxfp6": {
+    "median": 3812.0431900000003,
+    "min": 3806.21262,
+    "max": 3815.72495,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.14909639491284826,
+     "min": 0.14842896624189023,
+     "max": 0.15012272074378613,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "nvfp4": {
+    "median": 1676.802445,
+    "min": 1673.38715,
+    "max": 1679.13914,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.0655671404504194,
+     "min": 0.06529725392344339,
+     "max": 0.06598435204482397,
+     "below_one": 10,
+     "n": 10
+    }
+   }
+  },
+  "graph/compute/single_median_us": {
+   "fp32": {
+    "median": 25556.79175,
+    "min": 25314.6076,
+    "max": 25689.9042,
+    "n": 10
+   },
+   "bf16": {
+    "median": 6796.2081450000005,
+    "min": 6782.51195,
+    "max": 6799.088,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.26585150698691806,
+     "min": 0.26456478380435083,
+     "max": 0.26808932365200877,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "mxfp6": {
+    "median": 3812.7200000000003,
+    "min": 3806.56004,
+    "max": 3818.80009,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.14912445893522192,
+     "min": 0.1485296348438699,
+     "max": 0.15050978036886498,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "nvfp4": {
+    "median": 1677.1839850000001,
+    "min": 1673.11996,
+    "max": 1679.19999,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.06556101143185519,
+     "min": 0.0653050321612332,
+     "max": 0.06615690223063146,
+     "below_one": 10,
+     "n": 10
+    }
+   }
+  }
+ }
+}

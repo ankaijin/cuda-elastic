@@ -1,0 +1,93 @@
+{
+ "schema": "blackwell_experiments.summary/1",
+ "experiment": "packed",
+ "question": "Does native packed byte addition reduce instructions or kernel time while preserving exact results?",
+ "stamp": "20261030-182825-kilia-e20c6a4c",
+ "action": "check",
+ "source": {
+  "commit": "68379ecfcab29e57c5d918fe57605028b8971b38",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "cases": [
+  "control",
+  "add_u8x4"
+ ],
+ "settings": null,
+ "status": "pass",
+ "records": [
+  {
+   "kind": "make",
+   "targets": [
+    "build"
+   ],
+   "force": true,
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/packed/results/20261030-182825-kilia-e20c6a4c-make-build.log",
+   "log_sha256": "1ae3f609e546a54c95779b500423cfbba06d0ad90561142cbb279b54bc370972"
+  },
+  {
+   "kind": "make",
+   "targets": [
+    "test"
+   ],
+   "force": false,
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/packed/results/20261030-182825-kilia-e20c6a4c-make-test.log",
+   "log_sha256": "49d1f1794aedba942084012003a14c2cb29c48befcdb2d18423ca96c305bfb36"
+  },
+  {
+   "kind": "check",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182825-kilia-e20c6a4c-control-check.json",
+   "record_sha256": "0636fa292cbe126af0789c355ce8cca064d6659fcfe02751d29addec35fd65d0",
+   "status": "pass",
+   "exit_code": 0
+  },
+  {
+   "kind": "sass",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182825-kilia-e20c6a4c-control-sass.json",
+   "features": {
+    "VIADD.U8x4": 0,
+    "LOP3": 7,
+    "IADD": 2
+   }
+  },
+  {
+   "kind": "check",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182825-kilia-e20c6a4c-add_u8x4-check.json",
+   "record_sha256": "efd68415d759ebb5f879de5e93f7d4ed81565bf883bd5467fd0f7d141a79c7e6",
+   "status": "pass",
+   "exit_code": 0
+  },
+  {
+   "kind": "sass",
+   "case": "add_u8x4",
+   "record": "rtx5090/blackwell_experiments/packed/results/20261030-182825-kilia-e20c6a4c-add_u8x4-sass.json",
+   "features": {
+    "VIADD.U8x4": 1,
+    "LOP3": 3,
+    "IADD": 1
+   }
+  },
+  {
+   "kind": "digest_agreement",
+   "digests": {
+    "control": [
+     "835827d0e01d0383"
+    ],
+    "add_u8x4": [
+     "835827d0e01d0383"
+    ]
+   },
+   "agree": true
+  }
+ ]
+}

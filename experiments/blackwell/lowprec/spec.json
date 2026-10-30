@@ -1,0 +1,79 @@
+{
+ "identity": "blackwell-experiments/lowprec-decoder-classifier",
+ "version": 1,
+ "based_on": {
+  "contract": "applications/loom_private/decoder/contract.json",
+  "identity": "loom-private/llama2c-decoder",
+  "note": "Every case runs the production decoder pipeline (the optimized variant's rmsnorm and softmax+argmax kernels, unchanged) and replaces only the dense classifier multiplication. The low precision cases do not satisfy the contract's FP32 tolerances by design; this specification defines what they compute and how they are checked. Results from it are never production correctness passes."
+ },
+ "dimensions": {
+  "primary": {"batch": 1024, "width": 16384, "vocab": 8192, "steps": 4, "model": "the contract's synthetic model (classifier row r has one nonzero, 1.0 at column (r + vocab - 1) mod vocab)"},
+  "fixtures": {"batch": 64, "width": 1024, "vocab": 128, "steps": 4, "seeds": [1, 2, 3], "model": "dense; see fixtures"},
+  "constraints": "Low precision cases require width to be a multiple of 128 and vocab a multiple of 4 (CUTLASS operand and output alignment); vocab <= width as in the contract. Other contract limits apply unchanged."
+ },
+ "cases": {
+  "fp32": "Control: the production optimized classifier (register-tiled SGEMM, stream-K on the RTX 5090), FP32 inputs, sequential FP32 sums with separate multiply and add.",
+  "bf16": "Activations and weights rounded to bfloat16 (round to nearest even); CUTLASS 2.x device::Gemm, Sm80 tensor-op path (mma.sync, HMMA.16816.F32.BF16 on SM120), threadblock 128x256x32, warp 64x64x32, instruction 16x8x16, 3 stages, FP32 accumulation and output, alpha 1, beta 0. SM120 has no SM120-specific BF16 collective in CUTLASS 4.8.0.",
+  "mxfp6": "OCP MXFP6 E3M2 with UE8M0 scales per 32 values along the width; CUTLASS 4.8.0 SM120 block-scaled GEMM (OpClassBlockScaledTensorOp, mx_float6_t<float_e3m2_t> for both operands), tile 128x128x128, cluster 1x1x1, KernelTmaWarpSpecializedCooperative, automatic stage count, FP32 accumulation and output, alpha 1, beta 0, dense, no split-K.",
+  "nvfp4": "NVFP4 E2M1 with UE4M3 scales per 16 values along the width and one FP32 scale per tensor; the same CUTLASS SM120 block-scaled GEMM with nv_float4_t<float_e2m1_t> for both operands, the product of the two tensors' decode scales applied as a device-side alpha, beta 0."
+ },
+ "formats": {
+  "E2M1": "4 bits: sign, 2 exponent bits (bias 1), 1 mantissa bit. Magnitudes 0, 0.5, 1, 1.5, 2, 3, 4, 6 for codes 0..7; bit 3 is the sign.",
+  "E3M2": "6 bits: sign, 3 exponent bits (bias 3), 2 mantissa bits, no infinity or NaN. Exponent field 0 is subnormal: m/4 * 2^-2. Largest magnitude 28 (code 0x1f); bit 5 is the sign.",
+  "UE4M3": "8 bits, unsigned E4M3 (bias 7, subnormals, no infinity); bit 7 is 0. Largest finite value 448 (0x7e); 0x7f is NaN and never produced.",
+  "UE8M0": "8 bits, the power of two 2^(code - 127); code 255 is NaN and never produced.",
+  "BF16": "IEEE binary32 rounded to 8 significand bits, round to nearest even."
+ },
+ "rounding": "Every element and scale conversion rounds to nearest, ties to the code whose least significant magnitude bit is 0 (ties to even). Values above a format's largest magnitude saturate to it. A value whose magnitude rounds to zero is encoded as +0 (code 0). Inputs are finite.",
+ "mxfp6": {
+  "block": "32 consecutive values of one row along the width (K).",
+  "scale": "For a block with largest magnitude a > 0: E = floor(log2(a)), computed exactly from the float's exponent; shared exponent X = E - 4 (4 = the largest E3M2 exponent), clamped to [-127, 127]; scale code X + 127. OCP MX v1.0 section 6.3. Elements v/2^X can reach just under 32 and saturate to 28.",
+  "elements": "code = E3M2(v * 2^-X) with the rounding above; the multiplication by a power of two is exact.",
+  "zero_block": "a = 0: scale code 0 (2^-127) and every element code 0.",
+  "dequantize": "E3M2 value times 2^X."
+ },
+ "nvfp4": {
+  "block": "16 consecutive values of one row along the width (K).",
+  "tensor_scale": "a_t = largest magnitude of the whole tensor (all rows of one step's activations, or the whole weight matrix). Encode scale s = 2688.0f / a_t in FP32 (2688 = 448 * 6), or s = 1.0f when a_t = 0. Decode scale d = 1.0f / s in FP32.",
+  "block_scale": "For a block with largest magnitude a: code = UE4M3((a / 6.0f) * s), FP32 operations in this order, with the rounding and saturation above.",
+  "elements": "With f the block scale's value: code = E2M1((v * s) / f), FP32 operations in this order (IEEE division). A block whose scale code is 0 (including a = 0) has every element code 0.",
+  "alpha": "The GEMM output is multiplied by alpha = d_activations * d_weights (FP32 product), read from device memory each step.",
+  "dequantize": "E2M1 value times f times d."
+ },
+ "layout": {
+  "activations": "[batch][width] row-major (K contiguous) per step: BF16 two bytes per value; E3M2 packed little-endian bit stream, value i of a row at bits 6i..6i+5 of the row (3 bytes per 4 values); E2M1 two per byte, even index in the low nibble.",
+  "weights": "[vocab][width], the same encodings (the GEMM's column-major K x N operand).",
+  "scale_factors": "CUTLASS 4.8.0 Sm1xxBlkScaledConfig<SFVecSize>::tile_atom_to_shape_SFA (activations, M = batch) and tile_atom_to_shape_SFB (weights, N = vocab), K-major 128 x 4 atoms; padding scale bytes are 0."
+ },
+ "fixtures": {
+  "generator": "splitmix64 (state += 0x9e3779b97f4a7c15; standard output mix) seeded with seed * 0x100000001b3 + stream, stream 1 for the embedding and 2 for the classifier. Uniform u = (x >> 11) * 2^-53. Standard normals by Box-Muller from consecutive pairs (u1, u2): sqrt(-2 ln(1 - u1)) cos(2 pi u2), then sqrt(-2 ln(1 - u1)) sin(2 pi u2), in double, rounded to float.",
+  "embedding": "vocab x width standard normals, row-major.",
+  "classifier": "vocab x width standard normals times 1/sqrt(width) (float product), row-major.",
+  "norm_weight": "all 1.0, as in the contract.",
+  "prompts": "sequence b starts from token b mod vocab, as in the contract."
+ },
+ "implementation_check": {
+  "summary": "The check (`--action check`) establishes implementation correctness, never numerical quality. Each stage is compared with an independent host computation from the GPU's own inputs to that stage, so a correct implementation passes whatever its precision.",
+  "normalized": "Every sequence and step: the GPU normalized row against rmsnorm in double of the embedding row of the token the GPU fed back (the prompt at step 0), within the contract's 2e-6 relative (+1e-12 absolute).",
+  "quantized_inputs": "Every sequence and step (activations) and the whole weight matrix: the GPU's packed codes and scale bytes must equal the host quantizer's from the same FP32 inputs, bit for bit, and so must the NVFP4 tensor scales and alpha.",
+  "logits": "Up to 8 sequences spread over the batch, every step, every vocabulary row: the GPU logit against the double dot product of the host-dequantized operands times alpha. Bound: gamma * sum_k |a_k w_k| * |alpha| + 2^-23 |expected| + 1e-30 with gamma = K u / (1 - K u), u = 2^-23, which holds for FP32 accumulation in any order with rounding or truncation.",
+  "probabilities": "Every sequence and step: GPU probabilities against softmax in double of the GPU's own logits, within the contract's 2e-5 relative (+1e-12 absolute).",
+  "tokens": "Every sequence and step: the token equals the first index of the largest GPU probability.",
+  "fp32_control": "The control must also pass the production contract check (decoder_oracle::check) unchanged."
+ },
+ "accuracy": {
+  "summary": "`--accuracy` measures numerical quality for the primary model and the three fixtures, and reports the production FP32 tolerance check separately.",
+  "classifier_error": "Fixed FP32 reference activations: the step-0 rows (rmsnorm of each prompt's embedding row computed on the host in float, sequential square sum), uploaded once and passed through the case's classifier path (its activation conversion and GEMM). Reference logits: double dot products of the FP32 activations and FP32 weights. Reported: maximum absolute error, normalized RMS error sqrt(sum err^2 / sum ref^2), maximum absolute probability error and mean total variation distance between softmax(case) and softmax(reference) per row (double), and top-1 agreement.",
+  "token_agreement": "The case's complete four-step decode (one application-scope invocation). Reference tokens: the contract's analytic progression for the primary model; for fixtures, a double precision host decode (rmsnorm, dense classifier, argmax). Reported: agreeing tokens out of batch x steps, per step.",
+  "production_tolerance": "The production oracle check (decoder_oracle::check) on the primary decode, reported as pass or fail. A failure here is a precision result, not an implementation failure.",
+  "setup_cost": "Weight quantization (or BF16 conversion) time on the GPU, median of five repetitions, reported separately; it is outside every timed scope."
+ },
+ "timing_scope": {
+  "application": "As the contract: prompt upload, token reset, every step (rmsnorm, the case's activation conversion with scale generation and layout, the classifier GEMM, softmax+argmax with on-device feedback), generated-token download. Quantized weights are resident from setup.",
+  "compute": "Token reset and every step, as above.",
+  "excluded": "Model generation, weight quantization, GEMM initialization, allocation, graph construction, warmups, host references, diagnostics copies, and checking."
+ },
+ "dependencies": {
+  "cutlass": {"version": "4.8.0", "commit": "098de2a652cf8f00fd70b2df54051c7eccbb855a", "location": "outside the repository: $CUTLASS_DIR or ~/.cache/cuda-elastic/cutlass-4.8.0"}
+ }
+}

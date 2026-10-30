@@ -1,0 +1,30 @@
+$ make -C /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tma test
+make: Entering directory '/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tma'
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock /home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tma/tests/run_tests.sh /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/build /home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/attention
+PASS production run_tests.sh on control: attention tests: 18 passed, 0 failed
+PASS production run_tests_optimized.sh on control: attention optimized tests: 27 passed, 0 failed
+PASS production run_tests.sh on tma: attention tests: 18 passed, 0 failed
+PASS production run_tests_optimized.sh on tma: attention optimized tests: 27 passed, 0 failed
+PASS production run_tests.sh on tma_producer: attention tests: 18 passed, 0 failed
+PASS production run_tests_optimized.sh on tma_producer: attention optimized tests: 27 passed, 0 failed
+PASS partial-tile-and-group control=c27191dd16e67000 tma=c27191dd16e67000 tma_producer=c27191dd16e67000
+PASS three-splits control=fc70b7dd6a73e132 tma=fc70b7dd6a73e132 tma_producer=fc70b7dd6a73e132
+PASS many-splits control=ae3f2f66ec8c26f8 tma=ae3f2f66ec8c26f8 tma_producer=ae3f2f66ec8c26f8
+PASS shape1 control=15efac4e41a17c2f tma=15efac4e41a17c2f tma_producer=15efac4e41a17c2f
+PASS shape2 control=15efac4e41a17c2f tma=15efac4e41a17c2f tma_producer=15efac4e41a17c2f
+PASS shape3 control=15efac4e41a17c2f tma=15efac4e41a17c2f tma_producer=15efac4e41a17c2f
+PASS one-key control=82b6abe447b02372 tma=82b6abe447b02372 tma_producer=82b6abe447b02372
+PASS both-passes control=05c3deb254217f76 tma=05c3deb254217f76 tma_producer=05c3deb254217f76
+PASS both-passes-compute-path control=0c45bead968c5dc3 tma=0c45bead968c5dc3 tma_producer=0c45bead968c5dc3
+PASS compute-path control=7180e6a56755315f tma=7180e6a56755315f tma_producer=7180e6a56755315f
+PASS largest-context control=d9269dcb5d5989b1 tma=d9269dcb5d5989b1 tma_producer=d9269dcb5d5989b1
+PASS tma no-full-wait mutant is rejected (exit 1)
+PASS tma compute-sanitizer memcheck
+PASS tma compute-sanitizer racecheck
+PASS tma compute-sanitizer synccheck
+PASS tma_producer no-full-wait mutant is rejected (exit 70)
+PASS tma_producer compute-sanitizer memcheck
+PASS tma_producer compute-sanitizer racecheck
+PASS tma_producer compute-sanitizer synccheck
+tma tests: 25 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tma'

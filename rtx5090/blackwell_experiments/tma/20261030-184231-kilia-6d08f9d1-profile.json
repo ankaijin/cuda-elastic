@@ -1,0 +1,219 @@
+{
+ "schema": "blackwell_experiments.summary/1",
+ "experiment": "tma",
+ "question": "Can changing tile loading reduce instruction overhead without changing attention arithmetic?",
+ "stamp": "20261030-184231-kilia-6d08f9d1",
+ "action": "profile",
+ "source": {
+  "commit": "dc6a7395527bcf6b19c59ead58784eb74c2a9a6c",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "cases": [
+  "control",
+  "tma",
+  "tma_producer"
+ ],
+ "settings": null,
+ "status": "pass",
+ "records": [
+  {
+   "kind": "profile",
+   "case": "control",
+   "launch": "graph",
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-control-graph.log",
+   "files": [
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-control-graph-ncu-details.csv",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-control-graph-ncu-raw.csv",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-control-graph.log",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-control-graph.ncu-repz",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-control-graph.nsys-rep",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-control-graph_cuda_gpu_kern_sum.csv",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-control-graph_cuda_gpu_mem_time_sum.csv"
+   ],
+   "build": {
+    "schema": "blackwell_experiments.build/1",
+    "experiment": "tma",
+    "case": "control",
+    "binary": "rtx5090/blackwell_experiments/tma/build/control",
+    "binary_sha256": "bc082b6a969f6eb8218fd56a074f9cc6089799edbf99d9fd6ed2d76f0b1a4245",
+    "built_utc": "2026-10-30T18:42:34.854526+00:00",
+    "arch": "sm_120",
+    "command": [
+     "nvcc",
+     "-O3",
+     "-lineinfo",
+     "-Xcompiler",
+     "-pthread",
+     "-lpthread",
+     "-std=c++17",
+     "--fmad=false",
+     "-Xcompiler",
+     "-ffp-contract=off",
+     "-arch=sm_120",
+     "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common",
+     "-DLP_APP=\"attention\"",
+     "-DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\"",
+     "-DLP_VARIANT=\"tma/control\"",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/attention/attention_optimized.cu",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/attention/oracle.cpp",
+     "-o",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/build/control"
+    ],
+    "compiler_version": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0",
+    "source_commit": "dc6a7395527bcf6b19c59ead58784eb74c2a9a6c",
+    "source_dirty": false,
+    "spec": "applications/loom_private/attention/contract.json",
+    "spec_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190",
+    "sources": {
+     "applications/loom_private/attention/attention_optimized.cu": "16491edee73b706449f72e753836cf1d18961926b88f10c38883d8156be46492",
+     "applications/loom_private/attention/oracle.cpp": "7be978ec45104d0e547b404c70c5227c3a19bf229d287a39c13f1e79c27ffb4c",
+     "applications/loom_private/attention/oracle.h": "11e7605d7a48e844555ee63eb263f38aa3cf2cf427d36aafe9ad5e59061956c5"
+    },
+    "external_includes": {}
+   },
+   "gpu": {
+    "folder": "rtx5090",
+    "name": "NVIDIA GeForce RTX 5090",
+    "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+    "driver": "615.71.10"
+   }
+  },
+  {
+   "kind": "profile",
+   "case": "tma",
+   "launch": "graph",
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.log",
+   "files": [
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph-ncu-details.csv",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph-ncu-raw.csv",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.log",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.ncu-repz",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph_cuda_gpu_kern_sum.csv",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph_cuda_gpu_mem_time_sum.csv"
+   ],
+   "build": {
+    "schema": "blackwell_experiments.build/1",
+    "experiment": "tma",
+    "case": "tma",
+    "binary": "rtx5090/blackwell_experiments/tma/build/tma",
+    "binary_sha256": "1eeca2dab18082afa378ad4d67b9534abf660d490c92efc33e9c297235099a4a",
+    "built_utc": "2026-10-30T18:42:37.733346+00:00",
+    "arch": "sm_120",
+    "command": [
+     "nvcc",
+     "-O3",
+     "-lineinfo",
+     "-Xcompiler",
+     "-pthread",
+     "-lpthread",
+     "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/attention",
+     "-DLP_ATTENTION_TMA_MODE=1",
+     "-std=c++17",
+     "--fmad=false",
+     "-Xcompiler",
+     "-ffp-contract=off",
+     "-arch=sm_120",
+     "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common",
+     "-DLP_APP=\"attention\"",
+     "-DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\"",
+     "-DLP_VARIANT=\"tma/tma\"",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tma/attention_tma.cu",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/attention/oracle.cpp",
+     "-o",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/build/tma"
+    ],
+    "compiler_version": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0",
+    "source_commit": "dc6a7395527bcf6b19c59ead58784eb74c2a9a6c",
+    "source_dirty": false,
+    "spec": "applications/loom_private/attention/contract.json",
+    "spec_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190",
+    "sources": {
+     "experiments/blackwell/tma/attention_tma.cu": "04c8820258cc5e6a7b93172665a54c978caf5c5e49dcfabf60f28619e432882e",
+     "applications/loom_private/attention/oracle.cpp": "7be978ec45104d0e547b404c70c5227c3a19bf229d287a39c13f1e79c27ffb4c",
+     "applications/loom_private/attention/oracle.h": "11e7605d7a48e844555ee63eb263f38aa3cf2cf427d36aafe9ad5e59061956c5"
+    },
+    "external_includes": {}
+   },
+   "gpu": {
+    "folder": "rtx5090",
+    "name": "NVIDIA GeForce RTX 5090",
+    "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+    "driver": "615.71.10"
+   }
+  },
+  {
+   "kind": "profile",
+   "case": "tma_producer",
+   "launch": "graph",
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma_producer-graph.log",
+   "files": [
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma_producer-graph-ncu-details.csv",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma_producer-graph-ncu-raw.csv",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma_producer-graph.log",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma_producer-graph.ncu-repz",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma_producer-graph.nsys-rep",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma_producer-graph_cuda_gpu_kern_sum.csv",
+    "rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma_producer-graph_cuda_gpu_mem_time_sum.csv"
+   ],
+   "build": {
+    "schema": "blackwell_experiments.build/1",
+    "experiment": "tma",
+    "case": "tma_producer",
+    "binary": "rtx5090/blackwell_experiments/tma/build/tma_producer",
+    "binary_sha256": "1cf63167215fb9717e58768f34f47366db5a7a289ae39b82108b87650331955a",
+    "built_utc": "2026-10-30T18:42:40.556046+00:00",
+    "arch": "sm_120",
+    "command": [
+     "nvcc",
+     "-O3",
+     "-lineinfo",
+     "-Xcompiler",
+     "-pthread",
+     "-lpthread",
+     "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/attention",
+     "-DLP_ATTENTION_TMA_MODE=2",
+     "-std=c++17",
+     "--fmad=false",
+     "-Xcompiler",
+     "-ffp-contract=off",
+     "-arch=sm_120",
+     "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common",
+     "-DLP_APP=\"attention\"",
+     "-DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\"",
+     "-DLP_VARIANT=\"tma/tma_producer\"",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tma/attention_tma.cu",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/attention/oracle.cpp",
+     "-o",
+     "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/build/tma_producer"
+    ],
+    "compiler_version": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0",
+    "source_commit": "dc6a7395527bcf6b19c59ead58784eb74c2a9a6c",
+    "source_dirty": false,
+    "spec": "applications/loom_private/attention/contract.json",
+    "spec_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190",
+    "sources": {
+     "experiments/blackwell/tma/attention_tma.cu": "04c8820258cc5e6a7b93172665a54c978caf5c5e49dcfabf60f28619e432882e",
+     "applications/loom_private/attention/oracle.cpp": "7be978ec45104d0e547b404c70c5227c3a19bf229d287a39c13f1e79c27ffb4c",
+     "applications/loom_private/attention/oracle.h": "11e7605d7a48e844555ee63eb263f38aa3cf2cf427d36aafe9ad5e59061956c5"
+    },
+    "external_includes": {}
+   },
+   "gpu": {
+    "folder": "rtx5090",
+    "name": "NVIDIA GeForce RTX 5090",
+    "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+    "driver": "615.71.10"
+   }
+  }
+ ]
+}

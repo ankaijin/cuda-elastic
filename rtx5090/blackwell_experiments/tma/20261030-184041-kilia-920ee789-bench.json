@@ -1,0 +1,965 @@
+{
+ "schema": "blackwell_experiments.summary/1",
+ "experiment": "tma",
+ "question": "Can changing tile loading reduce instruction overhead without changing attention arithmetic?",
+ "stamp": "20261030-184041-kilia-920ee789",
+ "action": "bench",
+ "source": {
+  "commit": "ede7016a6be4c3a1c12192a518f2c23437b7a197",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "cases": [
+  "control",
+  "tma",
+  "tma_producer"
+ ],
+ "settings": {
+  "pairs": 10,
+  "iterations": 20,
+  "warmup": 3,
+  "launch": "both"
+ },
+ "status": "pass",
+ "records": [
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-direct-p01.json",
+   "record_sha256": "ceac81e5a9bab62666e138bbdab02175fbb519ec83374fbefeb32af6e037b600",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-direct-p01.json",
+   "record_sha256": "c91faf7068b9f6292590ee26ae39001732cccc2594802f45fec5480e3a5ea289",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-direct-p01.json",
+   "record_sha256": "11159a27dd0e50e542d110956da0302fdf483d69ff42b04c8baa09a5dd007c11",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-graph-p01.json",
+   "record_sha256": "7e9df8cd780919a1f15c33a5cd9ef4c030dfee64865298f21a40482a148ac674",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-graph-p01.json",
+   "record_sha256": "f1191795dca8e39e2e4676d63b5bfbd4f177b569e1d11dff3c9c5f0b55670c1b",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-graph-p01.json",
+   "record_sha256": "ac09090a7336fd23744dcdf8ccf4b9840dbb81ed8372119082958023250e4bc1",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-direct-p02.json",
+   "record_sha256": "abd75857418f6ac2c1681aa95b874722f3e59b99508d557f6e35b4649dca6f34",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-direct-p02.json",
+   "record_sha256": "735a567a2d596b4850f8307700a93a8ab157d519311ddbb7b6c43f3937f773e6",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-direct-p02.json",
+   "record_sha256": "652dcbe1d8b31f793628179bf51b4694e63febe2143d0b7f9fc8fa44ae94d44e",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-graph-p02.json",
+   "record_sha256": "b222a8a16a6df53daeaef856899f83d394bd8014a5f854fe89b4168a7948d72a",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-graph-p02.json",
+   "record_sha256": "088acecfc01f0b4e2439400abd861819c2497c506532103256aa6c8909b8e512",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-graph-p02.json",
+   "record_sha256": "e8ee9a2f992ca3bd76a5edcc6ba53bca0143373e7eb00910ca5189d569430b6f",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-direct-p03.json",
+   "record_sha256": "59ca3667f8e6cf6dad08dbed52ead056b0bf0474671ff64f73440aaa7d49d962",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-direct-p03.json",
+   "record_sha256": "c5cd9e470291c8754626a353d1396f1c5918ac6b02159d74b7965dd7907b4023",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-direct-p03.json",
+   "record_sha256": "69edd28e727c02eb67158e7c8b2e6ed06b169d128d3ff2ec273d1dd38cc4f897",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-graph-p03.json",
+   "record_sha256": "25fba743e0a97067040b336669a29871fbc3815afb102e9f54875ffa4f85b6e3",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-graph-p03.json",
+   "record_sha256": "48f590e01e4698d868178e23bbfddb92b3232b507046d9518a7328028fe2b3b0",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-graph-p03.json",
+   "record_sha256": "a97042083d23c7a6c92306bb4d22d685dc2b74cc5f052d05ef039a40bf8a7568",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-direct-p04.json",
+   "record_sha256": "b80356f3eb4da7c9d22589173e92c9e46232c01a0e394dc1a69c974ab5201678",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-direct-p04.json",
+   "record_sha256": "0ef95362ab3c5812e2956999cfb43184926a00e12b104c8f96d34b55f856aeb4",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-direct-p04.json",
+   "record_sha256": "77be52622d3258e6dbadc7983adf11fd24c1134b5c2043141150526b428b4558",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-graph-p04.json",
+   "record_sha256": "aabe6b3eecdea653475f89e85ae99e1f2326fa1f2403dd9f32d71500d65239ba",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-graph-p04.json",
+   "record_sha256": "3035de85955accdd7d573c27d4feb05d9d6d7f846680874e848e943c74774525",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-graph-p04.json",
+   "record_sha256": "11bc20781ff3065e1200f2761cb596c67db5ded06bf3ebf63c28eb3ec842e5e8",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-direct-p05.json",
+   "record_sha256": "894447c9cb8f11385a55732cd6de64ed7d7d9a131cd31b75570546b782dffa29",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-direct-p05.json",
+   "record_sha256": "67697846fb6c7253d0ada7e90992f52f4e162bf077321d3fcae752e47c2a2574",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-direct-p05.json",
+   "record_sha256": "50e897adce47c9788f7d46de93ca77a83dddd26d3f6078e9c91ce03292d6e8cb",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-graph-p05.json",
+   "record_sha256": "a5563083a06005df2efb1365485cc319d9836cb58b1c9a2e0a0ddbbd5b797405",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-graph-p05.json",
+   "record_sha256": "84f79e99fbe1ffccdaa72a39dd98f1fa068812fbcbe597bd73e7033140f043c6",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-graph-p05.json",
+   "record_sha256": "dcd03bcf15da4611c614f4e6925d13580ac34dfc38f71f59c05ff5a274498fc4",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-direct-p06.json",
+   "record_sha256": "6fcbe974cf4c9a18ab5856fe684f8f388a1717965e664aa9ef6a64eccde30154",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-direct-p06.json",
+   "record_sha256": "62dc37181be6ab3fc891302e3ac4e1e9cedfb54a4f7062c02c79b4b38ecc8c7e",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-direct-p06.json",
+   "record_sha256": "830c350c226cd61a952e24f85f36bebdd979287328b96dd8413b854439acb144",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-graph-p06.json",
+   "record_sha256": "32b34e07905f593a43f162fd84d7074e73db18fed1e890a1755badade461182b",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-graph-p06.json",
+   "record_sha256": "bcba477e50b97800c8334dcebd8a0c620ce5ea09d15859454c7671d6ec8f9e48",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-graph-p06.json",
+   "record_sha256": "6f0f7bc84c917c06c3da0e1e202e397b3fc8c01110b3b6f127712b2ef8a22cf6",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 6,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-direct-p07.json",
+   "record_sha256": "d5fbeef9653ad921808564295eae997cb9cb63794f65adc886705dfad9a176ca",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-direct-p07.json",
+   "record_sha256": "e64fc5163d62b84618c94b01ae42ac7ef2cbff12be74235b57ba81eaa050b130",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-direct-p07.json",
+   "record_sha256": "c432cf479a486c0e2e8dd6dad780b5a387c484f6aab126752f664101fe72c4d1",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-graph-p07.json",
+   "record_sha256": "6a92ce2f5446936c387f09f33b487b966cbeac0c813ff941c7a708088827efc0",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-graph-p07.json",
+   "record_sha256": "59a34f416568c3f09fd7c8e92e506e155e4849afd9768a167af4a6c4a4b0662f",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-graph-p07.json",
+   "record_sha256": "38ae810ca8bc7784c6581ffdd2604deb36130a96d8a7c4ec8f9de481d9b4edcc",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 7,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-direct-p08.json",
+   "record_sha256": "e332bef3e84f722c067efee2cf9af3bdbba61b9aae01d912bfe82320a4e46239",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-direct-p08.json",
+   "record_sha256": "6748000939354500936a8c81d50cb04e9ff878c6b21a005c2ae875d66b7a2c73",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-direct-p08.json",
+   "record_sha256": "fb2aa572c589897e3a5ca82273c308fca63dc44d8c34306fb5e6027bd08228f7",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-graph-p08.json",
+   "record_sha256": "cc185a04ccab8f12624e89202646dab4c4b6ecc12854e22aa28485d273496b5b",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-graph-p08.json",
+   "record_sha256": "1b1656945a0ce0658ad7bb407f06544ac1ef1c6f481d52160b88bcf923bc689a",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-graph-p08.json",
+   "record_sha256": "718f66ba83cd1b0cbb36d51ac8800e2e205c7276811a19f8f7600d4d4d5ec372",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 8,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-direct-p09.json",
+   "record_sha256": "2bb41e965541207587574b5b7b5e247aefafb707fc1af7e4defbb4c21bdd28d9",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-direct-p09.json",
+   "record_sha256": "54fdb7a61d4a7800476f22559c06b45470af673045013cf43b8f7fcb71e25470",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-direct-p09.json",
+   "record_sha256": "1de36a5774e7e455c98e72cc278ee9dd4e1b3ca6f4b4a7230068ffe9a0dadcfe",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-graph-p09.json",
+   "record_sha256": "294bcd7ab81d5d36d35fe17aaaab1c9a1611a04d4d7d5519875e511cff92cb5c",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-graph-p09.json",
+   "record_sha256": "dac8c1bf60f8a6e1849963a8bace75b2d41ed3e48206de131c3789b08301d3af",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-graph-p09.json",
+   "record_sha256": "9aa97e961f968f3c479561a1ca61a85a919fd6becf733296f5cef420ba2a6805",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 9,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-direct-p10.json",
+   "record_sha256": "0f8b30b7db1906a45676041357ddd1a15383a950866a2ad372f17ea3b5253848",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-direct-p10.json",
+   "record_sha256": "19bf1f2e4f9b31412750e90a6426d94f02319cdd14cfe240decd134f79c602f8",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-direct-p10.json",
+   "record_sha256": "7564f744b73ec71d67298597feeec6dfa40fca2e9f4fe90c156512304b85b598",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma_producer-bench-graph-p10.json",
+   "record_sha256": "ef0508745668e7baef9f57ae227954eb38febabbc194f7e40b9c24a20b6423e7",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-tma-bench-graph-p10.json",
+   "record_sha256": "ea81d2b9ee969066e23c096ce53ad51fe0c559fa4646b4609143c29fd8026eb2",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184041-kilia-920ee789-control-bench-graph-p10.json",
+   "record_sha256": "bb4a9c77bc8e32807f679a9a0e315b748cfa98fad8f1b8024faf833f69bcf3d3",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 10,
+   "launch": "graph",
+   "position": 2
+  }
+ ],
+ "timing": {
+  "direct/application/batch_per_iteration_us": {
+   "control": {
+    "median": 1374.4224100000001,
+    "min": 1370.64323,
+    "max": 1433.42075,
+    "n": 10
+   },
+   "tma": {
+    "median": 1346.725605,
+    "min": 1341.24479,
+    "max": 1360.60162,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.977514188912308,
+     "min": 0.9491990540809458,
+     "max": 0.9872212262363398,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "tma_producer": {
+    "median": 1507.762385,
+    "min": 1497.57118,
+    "max": 1529.90398,
+    "n": 10,
+    "paired_ratio": {
+     "median": 1.096572650435564,
+     "min": 1.0629867050550232,
+     "max": 1.1130071346998267,
+     "below_one": 0,
+     "n": 10
+    }
+   }
+  },
+  "direct/application/single_median_us": {
+   "control": {
+    "median": 1480.51998,
+    "min": 1457.19999,
+    "max": 1637.35998,
+    "n": 10
+   },
+   "tma": {
+    "median": 1434.2640350000001,
+    "min": 1363.74402,
+    "max": 1444.57603,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.9588603837769161,
+     "min": 0.8822592756908594,
+     "max": 0.9902717471196248,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "tma_producer": {
+    "median": 1605.576005,
+    "min": 1592.112,
+    "max": 1660.496,
+    "n": 10,
+    "paired_ratio": {
+     "median": 1.0834620971380722,
+     "min": 0.9846289451877284,
+     "max": 1.1231402835790576,
+     "below_one": 1,
+     "n": 10
+    }
+   }
+  },
+  "direct/compute/batch_per_iteration_us": {
+   "control": {
+    "median": 1500.4240049999999,
+    "min": 1457.88803,
+    "max": 1583.03041,
+    "n": 10
+   },
+   "tma": {
+    "median": 1438.51442,
+    "min": 1409.40638,
+    "max": 1570.56637,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.9592481036690992,
+     "min": 0.8903217342489332,
+     "max": 1.0464158111871,
+     "below_one": 8,
+     "n": 10
+    }
+   },
+   "tma_producer": {
+    "median": 1605.4616,
+    "min": 1578.04804,
+    "max": 1761.68804,
+    "n": 10,
+    "paired_ratio": {
+     "median": 1.0737728877283836,
+     "min": 1.0334729640474813,
+     "max": 1.1745000592254193,
+     "below_one": 0,
+     "n": 10
+    }
+   }
+  },
+  "direct/compute/single_median_us": {
+   "control": {
+    "median": 1505.0320299999998,
+    "min": 1500.28801,
+    "max": 1665.64804,
+    "n": 10
+   },
+   "tma": {
+    "median": 1468.2559649999998,
+    "min": 1431.42402,
+    "max": 1561.77604,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.9735780654791013,
+     "min": 0.8626744459171579,
+     "max": 1.0409508606135616,
+     "below_one": 6,
+     "n": 10
+    }
+   },
+   "tma_producer": {
+    "median": 1599.368005,
+    "min": 1590.04802,
+    "max": 1779.504,
+    "n": 10,
+    "paired_ratio": {
+     "median": 1.0632988363607798,
+     "min": 0.9620375622691574,
+     "max": 1.1816346459891316,
+     "below_one": 2,
+     "n": 10
+    }
+   }
+  },
+  "graph/application/batch_per_iteration_us": {
+   "control": {
+    "median": 1365.045595,
+    "min": 1360.95676,
+    "max": 1379.19836,
+    "n": 10
+   },
+   "tma": {
+    "median": 1338.46402,
+    "min": 1333.54244,
+    "max": 1347.87045,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.9802010465580375,
+     "min": 0.9686531094773053,
+     "max": 0.9860632690484045,
+     "below_one": 10,
+     "n": 10
+    }
+   },
+   "tma_producer": {
+    "median": 1499.57123,
+    "min": 1493.79845,
+    "max": 1522.16482,
+    "n": 10,
+    "paired_ratio": {
+     "median": 1.0993523673240002,
+     "min": 1.08315438397128,
+     "max": 1.111921880253736,
+     "below_one": 0,
+     "n": 10
+    }
+   }
+  },
+  "graph/application/single_median_us": {
+   "control": {
+    "median": 1496.00801,
+    "min": 1406.304,
+    "max": 1511.45601,
+    "n": 10
+   },
+   "tma": {
+    "median": 1446.168005,
+    "min": 1388.12798,
+    "max": 1452.14397,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.962652160855789,
+     "min": 0.9281412070616556,
+     "max": 1.028056529740369,
+     "below_one": 9,
+     "n": 10
+    }
+   },
+   "tma_producer": {
+    "median": 1612.976015,
+    "min": 1595.85601,
+    "max": 1742.03205,
+    "n": 10,
+    "paired_ratio": {
+     "median": 1.0889491972664136,
+     "min": 1.0670339801219175,
+     "max": 1.1626692836522543,
+     "below_one": 0,
+     "n": 10
+    }
+   }
+  },
+  "graph/compute/batch_per_iteration_us": {
+   "control": {
+    "median": 1500.506405,
+    "min": 1456.50721,
+    "max": 1582.45602,
+    "n": 10
+   },
+   "tma": {
+    "median": 1434.7159849999998,
+    "min": 1412.30402,
+    "max": 1576.92804,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.9582625470634318,
+     "min": 0.9092205734728729,
+     "max": 1.0766106958991803,
+     "below_one": 9,
+     "n": 10
+    }
+   },
+   "tma_producer": {
+    "median": 1601.792,
+    "min": 1576.14403,
+    "max": 1727.43511,
+    "n": 10,
+    "paired_ratio": {
+     "median": 1.0811958213735233,
+     "min": 1.0003690655491329,
+     "max": 1.149488558713815,
+     "below_one": 0,
+     "n": 10
+    }
+   }
+  },
+  "graph/compute/single_median_us": {
+   "control": {
+    "median": 1504.72,
+    "min": 1498.16,
+    "max": 1653.34404,
+    "n": 10
+   },
+   "tma": {
+    "median": 1440.53602,
+    "min": 1430.03196,
+    "max": 1564.35204,
+    "n": 10,
+    "paired_ratio": {
+     "median": 0.9567743535333697,
+     "min": 0.8651169783150517,
+     "max": 1.041841691369346,
+     "below_one": 7,
+     "n": 10
+    }
+   },
+   "tma_producer": {
+    "median": 1616.06398,
+    "min": 1588.256,
+    "max": 1778.54401,
+    "n": 10,
+    "paired_ratio": {
+     "median": 1.0671608971401607,
+     "min": 0.9779065583954324,
+     "max": 1.1801571671662907,
+     "below_one": 1,
+     "n": 10
+    }
+   }
+  }
+ }
+}

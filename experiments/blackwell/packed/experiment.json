@@ -1,0 +1,18 @@
+{
+ "experiment": "packed",
+ "title": "Packed byte arithmetic",
+ "question": "Does native packed byte addition reduce instructions or kernel time while preserving exact results?",
+ "workload": "loom-private/vecadd-product, optimized variant: 1,048,576 records of two 64-byte operands, 16 transfer chunks, 256-thread blocks",
+ "spec_kind": "contract",
+ "cases": [
+  {"name": "control", "role": "control",
+   "description": "applications/loom_private/vecadd_product/vecadd_product_optimized.cu unchanged: the portable seven-bit add with a top-bit fix-up, built for sm_120f"},
+  {"name": "add_u8x4", "role": "candidate",
+   "description": "the same source with add_bytes as one PTX add.u8x4 (add_u8x4.diff), built for sm_120f"}
+ ],
+ "check": {"args": ["--preset", "large", "--action", "check", "--launch", "both"],
+           "digests_must_match": true},
+ "sass": {"kernels": "add_records",
+          "features": {"VIADD.U8x4": "VIADD\\.U8x4", "LOP3": "LOP3\\.LUT", "IADD": "\\bIADD\\b"}},
+ "profile_launch": "graph"
+}

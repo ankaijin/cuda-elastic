@@ -1,0 +1,51 @@
+{
+  "folder": "rtx5090",
+  "label": "RTX 5090 on kilia (sm_120, 32 GB), CUDA 13.4",
+  "experiments": {
+    "packed": {
+      "check": "blackwell_experiments/packed/20261030-182653-kilia-455ace66-check.json",
+      "bench": "blackwell_experiments/packed/20261030-182653-kilia-455ace66-bench.json",
+      "confirm": "blackwell_experiments/packed/20261030-182825-kilia-e20c6a4c-bench.json",
+      "profile": "blackwell_experiments/packed/20261030-183036-kilia-f524919b-profile.json",
+      "conclusions": {
+        "add_u8x4": "no measurable benefit"
+      },
+      "notes": [
+        "add.u8x4 executes (one VIADD.U8x4 instead of four LOP3.LUT and one IADD) and removes 13.3% of the kernel's warp instructions with exact results, but the kernel is limited by memory traffic and the application scope by PCIe transfers.",
+        "Promotion would also require building the production RTX 5090 binary for sm_120f."
+      ]
+    },
+    "tma": {
+      "check": "blackwell_experiments/tma/20261030-183830-kilia-a2a2dcdd-check.json",
+      "bench": "blackwell_experiments/tma/20261030-183830-kilia-a2a2dcdd-bench.json",
+      "confirm": "blackwell_experiments/tma/20261030-184041-kilia-920ee789-bench.json",
+      "profile": "blackwell_experiments/tma/20261030-184231-kilia-6d08f9d1-profile.json",
+      "conclusions": {
+        "tma": "improved",
+        "tma_producer": "regressed"
+      },
+      "notes": [
+        "tma: about 2% faster at Graph application scope, confirmed by the rule; Direct application scope improved in 10 of 10 pairs but stayed within the control's half range; compute-scope gains of about 4% were not confirmed because compute-scope times vary by about 4%.",
+        "tma_producer: per-warp full and empty barriers raise short-scoreboard and wait stalls, and two blocks per SM limit the compute warps to 96 registers."
+      ]
+    },
+    "lowprec": {
+      "check": "blackwell_experiments/lowprec/20261030-190650-kilia-ccdb9517-check.json",
+      "bench": "blackwell_experiments/lowprec/20261030-190650-kilia-ccdb9517-bench.json",
+      "confirm": "blackwell_experiments/lowprec/20261030-191202-kilia-f746f49a-bench.json",
+      "profile": "blackwell_experiments/lowprec/20261030-191548-kilia-e2d793e7-profile.json",
+      "conclusions": {
+        "bf16": "improved",
+        "mxfp6": "improved",
+        "nvfp4": "improved"
+      },
+      "notes": [
+        "Speed: application-scope decode time falls to 0.27 (BF16), 0.15 (MXFP6), and 0.067 (NVFP4) of the FP32 control, in every pair.",
+        "Accuracy on the dense fixtures: normalized RMS logit error about 0.23% (BF16), 7.7% (MXFP6), and 13.5% (NVFP4); four-step token agreement 247-256, 174-204, and 161-171 of 256. On the primary synthetic model every case agrees on all 4,096 tokens.",
+        "Only the FP32 control and NVFP4 pass the production FP32 tolerance check of the primary decode. NVFP4 passes because its two-level scaling represents that synthetic model's values almost exactly; the fixtures show its general error.",
+        "MXFP6 uses the OCP v1.0 shared exponent, which clips block maxima whose mantissa exceeds 1.75; this contributes to its error on the primary model (12.4%).",
+        "Improved refers to speed only; whether the accuracy loss is acceptable depends on the application."
+      ]
+    }
+  }
+}
