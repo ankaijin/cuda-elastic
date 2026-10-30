@@ -1,0 +1,25 @@
+{
+ "experiment": "lowprec",
+ "title": "Lower precision Tensor Core classifier",
+ "question": "What accuracy-speed tradeoff results from replacing only the dense classifier multiplication?",
+ "workload": "loom-private/llama2c-decoder, optimized variant: 1,024 sequences x 4 steps, width 16,384, vocabulary 8,192; only the classifier changes",
+ "spec_kind": "experimental specification (spec.json)",
+ "cases": [
+  {"name": "fp32", "role": "control",
+   "description": "the production optimized classifier (register-tiled SGEMM with stream-K), FP32, built for sm_120f"},
+  {"name": "bf16", "role": "candidate",
+   "description": "BF16 activations and weights, CUTLASS 2.x mma.sync GEMM (128x256x32, 3 stages), FP32 accumulation"},
+  {"name": "mxfp6", "role": "candidate",
+   "description": "MXFP6 E3M2 with UE8M0 scales per 32, CUTLASS 4.8.0 SM120 block-scaled GEMM (128x128x128 cooperative), FP32 accumulation"},
+  {"name": "nvfp4", "role": "candidate",
+   "description": "NVFP4 E2M1 with UE4M3 scales per 16 and FP32 tensor scales, CUTLASS 4.8.0 SM120 block-scaled GEMM (128x128x128 cooperative), FP32 accumulation"}
+ ],
+ "check": {"args": ["--preset", "large", "--action", "check", "--launch", "both"],
+           "digests_must_match": false},
+ "extra_actions": [{"name": "accuracy", "args": ["--accuracy"]}],
+ "sass": {"kernels": "cutlass::device_kernel|cutlass::Kernel|classifier_kernel|quantize_|to_bf16_kernel|tensor_amax_kernel",
+          "features": {"FFMA": "\\bFFMA\\b", "FMUL": "\\bFMUL\\b", "FADD": "\\bFADD\\b",
+                       "HMMA.BF16": "HMMA\\.\\S*BF16", "QMMA.SF.E3M2": "QMMA\\.SF\\S*E3M2",
+                       "OMMA.SF.E2M1": "OMMA\\.SF\\S*E2M1", "F2FP": "\\bF2FP"}},
+ "profile_launch": "graph"
+}
