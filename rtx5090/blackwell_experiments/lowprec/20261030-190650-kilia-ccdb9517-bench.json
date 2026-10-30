@@ -1,0 +1,850 @@
+{
+ "schema": "blackwell_experiments.summary/1",
+ "experiment": "lowprec",
+ "question": "What accuracy-speed tradeoff results from replacing only the dense classifier multiplication?",
+ "stamp": "20261030-190650-kilia-ccdb9517",
+ "action": "bench",
+ "source": {
+  "commit": "38dd7987051bc87ac3dea368e769572b858e2786",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "cases": [
+  "fp32",
+  "bf16",
+  "mxfp6",
+  "nvfp4"
+ ],
+ "settings": {
+  "pairs": 5,
+  "iterations": 20,
+  "warmup": 3,
+  "launch": "both"
+ },
+ "status": "pass",
+ "records": [
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-fp32-bench-direct-p01.json",
+   "record_sha256": "91a3998213c9f5e17ddc69e2dc5a4f22f075fc9a5d3423d96ae24bf1eae8e932",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-bf16-bench-direct-p01.json",
+   "record_sha256": "175f17c7ce06f363bcfc7311ed3ff3050fae6926405cbd3f47b10d52a9708f65",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-mxfp6-bench-direct-p01.json",
+   "record_sha256": "3deef0283794d316be0d0848ee51d12bbc901c2bf4784be8f0d607eff4f31868",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-nvfp4-bench-direct-p01.json",
+   "record_sha256": "9922354566e33afb76ce057116f58ba1fbcd0c76bbaf87e9b9db58d22d7866da",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-fp32-bench-graph-p01.json",
+   "record_sha256": "ef874b1add3eb05d7dcb50fdba7789c170cdc2fbe0f1e983867ae24a449bb5b8",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-bf16-bench-graph-p01.json",
+   "record_sha256": "9cf906812ab0951f2d5cc07aff7e58cc59cc51e0ecb229b82bb0e7d893066f9e",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-mxfp6-bench-graph-p01.json",
+   "record_sha256": "c4cf2cf174fb0abd8a462529877ebf2d798afbae6bb6651d334520928601c2c9",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-nvfp4-bench-graph-p01.json",
+   "record_sha256": "d9c60febbd3e7d524e89a1e87479ab2a17bf1ce28078c0b04542480077e1ce03",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 1,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-nvfp4-bench-direct-p02.json",
+   "record_sha256": "bea813dc4b62dcce9e7f8832819ee27a96e8c1b696a3fd63d580db5ce7e10821",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-mxfp6-bench-direct-p02.json",
+   "record_sha256": "84a9cee7e39c2b6c569a0ead6470c9219f56dcb3bff334e530050406ba877611",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-bf16-bench-direct-p02.json",
+   "record_sha256": "faa79a225e17dd3c7f7384507d2cb55940a40208be5fda2445b47c00c91eb3b0",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-fp32-bench-direct-p02.json",
+   "record_sha256": "11a17b6acfee389bda8ae0e3ca22b1e05d5271fc10d03a2ee20d0d5ed4bc0257",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-nvfp4-bench-graph-p02.json",
+   "record_sha256": "d03bcd43ef18c029e926ffac120bde40e2ccff725c0586c49451c2896a1b4e84",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-mxfp6-bench-graph-p02.json",
+   "record_sha256": "ad2147ae33e685ae660d0f31ce7ea91dc189377115eea4231dd16878908889c9",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-bf16-bench-graph-p02.json",
+   "record_sha256": "f2f9ac27a95522697dc4ebc61af170ed9a8e91388c312d47dd57b70826fc0677",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-fp32-bench-graph-p02.json",
+   "record_sha256": "04938fb65b390a270ec907830f55bf9cfe864ecb7aa5ec2b107d06b5cc2da088",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 2,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-fp32-bench-direct-p03.json",
+   "record_sha256": "e2b9108cf8b7d88a18301b9c64b427c5a5232cfdfdb3266678dfd0f37ce698d0",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-bf16-bench-direct-p03.json",
+   "record_sha256": "11b21e0610d8437fa55cd7ab5ce3add9d6f7fb5c2e728158120cbed8221db763",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-mxfp6-bench-direct-p03.json",
+   "record_sha256": "708759dada0ccd3698232fefd6da78e3f249722d6732848b44538485641f4671",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-nvfp4-bench-direct-p03.json",
+   "record_sha256": "3f93fb71500dcb334de328bfb21dcd35388cfee1571b729830b09955158456a3",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-fp32-bench-graph-p03.json",
+   "record_sha256": "916684d4445ade8414cb550445de79f2b82286bfa097988698ddf90862c53fa8",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-bf16-bench-graph-p03.json",
+   "record_sha256": "8f666096c977efc873b400abb56be5d5b356cbc785302e82b3b458d855ff6a87",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-mxfp6-bench-graph-p03.json",
+   "record_sha256": "561d5b3b315b5357a8229660fb1b4fbe39db69dcbb788eeae13493681daf8389",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-nvfp4-bench-graph-p03.json",
+   "record_sha256": "44ffd49c8f712dd862b1734b9b6954925eb31ce8f1ac6f81ad45f9e4a3ab0571",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 3,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-nvfp4-bench-direct-p04.json",
+   "record_sha256": "1e157fb54a088006fa86f01969c39be57926400a2a6ceae6f6100e94a5817695",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-mxfp6-bench-direct-p04.json",
+   "record_sha256": "98d9e47650220e6ccb341208e78f9962ce6e2fce7c0c18b4bb0f316968eef3c1",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-bf16-bench-direct-p04.json",
+   "record_sha256": "e283f8b74577d1c200c5b7d772f57c44dd597b89a4927a6e58e9168fdee3046e",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-fp32-bench-direct-p04.json",
+   "record_sha256": "1629e86a52a922774b3b934f7cbb742593b4d3a92618f7e11eaf4bff6a4ed642",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-nvfp4-bench-graph-p04.json",
+   "record_sha256": "469a48910baf9679631bfb422d124eff3861a397caba808495a4dfbc49415f63",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-mxfp6-bench-graph-p04.json",
+   "record_sha256": "8777ac44cf45b48b53cd574800411f42c89256e26012c964fb0e1b0ab8d82722",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-bf16-bench-graph-p04.json",
+   "record_sha256": "c408a60aed45f015767a4b2a89e759d1a109d248538ac39d1e6a351c53cc5d31",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-fp32-bench-graph-p04.json",
+   "record_sha256": "eac65312997250cc32bca3759b54ede1906a21b6411f9aa9085247ebcc2da421",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 4,
+   "launch": "graph",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-fp32-bench-direct-p05.json",
+   "record_sha256": "4ed81a689fe006b30e2f588426c6159a70ba21abdef6d933e0820aee15f7fac9",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-bf16-bench-direct-p05.json",
+   "record_sha256": "636c063d3f91e3c2853b16fa56afb558f459438667e2d894af9e092c43e0192a",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-mxfp6-bench-direct-p05.json",
+   "record_sha256": "87d95064da446a5d5d548da7fede04f68ddcc1cc9604a0524deb74f2cb4fe814",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-nvfp4-bench-direct-p05.json",
+   "record_sha256": "ffc208ded2440a21eef800f8e059d6808c28df16b6ba664a1c79bd2e7dfc7d89",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "direct",
+   "position": 3
+  },
+  {
+   "kind": "bench",
+   "case": "fp32",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-fp32-bench-graph-p05.json",
+   "record_sha256": "ef8228720be528485d05bafcc87b51e362179fc3d5ede4439c7bf5b0854a9edb",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 0
+  },
+  {
+   "kind": "bench",
+   "case": "bf16",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-bf16-bench-graph-p05.json",
+   "record_sha256": "672e80ea4037f87e67d7a562acd56008d533b2cdf86315ce943b78b1943ac4a2",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 1
+  },
+  {
+   "kind": "bench",
+   "case": "mxfp6",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-mxfp6-bench-graph-p05.json",
+   "record_sha256": "be80a6f0157bc1a5dc9b76fb75bdd3189be344e3578284b5a5cc65003af0ff78",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 2
+  },
+  {
+   "kind": "bench",
+   "case": "nvfp4",
+   "record": "rtx5090/blackwell_experiments/lowprec/results/20261030-190650-kilia-ccdb9517-nvfp4-bench-graph-p05.json",
+   "record_sha256": "0b7d1db084bd2a187d2bbf48f6d2fbc6ee297291cc13ff3ec9958d819fff2fc6",
+   "status": "unvalidated_bench",
+   "exit_code": 0,
+   "pair": 5,
+   "launch": "graph",
+   "position": 3
+  }
+ ],
+ "timing": {
+  "direct/application/batch_per_iteration_us": {
+   "fp32": {
+    "median": 25182.399,
+    "min": 25041.9693,
+    "max": 25357.5317,
+    "n": 5
+   },
+   "bf16": {
+    "median": 6801.43356,
+    "min": 6782.32346,
+    "max": 6804.56467,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.270211137151786,
+     "min": 0.26746780957391053,
+     "max": 0.27143315002786145,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "mxfp6": {
+    "median": 3821.92307,
+    "min": 3811.34567,
+    "max": 3825.46387,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.15191022388295888,
+     "min": 0.1503042849395314,
+     "max": 0.15223338765134578,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "nvfp4": {
+    "median": 1684.30405,
+    "min": 1682.34406,
+    "max": 1686.78551,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.06695673791841675,
+     "min": 0.0663449455531983,
+     "max": 0.06719465229917042,
+     "below_one": 5,
+     "n": 5
+    }
+   }
+  },
+  "direct/application/single_median_us": {
+   "fp32": {
+    "median": 25450.9926,
+    "min": 25167.8562,
+    "max": 25548.5601,
+    "n": 5
+   },
+   "bf16": {
+    "median": 6798.97594,
+    "min": 6776.33595,
+    "max": 6805.45592,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.2671235753689229,
+     "min": 0.2661347650664665,
+     "max": 0.269245655893409,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "mxfp6": {
+    "median": 3823.40801,
+    "min": 3813.72797,
+    "max": 3824.70405,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.15022628272659197,
+     "min": 0.149703311459811,
+     "max": 0.15153169740377015,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "nvfp4": {
+    "median": 1683.34401,
+    "min": 1675.71199,
+    "max": 1684.304,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.0661783226482098,
+     "min": 0.06588801887116918,
+     "max": 0.06658143533099177,
+     "below_one": 5,
+     "n": 5
+    }
+   }
+  },
+  "direct/compute/batch_per_iteration_us": {
+   "fp32": {
+    "median": 25431.1737,
+    "min": 25086.1588,
+    "max": 25568.4097,
+    "n": 5
+   },
+   "bf16": {
+    "median": 6791.13922,
+    "min": 6768.33954,
+    "max": 6799.93286,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.2671076031491504,
+     "min": 0.26595055929505074,
+     "max": 0.26980374293094245,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "mxfp6": {
+    "median": 3815.2977,
+    "min": 3812.44812,
+    "max": 3816.10413,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.149974312443587,
+     "min": 0.14920586437567918,
+     "max": 0.15211212048932735,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "nvfp4": {
+    "median": 1675.88959,
+    "min": 1673.09914,
+    "max": 1676.35193,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.06590305385708564,
+     "min": 0.06556340224789187,
+     "max": 0.06672626021963952,
+     "below_one": 5,
+     "n": 5
+    }
+   }
+  },
+  "direct/compute/single_median_us": {
+   "fp32": {
+    "median": 25491.5199,
+    "min": 25219.5835,
+    "max": 25567.9359,
+    "n": 5
+   },
+   "bf16": {
+    "median": 6792.91201,
+    "min": 6770.84804,
+    "max": 6807.72805,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.2669276391385946,
+     "min": 0.26568089174535203,
+     "max": 0.268475807302686,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "mxfp6": {
+    "median": 3819.74399,
+    "min": 3812.80005,
+    "max": 3819.90397,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.14984998874076552,
+     "min": 0.1492419284421,
+     "max": 0.15146134471253261,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "nvfp4": {
+    "median": 1677.728,
+    "min": 1675.85599,
+    "max": 1678.92796,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.06578493474519725,
+     "min": 0.06566536956939101,
+     "max": 0.06652480997554935,
+     "below_one": 5,
+     "n": 5
+    }
+   }
+  },
+  "graph/application/batch_per_iteration_us": {
+   "fp32": {
+    "median": 25057.695,
+    "min": 25013.6703,
+    "max": 25191.8945,
+    "n": 5
+   },
+   "bf16": {
+    "median": 6794.36798,
+    "min": 6792.94739,
+    "max": 6795.29266,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.2711489616263587,
+     "min": 0.2696532843133334,
+     "max": 0.271624964237087,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "mxfp6": {
+    "median": 3815.11192,
+    "min": 3803.94249,
+    "max": 3817.52014,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.15207454341476628,
+     "min": 0.15149266284836183,
+     "max": 0.15244521231653238,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "nvfp4": {
+    "median": 1683.15525,
+    "min": 1682.90405,
+    "max": 1684.00478,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.06716755391906558,
+     "min": 0.06681336530684504,
+     "max": 0.06731391288489164,
+     "below_one": 5,
+     "n": 5
+    }
+   }
+  },
+  "graph/application/single_median_us": {
+   "fp32": {
+    "median": 25364.0156,
+    "min": 25326.0002,
+    "max": 25556.16,
+    "n": 5
+   },
+   "bf16": {
+    "median": 6798.92802,
+    "min": 6790.63988,
+    "max": 6801.95189,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.26789174365145935,
+     "min": 0.26615703963349735,
+     "max": 0.2684564465888301,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "mxfp6": {
+    "median": 3814.41605,
+    "min": 3811.80799,
+    "max": 3815.93597,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.150423730087331,
+     "min": 0.14925622824399284,
+     "max": 0.15065813550771434,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "nvfp4": {
+    "median": 1678.64001,
+    "min": 1677.40804,
+    "max": 1680.38398,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.06617375089455473,
+     "min": 0.06575260054718705,
+     "max": 0.06623264734871162,
+     "below_one": 5,
+     "n": 5
+    }
+   }
+  },
+  "graph/compute/batch_per_iteration_us": {
+   "fp32": {
+    "median": 25373.97,
+    "min": 25359.7488,
+    "max": 25539.7263,
+    "n": 5
+   },
+   "bf16": {
+    "median": 6789.29901,
+    "min": 6783.38242,
+    "max": 6798.45428,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.26748618345935665,
+     "min": 0.26619135225423307,
+     "max": 0.2676983935590458,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "mxfp6": {
+    "median": 3808.97102,
+    "min": 3805.1712,
+    "max": 3813.99345,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.15011332558523557,
+     "min": 0.14933572134639517,
+     "max": 0.15015207595728058,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "nvfp4": {
+    "median": 1674.32003,
+    "min": 1673.00472,
+    "max": 1675.42248,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.06593389682418635,
+     "min": 0.0656006434963244,
+     "max": 0.06602273718105599,
+     "below_one": 5,
+     "n": 5
+    }
+   }
+  },
+  "graph/compute/single_median_us": {
+   "fp32": {
+    "median": 25388.3362,
+    "min": 25297.4396,
+    "max": 25503.3445,
+    "n": 5
+   },
+   "bf16": {
+    "median": 6790.48014,
+    "min": 6783.8881,
+    "max": 6798.92802,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.2674777809977166,
+     "min": 0.2665896631714323,
+     "max": 0.26842558959998464,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "mxfp6": {
+    "median": 3809.26394,
+    "min": 3803.424,
+    "max": 3816.25605,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.14996545718071413,
+     "min": 0.14963747401835864,
+     "max": 0.15049934144323443,
+     "below_one": 5,
+     "n": 5
+    }
+   },
+   "nvfp4": {
+    "median": 1674.84802,
+    "min": 1673.23196,
+    "max": 1675.45599,
+    "n": 5,
+    "paired_ratio": {
+     "median": 0.06590553815023137,
+     "min": 0.06569554004965898,
+     "max": 0.06618282310277755,
+     "below_one": 5,
+     "n": 5
+    }
+   }
+  }
+ }
+}
