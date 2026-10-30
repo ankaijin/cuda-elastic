@@ -37,6 +37,14 @@ revision, which the manifest states (`source_revision`, a full commit hash):
 measurement runs start from commits that only add earlier runs' results, so
 their recorded commits need not stay in the history.
 Nothing is rerun. Requires openpyxl, and git for the workbook's links.
+
+EXPERIMENT_ROWS adds rows for a Blackwell feature experiment beside one
+application on a GPU's summary, Latency, Kernels, and Sources sheets. They use
+the selections in results/blackwell_experiments/inputs/<gpu>.json, which must
+conclude that the candidate improved and include a confirmation bench. The
+rows show the candidate's Graph launches, the median paired speedup over the
+experiment's control, and its accuracy loss. They are labeled as experiments
+because a candidate need not satisfy the application's contract.
 """
 
 import csv
@@ -101,6 +109,13 @@ OPTIMIZATIONS = {
                      "copy directions, with chunk counts and vector widths chosen per GPU.",
     "vecadd_product": "The same chunked multi-stream pipeline around the baseline kernel, which "
                       "already runs near DRAM bandwidth.",
+}
+# Blackwell feature experiments shown beside an application, per GPU folder.
+EXPERIMENT_ROWS = {
+    "rtx5090": [{"experiment": "lowprec", "case": "bf16", "control": "fp32", "app": "decoder",
+                 "label": "BF16 classifier", "control_label": "FP32 classifier",
+                 "change": "The optimized version with its FP32 classifier replaced by a BF16 "
+                           "Tensor Core GEMM (CUTLASS mma.sync, FP32 accumulation)."}],
 }
 # Integer `large` entries that are not problem extents (left out of the size column).
 NON_EXTENT_KEYS = {"expected_checksum"}
@@ -258,8 +273,132 @@ def load_gpu(folder):
         row["profiles"] = {(kind, version): load_profile(folder, app, kind, version,
                                                          profiles[kind][version])
                            for kind in PROFILE_SUFFIXES for version in PROFILE_VERSIONS}
+        row["experiments"] = [load_experiment(folder, entry, spec)
+                              for entry in EXPERIMENT_ROWS.get(folder, []) if entry["app"] == app]
         rows.append(row)
     return manifest, rows
+
+
+def experiment_summary(folder, name, relative, action):
+    """A passing run summary of experiments/blackwell/run.py whose records are unchanged."""
+    path = resolve(folder, relative)
+    summary = json.loads(path.read_text()) if path else {}
+    if (summary.get("schema") != "blackwell_experiments.summary/1"
+            or (summary.get("experiment"), summary.get("action")) != (name, action)
+            or summary.get("status") != "pass"
+            or (summary.get("gpu") or {}).get("folder") != folder):
+        raise ValueError(f"{folder}/{relative}: not a passing {name} {action} summary of {folder}")
+    for item in summary["records"]:
+        if "record_sha256" in item and sha256(REPO / item["record"]) != item["record_sha256"]:
+            raise ValueError(f"{item['record']} changed after its summary was written")
+    return summary
+
+
+def load_experiment(folder, entry, spec):
+    """An experiment candidate's Graph benches, paired speedups over its control,
+    accuracy, and profiles, from results/blackwell_experiments/inputs/<gpu>.json."""
+    name, case, control = entry["experiment"], entry["case"], entry["control"]
+    inputs = f"results/blackwell_experiments/inputs/{folder}.json"
+    selection = json.loads((REPO / inputs).read_text())["experiments"].get(name) or {}
+    if (selection.get("conclusions") or {}).get(case) != "improved" or not selection.get("confirm"):
+        raise ValueError(f"{inputs}: {name} {case} needs an improved conclusion and a "
+                         "confirmation bench")
+    confirm = experiment_summary(folder, name, selection["confirm"], "bench")
+    settings = confirm["settings"]
+    if settings["pairs"] < 10 or (settings["iterations"], settings["warmup"]) != (20, 3):
+        raise ValueError(f"{folder}/{selection['confirm']}: needs ten or more pairs of 20 "
+                         "iterations and 3 warmups")
+    benches = {case: {}, control: {}}
+    for item in confirm["records"]:
+        if item.get("kind") != "bench" or item["launch"] != "graph" or item["case"] not in benches:
+            continue
+        stored = json.loads((REPO / item["record"]).read_text())
+        record = dict(stored["result"], _path=item["record"], _arch=stored["build"]["arch"])
+        device = (record.get("device") or {}).get("name")
+        if not device_matches(folder, device):
+            raise ValueError(f"{item['record']}: recorded on {device!r}, not the {folder} "
+                             "folder's GPU")
+        for key, expected in spec["large"].items():
+            actual = record["dimensions"].get(key)
+            if is_integer(expected) and is_integer(actual) and actual != expected:
+                raise ValueError(f"{item['record']}: dimension {key}={actual} differs from the "
+                                 f"contract's large value {expected}")
+        benches[item["case"]][item["pair"]] = record
+    pairs = sorted(benches[case])
+    if len(pairs) < 10 or pairs != sorted(benches[control]):
+        raise ValueError(f"{folder}/{selection['confirm']}: {case} and {control} need the same "
+                         "ten or more Graph pairs")
+    ratios = {scope: [benches[control][p]["timing"][scope]["batch_per_iteration_us"]
+                      / benches[case][p]["timing"][scope]["batch_per_iteration_us"] for p in pairs]
+              for scope in ("application", "compute")}
+    check = experiment_summary(folder, name, selection["check"], "check")
+    accuracy = next((item for item in check["records"]
+                     if item.get("kind") == "accuracy" and item["case"] == case), None)
+    if accuracy is None:
+        raise ValueError(f"{folder}/{selection['check']}: no {case} accuracy record")
+    profile = (experiment_summary(folder, name, selection["profile"], "profile")
+               if selection.get("profile") else {"records": []})
+
+    def profiled(which, suffixes):
+        """The case's Graph profile file ending in one of suffixes, else None."""
+        item = next((i for i in profile["records"]
+                     if i.get("kind") == "profile" and i["case"] == which
+                     and i["launch"] == "graph"), {})
+        return next((f for f in item.get("files", []) if f.endswith(suffixes)), None)
+
+    def nsys(which):
+        report = profiled(which, (".nsys-rep",))
+        export = profiled(which, ("_cuda_gpu_kern_sum.csv",))
+        return {"_path": report, "csv": export} if report and export else None
+
+    return {"label": entry["label"], "change": entry["change"],
+            "control_label": entry["control_label"],
+            "bench": [benches[case][p] for p in pairs],
+            "control_bench": [benches[control][p] for p in pairs],
+            "speedup": {scope: statistics.median(r) for scope, r in ratios.items()},
+            "faster": {scope: sum(x > 1 for x in r) for scope, r in ratios.items()},
+            "stamp": confirm["stamp"], "commit": confirm["source"]["commit"],
+            "accuracy": json.loads((REPO / accuracy["record"]).read_text())["result"]["datasets"],
+            "nsys": nsys(case), "control_nsys": nsys(control),
+            "ncu": profiled(case, PROFILE_SUFFIXES["ncu"])}
+
+
+def experiment_note(exp, scope):
+    """Short and full notes of an experiment row: the paired speedup and the accuracy loss."""
+    primary = next(d for d in exp["accuracy"] if d["dataset"] == "primary")
+    fixtures = [d for d in exp["accuracy"] if d["dataset"] != "primary"]
+
+    def span(values, digits=0):
+        low, high = f"{min(values):.{digits}f}", f"{max(values):.{digits}f}"
+        return low if low == high else f"{low}–{high}"
+
+    rms = span([100 * d["classifier_error"]["normalized_rms_error"] for d in fixtures], 2)
+    agree = span([d["tokens"]["agree"] for d in fixtures])
+    total = fixtures[0]["tokens"]["total"]
+    tolerance = "passes" if primary.get("production_fp32_tolerance_pass") else "fails"
+    pairs = len(exp["bench"])
+    short = (f"Experiment with lower accuracy. {exp['speedup'][scope]:.2f}× faster than the "
+             f"{exp['control_label']} in {exp['faster'][scope]} of {pairs} paired runs. It "
+             f"{tolerance} the FP32 tolerance check; on test fixtures, logits differ by {rms}% RMS "
+             f"and {agree} of {total} tokens agree.")
+    scope_text = exp["bench"][0]["timing_scope"][scope]
+    full = (f"{exp['change']} It does not meet the workload's contract, so it is not a "
+            "version of it. "
+            f"Time: median of the {pairs} Graph-launch bench records of run {exp['stamp']} "
+            f"(source {exp['commit'][:7]}, {exp['bench'][0]['_arch']}). Speedup: median over the "
+            "pairs of the control's time divided by this time. The control "
+            f"({exp['control_label']}) compiles the production optimized source in the same run "
+            f"({timing(exp['control_bench'], scope):,.1f} us). The Optimized row comes from "
+            "another run and source revision, so compare with it only loosely. "
+            "Accuracy, from the experiment's check run: normalized RMS logit error "
+            f"{100 * primary['classifier_error']['normalized_rms_error']:.3f}% on the primary "
+            f"model, where {primary['tokens']['agree']:,} of {primary['tokens']['total']:,} tokens "
+            f"agree, and {rms}% on {len(fixtures)} dense fixtures, where {agree} of {total} tokens "
+            f"agree. The production FP32 tolerance check of the primary decode {tolerance}. "
+            "Whether the loss is acceptable depends on the application. "
+            f"Scope: {scope_text[0].upper() + scope_text[1:]}. "
+            "Details: results/blackwell_experiments/README.md.")
+    return short, full
 
 
 def selected_records(row):
@@ -524,6 +663,13 @@ def markdown(gpus):
               f"[`loom_private_{VERSION}.xlsx`](loom_private_{VERSION}.xlsx) has the same data "
               "plus single-iteration latencies, per-kernel times and Nsight Compute metrics from "
               "the selected profiles, contract hashes, and per-invocation check results."]
+    experiments = [(m["label"].split(" (")[0], row["app"], exp) for m, rows in gpus
+                   for row in rows for exp in row["experiments"]]
+    for gpu, app, exp in experiments:
+        lines[-1] += (f" The {gpu} sheets also show the {PROBLEMS[app][0]} with a "
+                      f"{exp['label']} from the [feature experiments](../blackwell_experiments/"
+                      f"README.md): {exp['speedup']['application']:.2f}× faster end to end than "
+                      f"with the {exp['control_label']}, with lower accuracy.")
     return "\n".join(lines)
 
 
@@ -551,6 +697,17 @@ SHORT_NOTES = {
 }
 DEFAULT_NOTES = {"application": "Includes input upload and output download (pinned host memory).",
                  "compute": "Kernels only; inputs already on the GPU."}
+# Comments on experiment cells whose column does not apply, and the sentence the
+# sheet descriptions gain when a GPU has experiment rows.
+EXPERIMENT_NA = {
+    "version": "The experiment changes only the optimized version.",
+    "speedup": "Graph / Optimized would compare different runs and contracts; the note gives the "
+               "paired speedup over the experiment's control.",
+    "gpu": "The experiment ran on this GPU only.",
+}
+EXPERIMENT_DESCRIPTION = (" Rows named after an experiment trade accuracy for speed and are not "
+                          "versions of the contract; their notes give the paired speedup and the "
+                          "accuracy loss.")
 # Per-launch ncu metrics on the NCU launches sheets (metric, column label).
 NCU_DETAIL_METRICS = [
     ("gpu__time_duration.sum", "Duration"),
@@ -713,6 +870,51 @@ def workbook(gpus):
                 " ".join(f"{p}." for p in parts))
         return short, full
 
+    def experiment_cells(ws, r, texts):
+        for col, text in enumerate(texts, 1):
+            ws.cell(r, col, text)
+        ws.cell(r, 1).font = bold
+
+    def not_applicable(ws, r, col, reason):
+        c = value(ws, r, col, "n/a")
+        c.comment = Comment(reason, "build_report.py")
+        return c
+
+    def experiment_values(ws, r, optimized, source, compare):
+        """Only the Optimized column of a summary-style sheet applies to an experiment."""
+        not_applicable(ws, r, 5, EXPERIMENT_NA["version"]).fill = fills[0]
+        not_applicable(ws, r, 6, EXPERIMENT_NA["version"]).fill = fills[1]
+        value(ws, r, 7, optimized, source).fill = fills[2]
+        not_applicable(ws, r, 8, EXPERIMENT_NA["version"])
+        not_applicable(ws, r, 9, EXPERIMENT_NA["speedup"])
+        if compare:
+            not_applicable(ws, r, 10, EXPERIMENT_NA["gpu"])
+
+    def experiment_kernel_note(exp):
+        if exp["nsys"] is None:
+            return "Not profiled yet.", "No Nsight Systems profile is selected."
+        kernels = nsys_kernels(exp["nsys"])
+        total = sum(us for _, us, _ in kernels) or 1
+        short = ("Experiment with lower accuracy. Every kernel of one end-to-end invocation; "
+                 f"launches: {sum(count for _, _, count in kernels):,}.")
+        if exp["control_nsys"]:
+            control = sum(us for _, us, _ in nsys_kernels(exp["control_nsys"]))
+            short += f" {exp['control_label']} in the same profile run: {control:,.0f} us."
+        def brief(name):
+            """Library kernels such as CUTLASS's keep only their outer template."""
+            inner = name.find("<", name.find("<") + 1)
+            return name if len(name) <= 80 or inner < 0 else name[:inner] + "<…>>"
+
+        full = (f"{exp['change']} Kernel time of one end-to-end invocation from Nsight Systems, "
+                "captured after one warmup invocation; copies and setup are left out. Kernels: "
+                + ", ".join(f"{brief(name)} ×{count} ({100 * us / total:.0f}%)"
+                            for name, us, count in sorted(kernels, key=lambda k: -k[1]))
+                + ". The accuracy loss is in the summary sheet's notes.")
+        return short, full
+
+    def experiment_name(row, exp):
+        return f"{PROBLEMS[row['app']][0]}, {exp['label']}"
+
     names = {m["folder"]: m["label"].split(" (")[0] for m, _ in gpus}
     base_rows = dict((m["folder"], rows) for m, rows in gpus)[BASELINE]
     targets = [m["folder"] for m, _ in gpus if m["folder"] != BASELINE]
@@ -747,11 +949,13 @@ def workbook(gpus):
     for manifest, rows in gpus:
         folder, title = manifest["folder"], names[manifest["folder"]]
         headers, widths = summary_headers(folder, 30)
+        extra = EXPERIMENT_DESCRIPTION if any(row["experiments"] for row in rows) else ""
         ws = table_sheet(title, headers, widths,
                          f"{manifest['label']}; {manifest['toolkit']}. Large workloads: time per "
                          "iteration in a back-to-back batch; lower is better. Optimized is the "
                          "optimized version of the same contract, replayed as a CUDA Graph. Times "
-                         "link to the bench records. Notes have full explanations in comments.")
+                         "link to the bench records. Notes have full explanations in comments."
+                         + extra)
         nav(ws, [f"Latency {title}", f"Kernels {title}"] + shared)
         for index, row in enumerate(rows):
             for scope, stage in STAGES:
@@ -764,10 +968,19 @@ def workbook(gpus):
                                [bench_source(row[key], scope) for key in BENCHES],
                                bench(base_rows[index]["bench_graph"], scope), folder != BASELINE)
                 note(ws, r, len(headers), *stage_note(row, scope))
+            for exp in row["experiments"]:
+                for scope, stage in STAGES:
+                    r = ws.max_row + 1
+                    experiment_cells(ws, r, (experiment_name(row, exp), stage,
+                                             problem_text(row["app"], row["contract"]), METRIC))
+                    experiment_values(ws, r, timing(exp["bench"], scope),
+                                      bench_source(exp["bench"], scope), folder != BASELINE)
+                    note(ws, r, len(headers), *experiment_note(exp, scope))
         finish_table(ws)
 
     for manifest, rows in gpus:
         folder, title = manifest["folder"], names[manifest["folder"]]
+        extra = EXPERIMENT_DESCRIPTION if any(row["experiments"] for row in rows) else ""
         headers = ["Workload", "Stage", "Problem size", "Version", "Batch iterations", "Runs",
                    "Full batch (ms)", "Batched (us/iteration)", "Single (us)", "Single / batched",
                    "Graph speedup (single)", "Optimized speedup (single)", "Notes"]
@@ -777,7 +990,7 @@ def workbook(gpus):
                          "follow the batch (as many as the batch has). Single/batched reflects "
                          "scheduling and timing conditions, not pure launch overhead. With "
                          "several runs, each column is the median over the runs; missing "
-                         "measurements stay pending.")
+                         "measurements stay pending." + extra)
         nav(ws, [title, f"Kernels {title}"] + shared)
         for row in rows:
             for scope, stage in STAGES:
@@ -813,6 +1026,25 @@ def workbook(gpus):
                     note(ws, r, 13, *stage_note(row, scope))
                     for col in range(1, len(headers) + 1):
                         ws.cell(r, col).fill = fill
+                for exp in row["experiments"]:
+                    records, r = exp["bench"], ws.max_row + 1
+                    experiment_cells(ws, r, (experiment_name(row, exp), stage,
+                                             problem_text(row["app"], row["contract"]),
+                                             f"Optimized, {exp['label']}"))
+                    iterations = {rec["iterations"] for rec in records}
+                    ws.cell(r, 5, iterations.pop() if len(iterations) == 1 else "mixed")
+                    ws.cell(r, 6, len(records))
+                    for col, field in enumerate(("batch_total_ms", "batch_per_iteration_us",
+                                                 "single_median_us"), 7):
+                        value(ws, r, col, timing(records, scope, field),
+                              bench_source(records, scope, field))
+                    value(ws, r, 10, ratio(timing(records, scope, "single_median_us"),
+                                           timing(records, scope)), speedup=True)
+                    not_applicable(ws, r, 11, EXPERIMENT_NA["version"])
+                    not_applicable(ws, r, 12, EXPERIMENT_NA["speedup"])
+                    note(ws, r, 13, *experiment_note(exp, scope))
+                    for col in range(1, len(headers) + 1):
+                        ws.cell(r, col).fill = fills[2]
         finish_table(ws)
 
         headers, widths = summary_headers(folder, 26)
@@ -820,7 +1052,7 @@ def workbook(gpus):
                          f"{manifest['label']}; {manifest['toolkit']}. GPU kernel time per "
                          "invocation from Nsight Systems: every kernel of one invocation summed, "
                          "with the copies left out. Times link to the profiles; notes list the "
-                         "kernels and their shares.")
+                         "kernels and their shares." + extra)
         nav(ws, [title, f"Latency {title}"] + shared)
         for index, row in enumerate(rows):
             r = ws.max_row + 1
@@ -835,6 +1067,14 @@ def workbook(gpus):
                            kernel_time(base_rows[index]["profiles"][("nsys", "graph")]),
                            folder != BASELINE)
             note(ws, r, len(headers), *kernel_note(row))
+            for exp in row["experiments"]:
+                r = ws.max_row + 1
+                experiment_cells(ws, r, (experiment_name(row, exp), "All kernels, one invocation",
+                                         problem_text(row["app"], row["contract"]),
+                                         "Nsight Systems kernel sum"))
+                experiment_values(ws, r, kernel_time(exp["nsys"]),
+                                  exp["nsys"]["_path"] if exp["nsys"] else None, folder != BASELINE)
+                note(ws, r, len(headers), *experiment_kernel_note(exp))
         finish_table(ws)
 
     ws = table_sheet("Sources", ["GPU", "Workload", "Problem size", "Version", "Measurement",
@@ -871,6 +1111,27 @@ def workbook(gpus):
                 note(ws, r, 9, *stage_note(row, "application"))
                 for col in range(1, 10):
                     ws.cell(r, col).fill = fills[VERSIONS.index(version)]
+            for exp in row["experiments"]:
+                r = ws.max_row + 1
+                experiment_cells(ws, r, (names[manifest["folder"]], experiment_name(row, exp),
+                                         problem_text(row["app"], row["contract"]),
+                                         f"Optimized, {exp['label']}"))
+                ws.cell(r, 1).font = Font()
+                record = median_record(exp["bench"], "application")
+                put_link(ws, r, 5, record["_path"],
+                         f"{Path(record['_path']).name} (median of {len(exp['bench'])})")
+                meta = f"{manifest['folder']}/runs/{exp['stamp']}/metadata.json"
+                if (REPO / meta).is_file():
+                    put_link(ws, r, 6, meta, f"{exp['stamp']}/metadata.json")
+                for col, path, pending in ((7, exp["ncu"], NCU_PENDING),
+                                           (8, exp["nsys"] and exp["nsys"]["_path"], NSYS_PENDING)):
+                    if path:
+                        put_link(ws, r, col, path, Path(path).name)
+                    else:
+                        value(ws, r, col, pending)
+                note(ws, r, 9, *experiment_note(exp, "application"))
+                for col in range(1, 10):
+                    ws.cell(r, col).fill = fills[2]
     finish_table(ws)
 
     ws = table_sheet("GPU analysis", ["GPU", "Workload", "Stage", "Problem size", "Version",
