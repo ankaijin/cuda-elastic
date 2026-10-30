@@ -250,7 +250,7 @@ class Runner:
         print(f"{case['name']:20s} sass {len(counts)} kernel(s): "
               + ", ".join(f"{k} {v}" for k, v in summary.items()), flush=True)
         self.records.append({"kind": "sass", "case": case["name"], "record": rel(record_path),
-                             "features": summary})
+                             "record_sha256": sha256(record_path), "features": summary})
         if not counts:
             self.failed = True
 

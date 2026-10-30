@@ -27,8 +27,10 @@ difference (a unit test keeps it current).
   binaries and is not committed. `results/` holds per-case records and logs,
   `profiles/` holds Nsight reports, and `<stamp>-<action>.json` summarizes one
   run.
-- `results/blackwell_experiments/`: the combined report, its generator, and
-  each GPU's input manifest. Mono publishes it.
+- `results/blackwell_experiments/`: the combined report generator
+  (`build_report.py`) and each GPU's input manifest (`inputs/<gpu>.json`),
+  which selects the run summaries and records each candidate's conclusion.
+  Mono generates and commits `README.md` after the raw evidence merges.
 
 ## Running an experiment
 

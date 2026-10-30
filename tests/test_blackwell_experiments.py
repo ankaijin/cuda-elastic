@@ -134,5 +134,58 @@ class BuildInfoTests(unittest.TestCase):
             self.assertFalse((directory / "bin.build.json").exists())
 
 
+class ReportTests(unittest.TestCase):
+    def report(self):
+        return load(REPO / "results/blackwell_experiments/build_report.py", "bw_report")
+
+    def test_report_builds_from_the_committed_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "README.md"
+            result = subprocess.run([sys.executable,
+                                     str(REPO / "results/blackwell_experiments/build_report.py"),
+                                     "--output", str(output)], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            text = output.read_text()
+        manifest = json.loads((REPO / "results/blackwell_experiments/inputs/rtx5090.json").read_text())
+        for name, selection in manifest["experiments"].items():
+            if not selection:
+                continue
+            title = json.loads((BW / name / "experiment.json").read_text())["title"]
+            self.assertIn(f"## {title} (`{name}`)", text)
+        for section in ("### Implementation correctness", "### Feature verification",
+                        "### Performance", "### Conclusions"):
+            self.assertIn(section, text)
+
+    def test_decision_rule(self):
+        report = self.report()
+        control = {"median": 100.0, "min": 99.0, "max": 101.0}  # half range 1%
+
+        def candidate(median, faster, n):
+            return {"paired_ratio": {"median": median, "below_one": faster, "n": n}}
+
+        self.assertEqual(report.classify(control, candidate(0.98, 4, 5), False), "apparent improvement")
+        self.assertEqual(report.classify(control, candidate(0.995, 5, 5), False), "within variation")
+        self.assertEqual(report.classify(control, candidate(0.98, 2, 5), False), "within variation")
+        self.assertEqual(report.classify(control, candidate(1.03, 0, 5), False), "apparent regression")
+        self.assertEqual(report.classify(control, candidate(0.98, 9, 10), True), "confirmed improvement")
+        self.assertEqual(report.classify(control, candidate(0.98, 8, 10), True), "within variation")
+        self.assertEqual(report.classify(control, candidate(1.05, 0, 10), True), "confirmed regression")
+
+    def test_pending_and_unknown_conclusions(self):
+        report = self.report()
+        self.assertIn("Pending: no check selected.",
+                      "\n".join(report.experiment_section("rtx5090", "lowprec", {"check": None})))
+        manifest = json.loads((REPO / "results/blackwell_experiments/inputs/rtx5090.json").read_text())
+        selection = dict(manifest["experiments"]["packed"], conclusions={"add_u8x4": "faster"})
+        with self.assertRaises(report.ReportError):
+            report.experiment_section("rtx5090", "packed", selection)
+
+    def test_a_summary_of_another_experiment_is_rejected(self):
+        report = self.report()
+        manifest = json.loads((REPO / "results/blackwell_experiments/inputs/rtx5090.json").read_text())
+        with self.assertRaises(report.ReportError):
+            report.checked_summary("rtx5090", "tma", manifest["experiments"]["packed"]["check"], "check")
+
+
 if __name__ == "__main__":
     unittest.main()

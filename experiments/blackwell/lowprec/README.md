@@ -113,3 +113,74 @@ and a normal classifier scaled by $1/\sqrt{\text{width}}$):
 The primary classifier has one nonzero weight per row. Its errors reflect only
 the activation format, and the dense fixtures are needed to measure general
 behavior.
+
+## Results on kilia's RTX 5090
+
+Runs `20261030-190650-kilia-ccdb9517` (check, accuracy, five pairs),
+`20261030-191202-kilia-f746f49a` (ten pairs), and
+`20261030-191548-kilia-e2d793e7` (profile). They ran at `38dd798` and two
+descendants that add only recorded evidence, with CUDA 13.4, driver
+615.71.10, and CUTLASS 4.8.0 `098de2a`. The generated report
+(`results/blackwell_experiments/`) lists every value. In brief:
+
+**Implementation correctness.** All four cases pass the implementation
+check in Direct and Graph mode, with converted weights and every step's
+activations bit-identical to the host quantizer. They also pass all 42 tests,
+including every mutant and memcheck.
+
+**Speed.** Median Graph application-scope time for the four-step decode, ten
+pairs, with every pair faster than the control:
+
+| Case | Time (µs) | Ratio to FP32 | Speedup |
+|---|--:|--:|--:|
+| `fp32` | 25,285.8 | 1 | 1 |
+| `bf16` | 6,802.5 | 0.2691 | 3.7× |
+| `mxfp6` | 3,816.6 | 0.1510 | 6.6× |
+| `nvfp4` | 1,685.8 | 0.0667 | 15.0× |
+
+Profiled kernel time (one Graph invocation, kernels serialized) splits as
+follows:
+
+- `fp32`: the classifier takes 97.8%.
+- `bf16`: the GEMM takes 89.8% and the conversion 2.3%.
+- `mxfp6`: the GEMM takes 81.5% and the quantization 4.2%.
+- `nvfp4`: the GEMM takes 53.0%, the tensor maximum and the quantization
+  17.1%, and the unchanged rmsnorm and softmax kernels 29.9%.
+
+Weight conversion at setup takes 0.51 ms (BF16), 0.42 ms (MXFP6), and
+0.69 ms (NVFP4).
+
+**Numerical quality.** Classifier error on fixed FP32 reference activations,
+and token agreement over the complete decode:
+
+| Case | Primary: normalized RMS error | Primary: tokens | Primary: FP32 tolerance check | Fixtures: normalized RMS error | Fixtures: tokens (of 256) |
+|---|--:|--:|---|--:|---|
+| `fp32` | 0 | 4,096/4,096 | pass | 5.7e-7 to 5.8e-7 | 256, 256, 256 |
+| `bf16` | 4.6e-4 | 4,096/4,096 | fail | 0.0023 | 249, 256, 247 |
+| `mxfp6` | 0.124 | 4,096/4,096 | fail | 0.075 to 0.077 | 174, 195, 204 |
+| `nvfp4` | 6.0e-8 | 4,096/4,096 | pass | 0.134 to 0.136 | 163, 161, 171 |
+
+- The primary model has one weight of 1.0 per classifier row, and its
+  normalized values are $\approx 1$ and $\approx 4$. NVFP4's two-level
+  scaling represents them almost exactly. That is why it passes the
+  production FP32 tolerance check there. The dense fixtures show its general
+  error.
+- MXFP6's primary error comes from the OCP shared exponent. A block whose
+  maximum is $0.9995 = 1.999 \times 2^{-1}$ gets $X = -5$, so the value
+  scales to 31.98 and saturates at 28. The decoded value is 0.875.
+- On the fixtures, token agreement falls step by step. A token that differs
+  sends that sequence down another path, and each later step compares with
+  the reference path.
+
+**Conclusions.** All three candidates are **improved** in speed, beyond
+measurement variation, and all are correctly implemented. They trade
+accuracy as follows:
+
+- BF16 keeps the fixtures' logits within about 0.2% and changes 0–9 of 256
+  tokens, at 3.7× the speed.
+- MXFP6 (6.6×) and NVFP4 (15×) change about 20–37% of the fixtures' tokens
+  over four steps.
+
+Only the FP32 control meets the contract's tolerances in general. NVFP4 meets
+them only on the synthetic primary model. Whether any loss is acceptable is
+an application decision. This experiment does not promote a case.
