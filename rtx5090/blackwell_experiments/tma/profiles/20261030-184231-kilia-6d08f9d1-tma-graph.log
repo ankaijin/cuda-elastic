@@ -1,0 +1,53 @@
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/build/tma --preset large --action profile --launch graph
+attention: optimized shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: TMA tile loads, mode 1, 256 threads per attention block
+attention: setup 0.00 s
+Capture range started in the application.
+Capture range ended in the application.
+Generating '/home/ankai/.cache/cuda-elastic/nsys-tmp/nsys-ankai/nsys-report-f83c.qdstrm'
+[1/1] [0%                          ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-repProcessing events...
+[1/1] [0%                          ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [1%                          ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [2%                          ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [5%                          ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [6%                          ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [==19%                       ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [==20%                       ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [====25%                     ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [=========46%                ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [==========47%               ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [==========48%               ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [=======================96%  ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [========================98% ] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [========================100%] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep[1/1] [========================100%] 20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "tma/tma", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "profile", "launch": "graph", "device": {"name": "NVIDIA GeForce RTX 5090", "cc": "12.0", "cuda_runtime": 13040, "cuda_driver": 13040}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "profiled": "one application-scope invocation after one warmup invocation", "timing": null, "output_digest": "9ca5f117f9ae05e7", "status": "profile"}
+Generated:
+	/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep
+Generating SQLite file /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.sqlite from /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.nsys-rep
+Processing [/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_gpu_kern_sum.py] to [/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph_cuda_gpu_kern_sum.csv]... PROCESSED
+
+Processing [/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.sqlite] with [/opt/nvidia/nsight-systems/2026.3.2/target-linux-x64/reports/cuda_gpu_mem_time_sum.py] to [/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph_cuda_gpu_mem_time_sum.csv]... PROCESSED
+
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set full --import-source no --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/build/tma --preset large --action profile --launch graph
+==PROF== Connected to process 3504089 (/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/build/tma)
+attention: optimized shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: TMA tile loads, mode 1, 256 threads per attention block
+attention: setup 0.00 s
+==PROF== Profiling "project_audio_kernel" - 0: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 1: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 2: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 3: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 4: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 5: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 6: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 7: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 8: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 9: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 10: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 11: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 12: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 13: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 14: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 15: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 16: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 17: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 18: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 19: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 20: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 21: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 22: 0%....50%....100% - 41 passes
+==PROF== Profiling "project_imu_kernel" - 23: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_partial_kernel" - 24: 0%....50%....100% - 41 passes
+==PROF== Profiling "attention_merge_kernel" - 25: 0%....50%....100% - 41 passes
+==PROF== Profiling "statistics_kernel" - 26: 0%....50%....100% - 41 passes
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "tma/tma", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "profile", "launch": "graph", "device": {"name": "NVIDIA GeForce RTX 5090", "cc": "12.0", "cuda_runtime": 13040, "cuda_driver": 13040}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "profiled": "one application-scope invocation after one warmup invocation", "timing": null, "output_digest": "9ca5f117f9ae05e7", "status": "profile"}
+==PROF== Disconnected from process 3504089
+==PROF== Report: /home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/profiles/20261030-184231-kilia-6d08f9d1-tma-graph.ncu-repz

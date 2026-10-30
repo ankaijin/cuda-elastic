@@ -1,0 +1,138 @@
+{
+ "schema": "blackwell_experiments.result/1",
+ "experiment": "tma",
+ "case": "tma_producer",
+ "role": "candidate",
+ "action": "check",
+ "stamp": "20261030-184231-kilia-6d08f9d1",
+ "source": {
+  "commit": "dc6a7395527bcf6b19c59ead58784eb74c2a9a6c",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "build": {
+  "schema": "blackwell_experiments.build/1",
+  "experiment": "tma",
+  "case": "tma_producer",
+  "binary": "rtx5090/blackwell_experiments/tma/build/tma_producer",
+  "binary_sha256": "1cf63167215fb9717e58768f34f47366db5a7a289ae39b82108b87650331955a",
+  "built_utc": "2026-10-30T18:42:40.556046+00:00",
+  "arch": "sm_120",
+  "command": [
+   "nvcc",
+   "-O3",
+   "-lineinfo",
+   "-Xcompiler",
+   "-pthread",
+   "-lpthread",
+   "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/attention",
+   "-DLP_ATTENTION_TMA_MODE=2",
+   "-std=c++17",
+   "--fmad=false",
+   "-Xcompiler",
+   "-ffp-contract=off",
+   "-arch=sm_120",
+   "-I/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/common",
+   "-DLP_APP=\"attention\"",
+   "-DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\"",
+   "-DLP_VARIANT=\"tma/tma_producer\"",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/experiments/blackwell/tma/attention_tma.cu",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/applications/loom_private/attention/oracle.cpp",
+   "-o",
+   "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/build/tma_producer"
+  ],
+  "compiler_version": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Tue_Sep_01_08:45:21_PDT_2026\nCuda compilation tools, release 13.4, V13.4.92\nBuild cuda_13.4.r13.4/compiler.38855100_0",
+  "source_commit": "dc6a7395527bcf6b19c59ead58784eb74c2a9a6c",
+  "source_dirty": false,
+  "spec": "applications/loom_private/attention/contract.json",
+  "spec_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190",
+  "sources": {
+   "experiments/blackwell/tma/attention_tma.cu": "04c8820258cc5e6a7b93172665a54c978caf5c5e49dcfabf60f28619e432882e",
+   "applications/loom_private/attention/oracle.cpp": "7be978ec45104d0e547b404c70c5227c3a19bf229d287a39c13f1e79c27ffb4c",
+   "applications/loom_private/attention/oracle.h": "11e7605d7a48e844555ee63eb263f38aa3cf2cf427d36aafe9ad5e59061956c5"
+  },
+  "external_includes": {}
+ },
+ "command": [
+  "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/build/tma_producer",
+  "--preset",
+  "large",
+  "--action",
+  "check",
+  "--launch",
+  "both",
+  "--json-out",
+  "/home/ankai/cuda-worktrees/blackwell-experiments/rtx5090/blackwell_experiments/tma/results/20261030-184231-kilia-6d08f9d1-tma_producer-check.raw.json"
+ ],
+ "exit_code": 0,
+ "log": "rtx5090/blackwell_experiments/tma/results/20261030-184231-kilia-6d08f9d1-tma_producer-check.log",
+ "log_sha256": "66e1aa2e2026c67d3b7cf4627ec973e465bfb014fe6c19a51c54da5211f425eb",
+ "result": {
+  "schema": "loom_private.result/1",
+  "suite_version": "v1",
+  "identity": "loom-private/multisensor-attention",
+  "variant": "tma/tma_producer",
+  "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b",
+  "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190",
+  "preset": "large",
+  "overrides": {},
+  "dimensions": {
+   "query_tokens": 25000,
+   "context_tokens": 250000,
+   "sensor_lanes": 3,
+   "feature_lanes": 4,
+   "statistics": 4,
+   "input_variant": 0,
+   "input_scale": 1,
+   "score_pairs": 6250000000,
+   "output_elements": 100000
+  },
+  "asset_sha256": {},
+  "action": "check",
+  "launch": "both",
+  "device": {
+   "name": "NVIDIA GeForce RTX 5090",
+   "cc": "12.0",
+   "cuda_runtime": 13040,
+   "cuda_driver": 13040
+  },
+  "timing_scope": {
+   "application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics",
+   "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"
+  },
+  "checks": [
+   {
+    "launch": "direct",
+    "invocation": 1,
+    "pass": true,
+    "digest": "9ca5f117f9ae05e7"
+   },
+   {
+    "launch": "direct",
+    "invocation": 2,
+    "pass": true,
+    "digest": "9ca5f117f9ae05e7"
+   },
+   {
+    "launch": "graph",
+    "invocation": 1,
+    "pass": true,
+    "digest": "9ca5f117f9ae05e7"
+   },
+   {
+    "launch": "graph",
+    "invocation": 2,
+    "pass": true,
+    "digest": "9ca5f117f9ae05e7"
+   }
+  ],
+  "outputs_agree": true,
+  "timing": null,
+  "status": "pass"
+ }
+}

@@ -1,0 +1,121 @@
+{
+ "schema": "blackwell_experiments.summary/1",
+ "experiment": "tma",
+ "question": "Can changing tile loading reduce instruction overhead without changing attention arithmetic?",
+ "stamp": "20261030-184231-kilia-6d08f9d1",
+ "action": "check",
+ "source": {
+  "commit": "dc6a7395527bcf6b19c59ead58784eb74c2a9a6c",
+  "dirty": false
+ },
+ "gpu": {
+  "folder": "rtx5090",
+  "name": "NVIDIA GeForce RTX 5090",
+  "uuid": "GPU-947b8c66-8235-01b9-4934-9a9da6d6c54b",
+  "driver": "615.71.10"
+ },
+ "cases": [
+  "control",
+  "tma",
+  "tma_producer"
+ ],
+ "settings": null,
+ "status": "pass",
+ "records": [
+  {
+   "kind": "make",
+   "targets": [
+    "build"
+   ],
+   "force": true,
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/tma/results/20261030-184231-kilia-6d08f9d1-make-build.log",
+   "log_sha256": "e8d9cbb4c78b776bfb26e274c5ff5aae1219fa982d6649cb820acb07c43f4d3b"
+  },
+  {
+   "kind": "make",
+   "targets": [
+    "test"
+   ],
+   "force": false,
+   "exit_code": 0,
+   "log": "rtx5090/blackwell_experiments/tma/results/20261030-184231-kilia-6d08f9d1-make-test.log",
+   "log_sha256": "d34acc7998ecf700673b6a6036b60d02dff8bdba6d435c04fb4651615783bb83"
+  },
+  {
+   "kind": "check",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184231-kilia-6d08f9d1-control-check.json",
+   "record_sha256": "d8cb1d68f428702bb1d6be5c577aaa374f11374f75121a25e665e9df0e2c989a",
+   "status": "pass",
+   "exit_code": 0
+  },
+  {
+   "kind": "sass",
+   "case": "control",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184231-kilia-6d08f9d1-control-sass.json",
+   "features": {
+    "UBLKCP": 0,
+    "LDGSTS": 20,
+    "SYNCS": 0,
+    "BAR.SYNC": 4,
+    "MUFU.EX2": 264
+   }
+  },
+  {
+   "kind": "check",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184231-kilia-6d08f9d1-tma-check.json",
+   "record_sha256": "02006b113f618d03efd0d726fde6d7955419722d1a43c5592db3d24176c20ef0",
+   "status": "pass",
+   "exit_code": 0
+  },
+  {
+   "kind": "sass",
+   "case": "tma",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184231-kilia-6d08f9d1-tma-sass.json",
+   "features": {
+    "UBLKCP": 4,
+    "LDGSTS": 0,
+    "SYNCS": 12,
+    "BAR.SYNC": 2,
+    "MUFU.EX2": 264
+   }
+  },
+  {
+   "kind": "check",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184231-kilia-6d08f9d1-tma_producer-check.json",
+   "record_sha256": "71dcd729ccce69c624d8b76f05e64002474256bd15b8283e5f09d8c0dd40fd42",
+   "status": "pass",
+   "exit_code": 0
+  },
+  {
+   "kind": "sass",
+   "case": "tma_producer",
+   "record": "rtx5090/blackwell_experiments/tma/results/20261030-184231-kilia-6d08f9d1-tma_producer-sass.json",
+   "features": {
+    "UBLKCP": 2,
+    "LDGSTS": 0,
+    "SYNCS": 16,
+    "BAR.SYNC": 0,
+    "MUFU.EX2": 264
+   }
+  },
+  {
+   "kind": "digest_agreement",
+   "digests": {
+    "control": [
+     "9ca5f117f9ae05e7"
+    ],
+    "tma": [
+     "9ca5f117f9ae05e7"
+    ],
+    "tma_producer": [
+     "9ca5f117f9ae05e7"
+    ]
+   },
+   "agree": true
+  }
+ ]
+}

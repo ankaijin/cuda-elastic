@@ -1,0 +1,4 @@
+control              profile graph  exit 0  7 files
+tma                  profile graph  exit 0  7 files
+tma_producer         profile graph  exit 0  7 files
+PASS: rtx5090/blackwell_experiments/tma/20261030-184231-kilia-6d08f9d1-profile.json
