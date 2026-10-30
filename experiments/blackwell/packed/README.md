@@ -68,10 +68,10 @@ of candidate/control within each pair, with the range of pair ratios.
 
 | Run | Scope | Launch | Control | `add_u8x4` | Ratio (range) | Pairs faster |
 |---|---|---|--:|--:|---|--:|
-| 5 pairs (`20261030-182653-kilia-455ace66`) | kernel | Direct | 117.01 | 117.28 | 1.0027 (1.0011–1.0063) | 0/5 |
-| | kernel | Graph | 117.44 | 117.57 | 1.0000 (0.9986–1.0028) | 3/5 |
-| | application | Direct | 4723.2 | 4637.8 | 0.9943 | 4/5 |
-| | application | Graph | 4617.1 | 4732.8 | 1.0045 | 2/5 |
+| 5 pairs (`20261030-182653-kilia-455ace66`) | kernel | Direct | 117.01 | 117.28 | 1.0027 (1.0003–1.0041) | 0/5 |
+| | kernel | Graph | 117.44 | 117.57 | 1.0000 (0.9981–1.0023) | 3/5 |
+| | application | Direct | 4723.2 | 4637.8 | 0.9943 (0.9673–1.0468) | 4/5 |
+| | application | Graph | 4617.1 | 4732.8 | 1.0045 (0.9927–1.0306) | 2/5 |
 | 10 pairs (`20261030-182825-kilia-e20c6a4c`) | kernel | Direct | 117.26 | 117.24 | 0.9993 (0.9959–1.0071) | 6/10 |
 | | kernel | Graph | 117.12 | 117.30 | 1.0009 (0.9978–1.0046) | 3/10 |
 | | application | Direct | 4644.8 | 4665.5 | 1.0065 (0.9825–1.0431) | 3/10 |
