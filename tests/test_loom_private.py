@@ -440,6 +440,89 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(book["NCU launches RTX 3090"].max_row, 6)
         self.assertEqual(book["GPU analysis"]["A5"].value, "pending")
 
+    def write_experiment(self, conclusion="improved"):
+        """A lowprec-style experiment of PageRank on this folder: a check summary with
+        an accuracy record, and ten Graph pairs in which bf16 takes half fp32's time."""
+        saved = self.m.EXPERIMENT_ROWS
+        self.addCleanup(setattr, self.m, "EXPERIMENT_ROWS", saved)
+        self.m.EXPERIMENT_ROWS = {"rtx3090": [
+            {"experiment": "lowprec", "case": "bf16", "control": "fp32", "app": "pagerank",
+             "label": "BF16 classifier", "control_label": "FP32 classifier",
+             "change": "A BF16 classifier."}]}
+        folder = self.m.REPO / "rtx3090/blackwell_experiments/lowprec"
+        (folder / "results").mkdir(parents=True)
+
+        def stored(name, result):
+            path = folder / "results" / name
+            path.write_text(json.dumps({"result": result, "build": {"arch": "sm_86"}}))
+            return {"record": f"rtx3090/blackwell_experiments/lowprec/results/{name}",
+                    "record_sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+
+        def summary(name, action, records, **fields):
+            data = {"schema": "blackwell_experiments.summary/1", "experiment": "lowprec",
+                    "action": action, "status": "pass", "stamp": "run",
+                    "source": {"commit": "17de016" + "0" * 33}, "gpu": {"folder": "rtx3090"},
+                    "records": records, **fields}
+            (folder / name).write_text(json.dumps(data))
+            return f"blackwell_experiments/lowprec/{name}"
+
+        dataset = {"classifier_error": {"normalized_rms_error": 0.0023},
+                   "tokens": {"agree": 250, "total": 256}}
+        accuracy = stored("bf16-accuracy.json", {"datasets": [
+            {"dataset": "primary", "classifier_error": {"normalized_rms_error": 0.0005},
+             "tokens": {"agree": 4096, "total": 4096}, "production_fp32_tolerance_pass": False},
+            dict(dataset, dataset="fixture1")]})
+        check = summary("check.json", "check", [dict(accuracy, kind="accuracy", case="bf16")])
+        records = []
+        for pair in range(1, 11):
+            for case, us in (("fp32", 20.0 + pair), ("bf16", (20.0 + pair) / 2)):
+                timing = {scope: {"batch_total_ms": us * 20 / 1000, "batch_per_iteration_us": us,
+                                  "single_median_us": us} for scope in ("application", "compute")}
+                records.append(dict(stored(f"{case}-p{pair}.json", {
+                    "device": {"name": "NVIDIA GeForce RTX 3090"}, "iterations": 20,
+                    "dimensions": {"nodes": 1048576}, "timing": timing,
+                    "timing_scope": {"application": "everything", "compute": "kernels"}}),
+                    kind="bench", case=case, launch="graph", pair=pair))
+        confirm = summary("bench.json", "bench", records,
+                          settings={"pairs": 10, "iterations": 20, "warmup": 3})
+        inputs = self.m.REPO / "results/blackwell_experiments/inputs/rtx3090.json"
+        inputs.parent.mkdir(parents=True)
+        inputs.write_text(json.dumps({"experiments": {"lowprec": {
+            "check": check, "confirm": confirm, "profile": None,
+            "conclusions": {"bf16": conclusion}}}}))
+
+    def test_experiment_rows_show_the_paired_speedup_and_accuracy(self):
+        self.write_experiment()
+        manifest, rows = self.select("check", None)
+        book = self.m.workbook([(manifest, rows)])
+        ws = book["RTX 3090"]
+        # PageRank's two rows, then the experiment's.
+        self.assertEqual([ws.cell(r, 1).value for r in (7, 8)], ["PageRank, BF16 classifier"] * 2)
+        self.assertEqual(ws["G7"].value, 12.75)  # median of the ten bf16 times
+        self.assertTrue(ws["G7"].hyperlink.target.endswith("bf16-p5.json"))
+        self.assertEqual([ws.cell(7, c).value for c in (5, 6, 8, 9)], ["n/a"] * 4)
+        self.assertIn("2.00× faster than the FP32 classifier in 10 of 10 paired runs",
+                      ws["J7"].value)
+        self.assertIn("fails the FP32 tolerance check", ws["J7"].value)
+        self.assertIn("0.23% RMS and 250 of 256 tokens agree", ws["J7"].value)
+        latency = book["Latency RTX 3090"]
+        self.assertEqual(latency.max_row, 4 + len(self.m.APPS) * 2 * 3 + 2)
+        self.assertEqual(latency["D8"].value, "Optimized, BF16 classifier")
+        self.assertEqual(latency["F8"].value, 10)
+        self.assertEqual(book["Kernels RTX 3090"]["G6"].value, "pending")
+        for sheet in ("RTX 3090", "Latency RTX 3090", "Kernels RTX 3090"):
+            self.assertIn("Rows named after an experiment", book[sheet]["A2"].value)
+        plain = self.m.workbook([(dict(manifest, folder="rtx3090"),
+                                  [dict(row, experiments=[]) for row in rows])])
+        for sheet in ("RTX 3090", "Latency RTX 3090", "Kernels RTX 3090"):
+            self.assertNotIn("experiment", plain[sheet]["A2"].value)
+        self.assertIn("2.00× faster end to end", self.m.markdown([(manifest, rows)]))
+
+    def test_experiment_rows_need_an_improved_conclusion(self):
+        self.write_experiment("no measurable benefit")
+        with self.assertRaisesRegex(ValueError, "needs an improved conclusion"):
+            self.select("check", None)
+
 
 class ContractTests(unittest.TestCase):
     """Every application contract against the suite README schema and assets.json."""
