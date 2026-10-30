@@ -323,8 +323,12 @@ class Runner:
                     if code:
                         break
                 Path(f"{prefix}.sqlite").unlink(missing_ok=True)
-                report = Path(f"{prefix}.ncu-rep")
-                if not code and report.is_file():
+                report = next((p for p in (Path(f"{prefix}.ncu-rep"), Path(f"{prefix}.ncu-repz"))
+                               if p.is_file()), None)
+                if not code and not self.args.no_ncu and report is None:
+                    stream.write("ncu wrote no report\n")
+                    code = 1
+                if not code and report is not None:
                     for page in ("raw", "details"):
                         with open(f"{prefix}-ncu-{page}.csv", "w") as csv:
                             code = subprocess.run(["ncu", "--import", str(report), "--csv",
