@@ -406,8 +406,10 @@ class ReportTests(unittest.TestCase):
         self.select_profile("ncu", "graph", self.write_profile("run-baseline-graph", ncu=raw))
         manifest, rows = self.select("check", self.write_record("check.json"))
         book = self.m.workbook([(manifest, rows)])
-        self.assertEqual(book.sheetnames, ["RTX 3090", "Nsys RTX 3090", "GPU analysis", "NCU",
-                                           "Environment", "Contracts"])
+        self.assertEqual(book.sheetnames, ["RTX 3090", "Nsys RTX 3090", "GPU speedup",
+                                           "NCU RTX 3090", "Environment", "Contracts"])
+        self.assertEqual([book["RTX 3090"].cell(3, c).value for c in (1, 2, 3)],
+                         ["Nsys RTX 3090", "NCU RTX 3090", "GPU speedup"])
         ws = book["RTX 3090"]
         self.assertEqual(ws["A1"].value, "RTX 3090")
         self.assertEqual(ws["A4"].value, "Workload")
@@ -434,17 +436,17 @@ class ReportTests(unittest.TestCase):
                          ["k", 4, 0.4, 0.1, 1.0])  # 400 ns over 4 launches, all kernel time
         self.assertTrue(nsys["H6"].hyperlink.target.endswith("run-baseline-graph.nsys-rep"))
         self.assertIn("not wall-clock times", nsys["A2"].value)
-        ncu = book["NCU"]
+        ncu = book["NCU RTX 3090"]
         # The two update launches share a configuration: one row of medians, Graph only.
-        self.assertEqual([ncu.cell(5, c).value for c in range(1, 9)],
-                         ["RTX 3090", "PageRank", "Graph", "update", 2, 11.0, 50.0, None])
-        self.assertIn("update(int)", ncu["D5"].comment.text)
-        self.assertIn("Grid 64, block 256.", ncu["D5"].comment.text)
-        self.assertTrue(ncu["I5"].hyperlink.target.endswith("run-baseline-graph.ncu-rep"))
-        self.assertEqual([ncu.cell(6, c).value for c in (3, 4)], ["Optimized", "pending"])
-        self.assertNotIn("Direct", [ncu.cell(r, 3).value for r in range(5, ncu.max_row + 1)])
+        self.assertEqual([ncu.cell(5, c).value for c in range(1, 8)],
+                         ["PageRank", "Graph", "update", 2, 11.0, 50.0, None])
+        self.assertIn("update(int)", ncu["C5"].comment.text)
+        self.assertIn("Grid 64, block 256.", ncu["C5"].comment.text)
+        self.assertTrue(ncu["H5"].hyperlink.target.endswith("run-baseline-graph.ncu-rep"))
+        self.assertEqual([ncu.cell(6, c).value for c in (2, 3)], ["Optimized", "pending"])
+        self.assertNotIn("Direct", [ncu.cell(r, 2).value for r in range(5, ncu.max_row + 1)])
         self.assertEqual(ncu.max_row, 4 + len(self.m.APPS) * 2)
-        self.assertEqual(book["GPU analysis"]["A5"].value, "pending")
+        self.assertEqual(book["GPU speedup"]["A5"].value, "pending")
 
     def test_gpu_comparison_is_left_to_gpu_analysis(self):
         self.pass_checks()
@@ -458,7 +460,7 @@ class ReportTests(unittest.TestCase):
             headers = [c.value for c in book[sheet][4]]
             self.assertEqual(headers[-2:], ["Optimized speedup\nGraph / Optimized", "Notes"])
         self.assertNotIn("GPU speedup", " ".join(c.value for c in book["Nsys RTX 4090"][4]))
-        analysis = book["GPU analysis"]
+        analysis = book["GPU speedup"]
         self.assertEqual([analysis.cell(5, c).value for c in (1, 5, 8)],
                          ["RTX 4090", "Graph", 1.0])
 
@@ -530,9 +532,9 @@ class ReportTests(unittest.TestCase):
         nsys = book["Nsys RTX 3090"]
         self.assertEqual([nsys.cell(8, c).value for c in (1, 2, 3)],
                          ["PageRank, BF16 classifier", "Optimized, BF16 classifier", "pending"])
-        # No ncu profile on this GPU, the experiment's included: one pending row.
-        self.assertEqual([c.value for c in book["NCU"][5]][:2], ["RTX 3090", "pending"])
-        self.assertEqual(book["NCU"].max_row, 5)
+        # No ncu profile on this GPU, the experiment's included: no NCU sheet or link.
+        self.assertNotIn("NCU RTX 3090", book.sheetnames)
+        self.assertEqual(book["RTX 3090"]["B3"].value, "GPU speedup")
         for sheet in ("RTX 3090", "Nsys RTX 3090"):
             self.assertIn("Rows named after an experiment", book[sheet]["A2"].value)
         plain = self.m.workbook([(dict(manifest, folder="rtx3090"),

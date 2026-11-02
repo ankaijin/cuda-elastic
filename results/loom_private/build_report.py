@@ -29,11 +29,13 @@ another application, version, or GPU are errors.
 Timing cells come only from bench records, so a correctness check never
 appears as a performance measurement. The workbook uses the layout and styling
 of results/cuda_performance.xlsx without its Latency sheets: per-GPU summary
-sheets, per-kernel Nsight Systems (Nsys) sheets, then GPU analysis, one Nsight
-Compute (NCU) sheet for every GPU, Environment, and Contracts. The README holds
-the correctness table; the workbook only times versions with a passing check. Its links point at GitHub, pinned to the latest origin/main commit
-that has each file. The test-machine table comes from the recorder metadata
-(<gpu>/runs/<run-id>/metadata.json) of the selected runs, except the source
+sheets, per-kernel Nsight Systems (Nsys) sheets, then GPU speedup (the legacy
+GPU analysis), Nsight Compute (NCU) sheets for the GPUs with ncu profiles,
+Environment, and Contracts. The README holds the correctness table; the
+workbook only times versions with a passing check. Its links point at GitHub,
+pinned to the latest origin/main commit that has each file. The test-machine
+table comes from the recorder metadata (<gpu>/runs/<run-id>/metadata.json) of
+the selected runs, except the source
 revision, which the manifest states (`source_revision`, a full commit hash):
 measurement runs start from commits that only add earlier runs' results, so
 their recorded commits need not stay in the history.
@@ -858,9 +860,16 @@ def workbook(gpus):
     names = {m["folder"]: m["label"].split(" (")[0] for m, _ in gpus}
     base_rows = dict((m["folder"], rows) for m, rows in gpus)[BASELINE]
     targets = [m["folder"] for m, _ in gpus if m["folder"] != BASELINE]
-    shared = ["GPU analysis", "NCU", "Environment", "Contracts"]
+    shared = ["GPU speedup", "Environment", "Contracts"]
+    # A GPU without any ncu profile (counters admin-only on its host) has no NCU sheet.
+    ncu_titles = [f"NCU {names[m['folder']]}" for m, rows in gpus
+                  if any(row["profiles"][("ncu", key)] for row in rows for key in PROFILE_VERSIONS)
+                  or any(exp["ncu"] for row in rows for exp in row["experiments"])]
 
-    # GPU analysis holds the cross-GPU ratios, so the summaries compare versions only.
+    def ncu_nav(title):
+        return [f"NCU {title}"] if f"NCU {title}" in ncu_titles else []
+
+    # GPU speedup holds the cross-GPU ratios, so the summaries compare versions only.
     summary_headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)",
                        "Graph (us)", "Optimized (us)", "Graph speedup\nDirect / Graph",
                        "Optimized speedup\nGraph / Optimized", "Notes"]
@@ -889,7 +898,7 @@ def workbook(gpus):
                          "link to the bench records. Notes have full explanations in comments. "
                          "Every timing has a passing correctness check of its version; "
                          "results/loom_private/README.md links each check record." + extra)
-        nav(ws, [f"Nsys {title}"] + shared)
+        nav(ws, [f"Nsys {title}"] + ncu_nav(title) + shared)
         for index, row in enumerate(rows):
             for scope, stage in STAGES:
                 r = ws.max_row + 1
@@ -927,7 +936,7 @@ def workbook(gpus):
                             f"not versions of the contract; the {title} sheet's notes give their "
                             "paired speedup and accuracy loss." if extra else ""))
         ws.freeze_panes = "D5"
-        nav(ws, [title] + shared)
+        nav(ws, [title] + ncu_nav(title) + shared)
 
         def kernel_rows(workload, version, profile, fill, pending=NSYS_PENDING):
             if profile is None:
@@ -965,7 +974,7 @@ def workbook(gpus):
                             exp["nsys"], fills[2])
         finish_table(ws)
 
-    ws = table_sheet("GPU analysis", ["GPU", "Workload", "Stage", "Problem size", "Version",
+    ws = table_sheet("GPU speedup", ["GPU", "Workload", "Stage", "Problem size", "Version",
                                       f"{names[BASELINE]} (us)", "GPU (us)", "Measured speedup",
                                       "Notes"],
                      [15, 24, 26, 30, 14, 15, 15, 16, 48],
@@ -997,24 +1006,28 @@ def workbook(gpus):
         value(ws, 5, 1, "pending (only one GPU)")
     finish_table(ws)
 
-    ws = table_sheet("NCU", ["GPU", "Workload", "Version", "Kernel", "Launches",
-                             "Median duration (us)", "SM throughput %", "Memory throughput %",
-                             "ncu report"],
-                     [15, 24, 14, 46, 11, 16, 15, 16, 50],
-                     "Nsight Compute metrics of each kernel in one end-to-end invocation, after a "
-                     "warmup: one row per GPU, version, kernel and launch configuration, with "
-                     "medians over its launches. How to read it: SM throughput is how busy the "
-                     "compute units are and memory throughput how busy the busiest memory unit "
-                     "(DRAM, L2 or L1) is, each as a share of its peak. High memory with low SM "
-                     "means memory-bound, high SM means compute-bound, and both low means "
-                     "latency-bound (a small grid, or waiting). Direct is left out: it launches "
-                     "the same kernels as Graph, and ncu replays each launch alone. Replayed "
-                     "durations are not application times. The kernel's comment has its full "
-                     "name, configuration and occupancy; the report has every launch and metric.")
-    ws.freeze_panes = "E5"
-    nav(ws, [names[f] for f in GPUS if f in names] + ["Environment"])
     for manifest, rows in gpus:
-        gpu = names[manifest["folder"]]
+        title = names[manifest["folder"]]
+        if f"NCU {title}" not in ncu_titles:
+            continue
+        ws = table_sheet(f"NCU {title}", ["Workload", "Version", "Kernel", "Launches",
+                                          "Median duration (us)", "SM throughput %",
+                                          "Memory throughput %", "ncu report"],
+                         [24, 26, 46, 11, 16, 15, 16, 50],
+                         f"{manifest['label']}; {manifest['toolkit']}. Nsight Compute metrics of "
+                         "each kernel in one end-to-end invocation, after a warmup: one row per "
+                         "version, kernel and launch configuration, with medians over its "
+                         "launches. How to read it: SM throughput is how busy the compute units "
+                         "are and memory throughput how busy the busiest memory unit (DRAM, L2 or "
+                         "L1) is, each as a share of its peak. High memory with low SM means "
+                         "memory-bound, high SM means compute-bound, and both low means "
+                         "latency-bound (a small grid, or waiting). Direct is left out: it "
+                         "launches the same kernels as Graph, and ncu replays each launch alone. "
+                         "Replayed durations are not application times. The kernel's comment has "
+                         "its full name, configuration and occupancy; the report has every launch "
+                         "and metric.")
+        ws.freeze_panes = "D5"
+        nav(ws, [title, f"Nsys {title}"] + shared)
         reports = []
         for row in rows:
             reports += [(PROBLEMS[row["app"]][0], version, row["profiles"][("ncu", key)], fill)
@@ -1022,17 +1035,12 @@ def workbook(gpus):
                         if version != "Direct"]
             reports += [(experiment_name(row, exp), f"Optimized, {exp['label']}", exp["ncu"],
                          fills[2]) for exp in row["experiments"]]
-        if not any(profile for _, _, profile, _ in reports):
-            r = ws.max_row + 1
-            ws.cell(r, 1, gpu)
-            value(ws, r, 2, manifest.get("ncu_pending", NCU_PENDING))
-            continue
         for workload, version, profile, fill in reports:
             if profile is None:
                 r = ws.max_row + 1
-                for col, text in enumerate((gpu, workload, version), 1):
+                for col, text in enumerate((workload, version), 1):
                     ws.cell(r, col, text).fill = fill
-                value(ws, r, 4, manifest.get("ncu_pending", NCU_PENDING)).fill = fill
+                value(ws, r, 3, manifest.get("ncu_pending", NCU_PENDING)).fill = fill
                 continue
             groups = {}
             for launch in ncu_rows(profile):
@@ -1041,15 +1049,15 @@ def workbook(gpus):
                 groups.setdefault(key, []).append(launch)
             for (kernel, _), launches in groups.items():
                 first, r = launches[0], ws.max_row + 1
-                for col, text in enumerate((gpu, workload, version,
+                for col, text in enumerate((workload, version,
                                             brief_kernel(short_kernel(kernel)), len(launches)), 1):
                     ws.cell(r, col, text)
-                value(ws, r, 6, statistics.median(launch_us(launch) for launch in launches))
-                for col, metric in ((7, "sm__throughput.avg.pct_of_peak_sustained_elapsed"),
-                                    (8, "gpu__compute_memory_throughput.avg."
+                value(ws, r, 5, statistics.median(launch_us(launch) for launch in launches))
+                for col, metric in ((6, "sm__throughput.avg.pct_of_peak_sustained_elapsed"),
+                                    (7, "gpu__compute_memory_throughput.avg."
                                         "pct_of_peak_sustained_elapsed")):
                     value(ws, r, col, ncu_metric_median(launches, metric))
-                put_link(ws, r, 9, profile["_path"], Path(profile["_path"]).name)
+                put_link(ws, r, 8, profile["_path"], Path(profile["_path"]).name)
                 shared_mem, unit = first.get("launch__shared_mem_per_block", ("", ""))
                 registers = ncu_metric_median(launches, "launch__registers_per_thread")
                 achieved, theoretical = (ncu_metric_median(launches, metric) for metric in (
@@ -1063,11 +1071,11 @@ def workbook(gpus):
                 if achieved is not None and theoretical is not None:
                     config += (f" Achieved occupancy {achieved:.0f}% of a theoretical "
                                f"{theoretical:.0f}% (medians).")
-                ws.cell(r, 4).comment = Comment(f"{kernel}\n\n{config}", "build_report.py",
+                ws.cell(r, 3).comment = Comment(f"{kernel}\n\n{config}", "build_report.py",
                                                 width=540, height=200)
-                for col in range(1, 10):
+                for col in range(1, 9):
                     ws.cell(r, col).fill = fill
-    finish_table(ws)
+        finish_table(ws)
 
     ws = table_sheet("Environment", ["GPU", "Run", "Measurement", "Host", "Driver", "CUDA",
                                      "Source revision"],
@@ -1117,14 +1125,14 @@ def workbook(gpus):
         ws.cell(r, 5, "No (direct port)" if extension is False else str(extension))
     finish_table(ws)
 
-    # Legacy order without its Latency and Sources sheets, and one NCU sheet for
-    # every GPU: summaries, then the per-kernel Nsys sheets, GPU analysis, and
-    # NCU; this report's own sheets come last. Single-iteration times stay in
-    # the bench records, every ncu launch stays in its report, and the README
-    # links each correctness check.
+    # Legacy order without its Latency and Sources sheets, with GPU analysis
+    # named GPU speedup: summaries, then the per-kernel Nsys sheets, GPU
+    # speedup, and the NCU sheets; this report's own sheets come last.
+    # Single-iteration times stay in the bench records, every ncu launch stays
+    # in its report, and the README links each correctness check.
     order = [names[f] for f in GPUS if f in names]
     order += [f"Nsys {names[f]}" for f in GPUS if f in names]
-    order += ["GPU analysis", "NCU", "Environment", "Contracts"]
+    order += ["GPU speedup"] + ncu_titles + ["Environment", "Contracts"]
     book._sheets = [book[title] for title in order]
     return book
 
