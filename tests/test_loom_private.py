@@ -406,14 +406,14 @@ class ReportTests(unittest.TestCase):
         self.select_profile("ncu", "graph", self.write_profile("run-baseline-graph", ncu=raw))
         manifest, rows = self.select("check", self.write_record("check.json"))
         book = self.m.workbook([(manifest, rows)])
-        self.assertEqual(book.sheetnames, ["RTX 3090", "Nsys RTX 3090",
-                                           "Sources", "GPU analysis", "NCU", "Correctness",
+        self.assertEqual(book.sheetnames, ["RTX 3090", "Nsys RTX 3090", "GPU analysis", "NCU",
                                            "Environment", "Contracts"])
         ws = book["RTX 3090"]
         self.assertEqual(ws["A1"].value, "RTX 3090")
         self.assertEqual(ws["A4"].value, "Workload")
         self.assertEqual(ws["A4"].fill.fgColor.rgb, "001F3864")
         self.assertEqual(ws.freeze_panes, "C5")
+        self.assertIn("Every timing has a passing correctness check", ws["A2"].value)
         # PageRank: an Application row and a Kernel-only row.
         self.assertEqual([ws.cell(r, 2).value for r in (5, 6)],
                          ["Application (end to end)", "Kernel only (no transfers)"])
@@ -530,6 +530,9 @@ class ReportTests(unittest.TestCase):
         nsys = book["Nsys RTX 3090"]
         self.assertEqual([nsys.cell(8, c).value for c in (1, 2, 3)],
                          ["PageRank, BF16 classifier", "Optimized, BF16 classifier", "pending"])
+        # No ncu profile on this GPU, the experiment's included: one pending row.
+        self.assertEqual([c.value for c in book["NCU"][5]][:2], ["RTX 3090", "pending"])
+        self.assertEqual(book["NCU"].max_row, 5)
         for sheet in ("RTX 3090", "Nsys RTX 3090"):
             self.assertIn("Rows named after an experiment", book[sheet]["A2"].value)
         plain = self.m.workbook([(dict(manifest, folder="rtx3090"),
