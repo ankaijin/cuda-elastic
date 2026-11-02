@@ -920,15 +920,17 @@ def workbook(gpus):
     targets = [m["folder"] for m, _ in gpus if m["folder"] != BASELINE]
     shared = ["Sources", "GPU analysis", "Correctness", "Environment", "Contracts"]
 
-    def summary_headers(folder, first):
+    def summary_headers(folder, first, compare):
+        """compare adds the baseline / this GPU Graph column; the summary sheets leave it
+        to GPU analysis, which has the same ratios, and only the Kernels sheets keep it."""
         title = names[folder]
         headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)", "Graph (us)",
                    "Optimized (us)", "Graph speedup\nDirect / Graph",
                    "Optimized speedup\nGraph / Optimized"]
-        if folder != BASELINE:
+        if compare:
             headers += [f"GPU speedup\n{names[BASELINE].removeprefix('RTX ')} / "
                         f"{title.removeprefix('RTX ')}\n(Graph)"]
-        widths = [24, first, 30, 20, 15, 15, 15, 15, 17] + ([18] if folder != BASELINE else [])
+        widths = [24, first, 30, 20, 15, 15, 15, 15, 17] + ([18] if compare else [])
         return headers + ["Notes"], widths + [48]
 
     def speedup(a, b):
@@ -948,7 +950,7 @@ def workbook(gpus):
 
     for manifest, rows in gpus:
         folder, title = manifest["folder"], names[manifest["folder"]]
-        headers, widths = summary_headers(folder, 30)
+        headers, widths = summary_headers(folder, 30, False)
         extra = EXPERIMENT_DESCRIPTION if any(row["experiments"] for row in rows) else ""
         ws = table_sheet(title, headers, widths,
                          f"{manifest['label']}; {manifest['toolkit']}. Large workloads: time per "
@@ -965,8 +967,7 @@ def workbook(gpus):
                     ws.cell(r, col, text)
                 ws.cell(r, 1).font = bold
                 summary_values(ws, r, *(bench(row[key], scope) for key in BENCHES),
-                               [bench_source(row[key], scope) for key in BENCHES],
-                               bench(base_rows[index]["bench_graph"], scope), folder != BASELINE)
+                               [bench_source(row[key], scope) for key in BENCHES])
                 note(ws, r, len(headers), *stage_note(row, scope))
             for exp in row["experiments"]:
                 for scope, stage in STAGES:
@@ -974,7 +975,7 @@ def workbook(gpus):
                     experiment_cells(ws, r, (experiment_name(row, exp), stage,
                                              problem_text(row["app"], row["contract"]), METRIC))
                     experiment_values(ws, r, timing(exp["bench"], scope),
-                                      bench_source(exp["bench"], scope), folder != BASELINE)
+                                      bench_source(exp["bench"], scope), False)
                     note(ws, r, len(headers), *experiment_note(exp, scope))
         finish_table(ws)
 
@@ -1047,7 +1048,7 @@ def workbook(gpus):
                         ws.cell(r, col).fill = fills[2]
         finish_table(ws)
 
-        headers, widths = summary_headers(folder, 26)
+        headers, widths = summary_headers(folder, 26, folder != BASELINE)
         ws = table_sheet(f"Kernels {title}", headers, widths,
                          f"{manifest['label']}; {manifest['toolkit']}. GPU kernel time per "
                          "invocation from Nsight Systems: every kernel of one invocation summed, "

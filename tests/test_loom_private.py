@@ -440,6 +440,23 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(book["NCU launches RTX 3090"].max_row, 6)
         self.assertEqual(book["GPU analysis"]["A5"].value, "pending")
 
+    def test_gpu_comparison_is_left_to_gpu_analysis(self):
+        self.pass_checks()
+        self.select("bench_direct", [self.write_bench("bench-direct.json", 12.5, launch="direct")])
+        self.select("bench_graph", [self.write_bench("bench-graph.json", 12.5)])
+        manifest, rows = self.select_profile("nsys", "graph", self.write_profile(
+            "run-baseline-graph", kernels=[("k", 400, 4)]))
+        target = dict(manifest, folder="rtx4090", label="RTX 4090 (sm_89, 24 GB)")
+        book = self.m.workbook([(manifest, rows), (target, rows)])
+        for sheet in ("RTX 3090", "RTX 4090"):
+            headers = [c.value for c in book[sheet][4]]
+            self.assertEqual(headers[-2:], ["Optimized speedup\nGraph / Optimized", "Notes"])
+        kernels = [c.value for c in book["Kernels RTX 4090"][4]]
+        self.assertEqual(kernels[-2], "GPU speedup\n3090 / 4090\n(Graph)")
+        analysis = book["GPU analysis"]
+        self.assertEqual([analysis.cell(5, c).value for c in (1, 5, 8)],
+                         ["RTX 4090", "Graph", 1.0])
+
     def write_experiment(self, conclusion="improved"):
         """A lowprec-style experiment of PageRank on this folder: a check summary with
         an accuracy record, and ten Graph pairs in which bf16 takes half fp32's time."""
