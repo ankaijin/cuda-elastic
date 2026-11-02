@@ -982,70 +982,72 @@ def workbook(gpus):
     for manifest, rows in gpus:
         folder, title = manifest["folder"], names[manifest["folder"]]
         extra = EXPERIMENT_DESCRIPTION if any(row["experiments"] for row in rows) else ""
-        headers = ["Workload", "Stage", "Problem size", "Version", "Batch iterations", "Runs",
-                   "Full batch (ms)", "Batched (us/iteration)", "Single (us)", "Single / batched",
-                   "Graph speedup (single)", "Optimized speedup (single)", "Notes"]
-        ws = table_sheet(f"Latency {title}", headers,
-                         [24, 24, 30, 16, 14, 9, 16, 17, 15, 15, 17, 18, 48],
+        # The batched times, problem sizes and timing scopes are on the summary sheet; this one
+        # keeps only the single-invocation measurements and states shared counts once.
+        iterations = {rec["iterations"] for row in rows for key in BENCHES
+                      for rec in row[key] or []}
+        runs = {len(row[key]) for row in rows for key in BENCHES if row[key]}
+        uniform = len(iterations) == 1 and len(runs) == 1
+        counts = ""
+        if uniform:
+            n, b = runs.pop(), iterations.pop()
+            counts = (f" Each value is the median of {'one run' if n == 1 else f'{n} runs'} of "
+                      f"{b:,} isolated iterations, which follow a {b:,}-iteration batch.")
+        headers = ["Workload", "Stage"] + [f"{v} single (us)" for v in VERSIONS] + [
+            f"{v}\nsingle / batched" for v in VERSIONS] + [
+            "Graph speedup (single)\nDirect / Graph",
+            "Optimized speedup (single)\nGraph / Optimized"]
+        notes = not uniform or bool(extra)
+        ws = table_sheet(f"Latency {title}", headers + ["Notes"] * notes,
+                         [24, 26, 15, 15, 15, 15, 15, 15, 17, 18] + [40] * notes,
                          f"{manifest['label']}. Single = median of the isolated iterations that "
-                         "follow the batch (as many as the batch has). Single/batched reflects "
-                         "scheduling and timing conditions, not pure launch overhead. With "
-                         "several runs, each column is the median over the runs; missing "
-                         "measurements stay pending." + extra)
+                         "follow the batch (as many as the batch has); single / batched divides "
+                         f"it by the batched time on the {title} sheet. Single/batched reflects "
+                         "scheduling and timing conditions, not pure launch overhead."
+                         + (counts or " With several runs, each column is the median over the "
+                            "runs.") + " Missing measurements stay pending."
+                         + (f" Rows named after an experiment trade accuracy for speed and are "
+                            f"not versions of the contract; the {title} sheet's notes give their "
+                            "paired speedup and accuracy loss." if extra else ""))
         nav(ws, [title, f"Kernels {title}"] + shared)
         for row in rows:
             for scope, stage in STAGES:
+                r = ws.max_row + 1
+                ws.cell(r, 1, PROBLEMS[row["app"]][0]).font = bold
+                ws.cell(r, 2, stage)
                 singles = {}
-                for version, key, fill in zip(VERSIONS, BENCHES, fills):
+                for i, (version, key, fill) in enumerate(zip(VERSIONS, BENCHES, fills)):
                     records = row[key]
-                    r = ws.max_row + 1
-                    for col, text in enumerate((PROBLEMS[row["app"]][0], stage,
-                                                problem_text(row["app"], row["contract"]),
-                                                version), 1):
-                        ws.cell(r, col, text)
-                    ws.cell(r, 1).font = bold
-                    if not records:
-                        for col in range(5, 11):
-                            value(ws, r, col, BENCH_PENDING, speedup=col == 10)
-                    else:
-                        singles[version] = timing(records, scope, "single_median_us")
-                        iterations = {rec["iterations"] for rec in records}
-                        ws.cell(r, 5, iterations.pop() if len(iterations) == 1 else "mixed")
-                        ws.cell(r, 6, len(records))
-                        for col, field in enumerate(("batch_total_ms", "batch_per_iteration_us",
-                                                     "single_median_us"), 7):
-                            value(ws, r, col, timing(records, scope, field),
-                                  bench_source(records, scope, field))
-                        value(ws, r, 10, ratio(singles[version],
-                                               timing(records, scope)), speedup=True)
-                    if version == "Graph":
-                        value(ws, r, 11, ratio(singles.get("Direct"), singles.get("Graph"))
-                              or BENCH_PENDING, speedup=True)
-                    if version == "Optimized":
-                        value(ws, r, 12, ratio(singles.get("Graph"), singles.get("Optimized"))
-                              or BENCH_PENDING, speedup=True)
-                    note(ws, r, 13, *stage_note(row, scope))
-                    for col in range(1, len(headers) + 1):
-                        ws.cell(r, col).fill = fill
+                    single = bench(records, scope, "single_median_us")
+                    singles[version] = single
+                    value(ws, r, 3 + i, single,
+                          bench_source(records, scope, "single_median_us")).fill = fill
+                    value(ws, r, 6 + i, speedup(single, bench(records, scope)),
+                          speedup=True).fill = fill
+                value(ws, r, 9, ratio(singles["Direct"], singles["Graph"]) or BENCH_PENDING,
+                      speedup=True)
+                value(ws, r, 10, ratio(singles["Graph"], singles["Optimized"]) or BENCH_PENDING,
+                      speedup=True)
+                if not uniform and any(row[key] for key in BENCHES):
+                    ws.cell(r, 11, describe(row).strip())
                 for exp in row["experiments"]:
                     records, r = exp["bench"], ws.max_row + 1
-                    experiment_cells(ws, r, (experiment_name(row, exp), stage,
-                                             problem_text(row["app"], row["contract"]),
-                                             f"Optimized, {exp['label']}"))
-                    iterations = {rec["iterations"] for rec in records}
-                    ws.cell(r, 5, iterations.pop() if len(iterations) == 1 else "mixed")
-                    ws.cell(r, 6, len(records))
-                    for col, field in enumerate(("batch_total_ms", "batch_per_iteration_us",
-                                                 "single_median_us"), 7):
-                        value(ws, r, col, timing(records, scope, field),
-                              bench_source(records, scope, field))
-                    value(ws, r, 10, ratio(timing(records, scope, "single_median_us"),
-                                           timing(records, scope)), speedup=True)
-                    not_applicable(ws, r, 11, EXPERIMENT_NA["version"])
-                    not_applicable(ws, r, 12, EXPERIMENT_NA["speedup"])
-                    note(ws, r, 13, *experiment_note(exp, scope))
-                    for col in range(1, len(headers) + 1):
-                        ws.cell(r, col).fill = fills[2]
+                    experiment_cells(ws, r, (experiment_name(row, exp), stage))
+                    single = timing(records, scope, "single_median_us")
+                    for col in (3, 4, 6, 7):
+                        not_applicable(ws, r, col, EXPERIMENT_NA["version"]).fill = fills[col % 3]
+                    value(ws, r, 5, single,
+                          bench_source(records, scope, "single_median_us")).fill = fills[2]
+                    value(ws, r, 8, ratio(single, timing(records, scope)),
+                          speedup=True).fill = fills[2]
+                    not_applicable(ws, r, 9, EXPERIMENT_NA["version"])
+                    not_applicable(ws, r, 10, EXPERIMENT_NA["speedup"])
+                    n = len(records)
+                    note(ws, r, 11, "Experiment with lower accuracy. "
+                         + ("One run." if n == 1 else f"Median of {n} runs."),
+                         f"Optimized, {exp['label']}. The paired speedup over the "
+                         f"{exp['control_label']} and the accuracy loss are in the {title} "
+                         "sheet's notes.")
         finish_table(ws)
 
         headers, widths = summary_headers(folder, 26, folder != BASELINE)

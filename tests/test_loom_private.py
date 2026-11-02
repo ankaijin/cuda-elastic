@@ -274,8 +274,10 @@ class ReportTests(unittest.TestCase):
                          "rtx3090/r3.json")
         self.assertIn("then the median of 3 recorded runs", self.m.markdown([(manifest, rows)]))
         latency = self.m.workbook([(manifest, rows)])["Latency RTX 3090"]
-        self.assertEqual(latency["F6"].value, 3)
-        self.assertIn("Median of 3 runs", latency["M6"].value)
+        self.assertEqual(latency["D5"].value, 22.0)  # Graph single, median of 33, 11, 22
+        self.assertEqual(latency["G5"].value, 1.1)  # over the batched median, 20
+        self.assertIn("the median of 3 runs of 20 isolated iterations", latency["A2"].value)
+        self.assertEqual(latency.max_column, 10)  # shared counts need no Notes column
 
     def test_repetitions_must_be_distinct_and_consistent(self):
         self.pass_checks()
@@ -427,10 +429,15 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(ws["I5"].value, 2.5)  # Graph / Optimized
         self.assertEqual(ws.cell(7, 7).value, "pending")  # attention: nothing selected
         latency = book["Latency RTX 3090"]
-        self.assertEqual(latency["I5"].value, 13.75)  # single-iteration median
-        self.assertEqual(latency["F5"].value, 1)  # runs
-        self.assertEqual(latency["L7"].value, 2.292)  # Graph single / Optimized single
-        self.assertEqual(latency.max_row, 4 + len(self.m.APPS) * 2 * 3)
+        # One row per workload and stage; batched times stay on the summary sheet.
+        self.assertEqual([latency.cell(4, c).value for c in (1, 2, 3, 6)],
+                         ["Workload", "Stage", "Direct single (us)", "Direct\nsingle / batched"])
+        self.assertEqual(latency["C5"].value, 13.75)  # Direct single-iteration median
+        self.assertEqual(latency["F5"].value, 1.1)  # Direct single / batched
+        self.assertEqual(latency["J5"].value, 2.292)  # Graph single / Optimized single
+        self.assertEqual(latency["C7"].value, "pending")  # attention: nothing selected
+        self.assertIn("the median of one run of 20 isolated iterations", latency["A2"].value)
+        self.assertEqual(latency.max_row, 4 + len(self.m.APPS) * 2)
         kernels = book["Kernels RTX 3090"]
         self.assertEqual(kernels["F5"].value, 0.4)  # 400 ns in the captured invocation
         self.assertEqual(kernels["E5"].value, "pending")
@@ -523,9 +530,11 @@ class ReportTests(unittest.TestCase):
         self.assertIn("fails the FP32 tolerance check", ws["J7"].value)
         self.assertIn("0.23% RMS and 250 of 256 tokens agree", ws["J7"].value)
         latency = book["Latency RTX 3090"]
-        self.assertEqual(latency.max_row, 4 + len(self.m.APPS) * 2 * 3 + 2)
-        self.assertEqual(latency["D8"].value, "Optimized, BF16 classifier")
-        self.assertEqual(latency["F8"].value, 10)
+        self.assertEqual(latency.max_row, 4 + len(self.m.APPS) * 2 + 2)
+        self.assertEqual(latency["A6"].value, "PageRank, BF16 classifier")
+        self.assertEqual(latency["E6"].value, 12.75)  # Optimized single
+        self.assertEqual([latency.cell(6, c).value for c in (3, 4, 9, 10)], ["n/a"] * 4)
+        self.assertIn("Median of 10 runs", latency["K6"].value)
         self.assertEqual(book["Kernels RTX 3090"]["G6"].value, "pending")
         for sheet in ("RTX 3090", "Latency RTX 3090", "Kernels RTX 3090"):
             self.assertIn("Rows named after an experiment", book[sheet]["A2"].value)
