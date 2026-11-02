@@ -29,7 +29,7 @@ another application, version, or GPU are errors.
 Timing cells come only from bench records, so a correctness check never
 appears as a performance measurement. The workbook uses the layout and styling
 of results/cuda_performance.xlsx without its Latency sheets: per-GPU summary
-and Kernels sheets, then Sources, GPU analysis, the ncu sheets, Correctness, Environment, and
+sheets, per-kernel Nsight Systems (Nsys) sheets, then Sources, GPU analysis, the ncu sheets, Correctness, Environment, and
 Contracts. Its links point at GitHub, pinned to the latest origin/main commit
 that has each file. The test-machine table comes from the recorder metadata
 (<gpu>/runs/<run-id>/metadata.json) of the selected runs, except the source
@@ -39,7 +39,7 @@ their recorded commits need not stay in the history.
 Nothing is rerun. Requires openpyxl, and git for the workbook's links.
 
 EXPERIMENT_ROWS adds rows for a Blackwell feature experiment beside one
-application on a GPU's summary, Kernels, and Sources sheets. They use
+application on a GPU's summary, Nsys, and Sources sheets. They use
 the selections in results/blackwell_experiments/inputs/<gpu>.json, which must
 conclude that the candidate improved and include a confirmation bench. The
 rows show the candidate's Graph launches, the median paired speedup over the
@@ -531,6 +531,12 @@ def nsys_kernels(profile):
                  int(row["Instances"])) for row in csv.DictReader(stream)]
 
 
+def brief_kernel(name):
+    """Library kernels such as CUTLASS's keep only their outer template."""
+    inner = name.find("<", name.find("<") + 1)
+    return name if len(name) <= 80 or inner < 0 else name[:inner] + "<…>>"
+
+
 def ncu_rows(profile):
     """All profiled launches of an ncu raw export, as {metric: (value, unit)} dicts."""
     with open(REPO / profile["csv"], newline="") as stream:
@@ -703,7 +709,6 @@ EXPERIMENT_NA = {
     "version": "The experiment changes only the optimized version.",
     "speedup": "Graph / Optimized would compare different runs and contracts; the note gives the "
                "paired speedup over the experiment's control.",
-    "gpu": "The experiment ran on this GPU only.",
 }
 EXPERIMENT_DESCRIPTION = (" Rows named after an experiment trade accuracy for speed and are not "
                           "versions of the contract; their notes give the paired speedup and the "
@@ -828,9 +833,6 @@ def workbook(gpus):
     def bench_source(records, scope, field="batch_per_iteration_us"):
         return median_record(records, scope, field)["_path"] if records else None
 
-    def kernel_time(profile):
-        return NSYS_PENDING if profile is None else sum(us for _, us, _ in nsys_kernels(profile))
-
     def describe(row):
         """Iterations per batch and run counts, per version."""
         counts = {r["iterations"] for key in BENCHES for r in row[key] or []}
@@ -849,27 +851,6 @@ def workbook(gpus):
         full = spec.get("timing_scope", {}).get(scope, "Contract pending.")
         return short, full[0].upper() + full[1:] + "."
 
-    def kernel_note(row):
-        parts, launches = [], {}
-        for version, key in zip(VERSIONS, PROFILE_VERSIONS):
-            profile = row["profiles"][("nsys", key)]
-            if profile is None:
-                continue
-            kernels = nsys_kernels(profile)
-            launches[version] = sum(count for _, _, count in kernels)
-            total = sum(us for _, us, _ in kernels) or 1
-            parts.append(f"{version}: " + ", ".join(
-                f"{name} ×{count} ({100 * us / total:.0f}%)"
-                for name, us, count in sorted(kernels, key=lambda k: -k[1])))
-        if not parts:
-            return "Not profiled yet.", "No Nsight Systems profile is selected."
-        short = "Every kernel of one end-to-end invocation; launches: " + ", ".join(
-            f"{v} {n:,}" for v, n in launches.items()) + "."
-        full = ("Kernel time of one end-to-end invocation from Nsight Systems, captured after "
-                "one warmup invocation; copies and setup are left out. " +
-                " ".join(f"{p}." for p in parts))
-        return short, full
-
     def experiment_cells(ws, r, texts):
         for col, text in enumerate(texts, 1):
             ws.cell(r, col, text)
@@ -880,37 +861,13 @@ def workbook(gpus):
         c.comment = Comment(reason, "build_report.py")
         return c
 
-    def experiment_values(ws, r, optimized, source, compare):
+    def experiment_values(ws, r, optimized, source):
         """Only the Optimized column of a summary-style sheet applies to an experiment."""
         not_applicable(ws, r, 5, EXPERIMENT_NA["version"]).fill = fills[0]
         not_applicable(ws, r, 6, EXPERIMENT_NA["version"]).fill = fills[1]
         value(ws, r, 7, optimized, source).fill = fills[2]
         not_applicable(ws, r, 8, EXPERIMENT_NA["version"])
         not_applicable(ws, r, 9, EXPERIMENT_NA["speedup"])
-        if compare:
-            not_applicable(ws, r, 10, EXPERIMENT_NA["gpu"])
-
-    def experiment_kernel_note(exp):
-        if exp["nsys"] is None:
-            return "Not profiled yet.", "No Nsight Systems profile is selected."
-        kernels = nsys_kernels(exp["nsys"])
-        total = sum(us for _, us, _ in kernels) or 1
-        short = ("Experiment with lower accuracy. Every kernel of one end-to-end invocation; "
-                 f"launches: {sum(count for _, _, count in kernels):,}.")
-        if exp["control_nsys"]:
-            control = sum(us for _, us, _ in nsys_kernels(exp["control_nsys"]))
-            short += f" {exp['control_label']} in the same profile run: {control:,.0f} us."
-        def brief(name):
-            """Library kernels such as CUTLASS's keep only their outer template."""
-            inner = name.find("<", name.find("<") + 1)
-            return name if len(name) <= 80 or inner < 0 else name[:inner] + "<…>>"
-
-        full = (f"{exp['change']} Kernel time of one end-to-end invocation from Nsight Systems, "
-                "captured after one warmup invocation; copies and setup are left out. Kernels: "
-                + ", ".join(f"{brief(name)} ×{count} ({100 * us / total:.0f}%)"
-                            for name, us, count in sorted(kernels, key=lambda k: -k[1]))
-                + ". The accuracy loss is in the summary sheet's notes.")
-        return short, full
 
     def experiment_name(row, exp):
         return f"{PROBLEMS[row['app']][0]}, {exp['label']}"
@@ -920,18 +877,10 @@ def workbook(gpus):
     targets = [m["folder"] for m, _ in gpus if m["folder"] != BASELINE]
     shared = ["Sources", "GPU analysis", "Correctness", "Environment", "Contracts"]
 
-    def summary_headers(folder, first, compare):
-        """compare adds the baseline / this GPU Graph column; the summary sheets leave it
-        to GPU analysis, which has the same ratios, and only the Kernels sheets keep it."""
-        title = names[folder]
-        headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)", "Graph (us)",
-                   "Optimized (us)", "Graph speedup\nDirect / Graph",
-                   "Optimized speedup\nGraph / Optimized"]
-        if compare:
-            headers += [f"GPU speedup\n{names[BASELINE].removeprefix('RTX ')} / "
-                        f"{title.removeprefix('RTX ')}\n(Graph)"]
-        widths = [24, first, 30, 20, 15, 15, 15, 15, 17] + ([18] if compare else [])
-        return headers + ["Notes"], widths + [48]
+    # GPU analysis holds the cross-GPU ratios, so the summaries compare versions only.
+    summary_headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)",
+                       "Graph (us)", "Optimized (us)", "Graph speedup\nDirect / Graph",
+                       "Optimized speedup\nGraph / Optimized", "Notes"]
 
     def speedup(a, b):
         """a / b, else the pending reason of the missing value."""
@@ -939,26 +888,24 @@ def workbook(gpus):
             return ratio(a, b)
         return next((x for x in (b, a) if isinstance(x, str)), "n/a (zero time)")
 
-    def summary_values(ws, r, direct, graph, optimized, sources, base_graph=None, compare=False):
+    def summary_values(ws, r, direct, graph, optimized, sources):
         for col, (data, source, fill) in enumerate(zip((direct, graph, optimized), sources,
                                                        fills), 5):
             value(ws, r, col, data, source).fill = fill
         value(ws, r, 8, speedup(direct, graph), speedup=True)
         value(ws, r, 9, speedup(graph, optimized), speedup=True)
-        if compare:
-            value(ws, r, 10, speedup(base_graph, graph), speedup=True)
 
     for manifest, rows in gpus:
         folder, title = manifest["folder"], names[manifest["folder"]]
-        headers, widths = summary_headers(folder, 30, False)
+        headers = summary_headers
         extra = EXPERIMENT_DESCRIPTION if any(row["experiments"] for row in rows) else ""
-        ws = table_sheet(title, headers, widths,
+        ws = table_sheet(title, headers, [24, 30, 30, 20, 15, 15, 15, 15, 17, 48],
                          f"{manifest['label']}; {manifest['toolkit']}. Large workloads: time per "
                          "iteration in a back-to-back batch; lower is better. Optimized is the "
                          "optimized version of the same contract, replayed as a CUDA Graph. Times "
                          "link to the bench records. Notes have full explanations in comments."
                          + extra)
-        nav(ws, [f"Kernels {title}"] + shared)
+        nav(ws, [f"Nsys {title}"] + shared)
         for index, row in enumerate(rows):
             for scope, stage in STAGES:
                 r = ws.max_row + 1
@@ -975,41 +922,63 @@ def workbook(gpus):
                     experiment_cells(ws, r, (experiment_name(row, exp), stage,
                                              problem_text(row["app"], row["contract"]), METRIC))
                     experiment_values(ws, r, timing(exp["bench"], scope),
-                                      bench_source(exp["bench"], scope), False)
+                                      bench_source(exp["bench"], scope))
                     note(ws, r, len(headers), *experiment_note(exp, scope))
         finish_table(ws)
 
     for manifest, rows in gpus:
         folder, title = manifest["folder"], names[manifest["folder"]]
         extra = EXPERIMENT_DESCRIPTION if any(row["experiments"] for row in rows) else ""
-        headers, widths = summary_headers(folder, 26, folder != BASELINE)
-        ws = table_sheet(f"Kernels {title}", headers, widths,
-                         f"{manifest['label']}; {manifest['toolkit']}. GPU kernel time per "
-                         "invocation from Nsight Systems: every kernel of one invocation summed, "
-                         "with the copies left out. Times link to the profiles; notes list the "
-                         "kernels and their shares." + extra)
+        ws = table_sheet(f"Nsys {title}", ["Workload", "Version", "Kernel", "Launches",
+                                           "Total (us)", "Average (us)",
+                                           "Share of kernel time", "nsys report"],
+                         [24, 26, 46, 11, 15, 15, 15, 50],
+                         f"{manifest['label']}; {manifest['toolkit']}. One row per kernel of one "
+                         "end-to-end invocation, from Nsight Systems after one warmup invocation; "
+                         "copies and setup are left out. Total adds up a kernel's launches and "
+                         "share divides it by the version's summed kernel time. Kernels on "
+                         "different streams can overlap, so totals are not wall-clock times: the "
+                         f"{title} sheet has the timings."
+                         + (f" Rows named after an experiment trade accuracy for speed and are "
+                            f"not versions of the contract; the {title} sheet's notes give their "
+                            "paired speedup and accuracy loss." if extra else ""))
+        ws.freeze_panes = "D5"
         nav(ws, [title] + shared)
-        for index, row in enumerate(rows):
-            r = ws.max_row + 1
-            for col, text in enumerate((PROBLEMS[row["app"]][0], "All kernels, one invocation",
-                                        problem_text(row["app"], row["contract"]),
-                                        "Nsight Systems kernel sum"), 1):
-                ws.cell(r, col, text)
-            ws.cell(r, 1).font = bold
-            profiles = [row["profiles"][("nsys", v)] for v in PROFILE_VERSIONS]
-            summary_values(ws, r, *(kernel_time(p) for p in profiles),
-                           [p["_path"] if p else None for p in profiles],
-                           kernel_time(base_rows[index]["profiles"][("nsys", "graph")]),
-                           folder != BASELINE)
-            note(ws, r, len(headers), *kernel_note(row))
-            for exp in row["experiments"]:
+
+        def kernel_rows(workload, version, profile, fill, pending=NSYS_PENDING):
+            if profile is None:
                 r = ws.max_row + 1
-                experiment_cells(ws, r, (experiment_name(row, exp), "All kernels, one invocation",
-                                         problem_text(row["app"], row["contract"]),
-                                         "Nsight Systems kernel sum"))
-                experiment_values(ws, r, kernel_time(exp["nsys"]),
-                                  exp["nsys"]["_path"] if exp["nsys"] else None, folder != BASELINE)
-                note(ws, r, len(headers), *experiment_kernel_note(exp))
+                ws.cell(r, 1, workload).font = bold
+                ws.cell(r, 2, version)
+                value(ws, r, 3, pending)
+                for col in range(1, 9):
+                    ws.cell(r, col).fill = fill
+                return
+            kernels = {}
+            for name, us, count in nsys_kernels(profile):
+                total, launches = kernels.get(name, (0.0, 0))
+                kernels[name] = (total + us, launches + count)
+            summed = sum(us for us, _ in kernels.values()) or 1
+            for name, (us, count) in sorted(kernels.items(), key=lambda k: -k[1][0]):
+                r = ws.max_row + 1
+                ws.cell(r, 1, workload).font = bold
+                ws.cell(r, 2, version)
+                ws.cell(r, 3, brief_kernel(name))
+                ws.cell(r, 4, count)
+                value(ws, r, 5, us)
+                value(ws, r, 6, us / count)
+                ws.cell(r, 7, round(us / summed, 4)).number_format = "0.0%"
+                put_link(ws, r, 8, profile["_path"], Path(profile["_path"]).name)
+                for col in range(1, 9):
+                    ws.cell(r, col).fill = fill
+
+        for row in rows:
+            for version, key, fill in zip(VERSIONS, PROFILE_VERSIONS, fills):
+                kernel_rows(PROBLEMS[row["app"]][0], version, row["profiles"][("nsys", key)],
+                            fill, manifest.get("nsys_pending", NSYS_PENDING))
+            for exp in row["experiments"]:
+                kernel_rows(experiment_name(row, exp), f"Optimized, {exp['label']}",
+                            exp["nsys"], fills[2])
         finish_table(ws)
 
     ws = table_sheet("Sources", ["GPU", "Workload", "Problem size", "Version", "Measurement",
@@ -1251,11 +1220,11 @@ def workbook(gpus):
         ws.cell(r, 5, "No (direct port)" if extension is False else str(extension))
     finish_table(ws)
 
-    # Legacy order without its Latency sheets: summaries, then Kernels per GPU,
-    # Sources, GPU analysis, and the ncu sheets; this report's own sheets come
-    # last. Single-iteration times stay in the bench records.
+    # Legacy order without its Latency sheets: summaries, then the per-kernel
+    # Nsys sheets, Sources, GPU analysis, and the ncu sheets; this report's own
+    # sheets come last. Single-iteration times stay in the bench records.
     order = [names[f] for f in GPUS if f in names]
-    order += [f"Kernels {names[f]}" for f in GPUS if f in names]
+    order += [f"Nsys {names[f]}" for f in GPUS if f in names]
     order += ["Sources", "GPU analysis"]
     order += [s for f in GPUS if f in names
               for s in (f"ncu metrics ({names[f]})", f"NCU launches {names[f]}")]

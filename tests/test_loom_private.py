@@ -406,7 +406,7 @@ class ReportTests(unittest.TestCase):
         self.select_profile("ncu", "graph", self.write_profile("run-baseline-graph", ncu=raw))
         manifest, rows = self.select("check", self.write_record("check.json"))
         book = self.m.workbook([(manifest, rows)])
-        self.assertEqual(book.sheetnames, ["RTX 3090", "Kernels RTX 3090",
+        self.assertEqual(book.sheetnames, ["RTX 3090", "Nsys RTX 3090",
                                            "Sources", "GPU analysis", "ncu metrics (RTX 3090)",
                                            "NCU launches RTX 3090", "Correctness",
                                            "Environment", "Contracts"])
@@ -427,9 +427,14 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(ws["H5"].number_format, '0.00"x"')
         self.assertEqual(ws["I5"].value, 2.5)  # Graph / Optimized
         self.assertEqual(ws.cell(7, 7).value, "pending")  # attention: nothing selected
-        kernels = book["Kernels RTX 3090"]
-        self.assertEqual(kernels["F5"].value, 0.4)  # 400 ns in the captured invocation
-        self.assertEqual(kernels["E5"].value, "pending")
+        nsys = book["Nsys RTX 3090"]
+        # One row per kernel and version: Direct pending, Graph's one kernel, Optimized pending.
+        self.assertEqual([nsys.cell(r, 2).value for r in (5, 6, 7)], ["Direct", "Graph", "Optimized"])
+        self.assertEqual(nsys["C5"].value, "pending")
+        self.assertEqual([nsys.cell(6, c).value for c in (3, 4, 5, 6, 7)],
+                         ["k", 4, 0.4, 0.1, 1.0])  # 400 ns over 4 launches, all kernel time
+        self.assertTrue(nsys["H6"].hyperlink.target.endswith("run-baseline-graph.nsys-rep"))
+        self.assertIn("not wall-clock times", nsys["A2"].value)
         metrics = book["ncu metrics (RTX 3090)"]
         self.assertEqual([metrics.cell(5, c).value for c in (2, 3, 4, 5, 8)],
                          ["Graph", "update", 2, 11.0, 50.0])
@@ -447,8 +452,7 @@ class ReportTests(unittest.TestCase):
         for sheet in ("RTX 3090", "RTX 4090"):
             headers = [c.value for c in book[sheet][4]]
             self.assertEqual(headers[-2:], ["Optimized speedup\nGraph / Optimized", "Notes"])
-        kernels = [c.value for c in book["Kernels RTX 4090"][4]]
-        self.assertEqual(kernels[-2], "GPU speedup\n3090 / 4090\n(Graph)")
+        self.assertNotIn("GPU speedup", " ".join(c.value for c in book["Nsys RTX 4090"][4]))
         analysis = book["GPU analysis"]
         self.assertEqual([analysis.cell(5, c).value for c in (1, 5, 8)],
                          ["RTX 4090", "Graph", 1.0])
@@ -518,12 +522,14 @@ class ReportTests(unittest.TestCase):
                       ws["J7"].value)
         self.assertIn("fails the FP32 tolerance check", ws["J7"].value)
         self.assertIn("0.23% RMS and 250 of 256 tokens agree", ws["J7"].value)
-        self.assertEqual(book["Kernels RTX 3090"]["G6"].value, "pending")
-        for sheet in ("RTX 3090", "Kernels RTX 3090"):
+        nsys = book["Nsys RTX 3090"]
+        self.assertEqual([nsys.cell(8, c).value for c in (1, 2, 3)],
+                         ["PageRank, BF16 classifier", "Optimized, BF16 classifier", "pending"])
+        for sheet in ("RTX 3090", "Nsys RTX 3090"):
             self.assertIn("Rows named after an experiment", book[sheet]["A2"].value)
         plain = self.m.workbook([(dict(manifest, folder="rtx3090"),
                                   [dict(row, experiments=[]) for row in rows])])
-        for sheet in ("RTX 3090", "Kernels RTX 3090"):
+        for sheet in ("RTX 3090", "Nsys RTX 3090"):
             self.assertNotIn("experiment", plain[sheet]["A2"].value)
         self.assertIn("2.00× faster end to end", self.m.markdown([(manifest, rows)]))
 
