@@ -29,7 +29,8 @@ another application, version, or GPU are errors.
 Timing cells come only from bench records, so a correctness check never
 appears as a performance measurement. The workbook uses the layout and styling
 of results/cuda_performance.xlsx without its Latency sheets: per-GPU summary
-sheets, per-kernel Nsight Systems (Nsys) sheets, then Sources, GPU analysis, the ncu sheets, Correctness, Environment, and
+sheets, per-kernel Nsight Systems (Nsys) sheets, then Sources, GPU analysis,
+one Nsight Compute (NCU) sheet for every GPU, Correctness, Environment, and
 Contracts. Its links point at GitHub, pinned to the latest origin/main commit
 that has each file. The test-machine table comes from the recorder metadata
 (<gpu>/runs/<run-id>/metadata.json) of the selected runs, except the source
@@ -713,19 +714,6 @@ EXPERIMENT_NA = {
 EXPERIMENT_DESCRIPTION = (" Rows named after an experiment trade accuracy for speed and are not "
                           "versions of the contract; their notes give the paired speedup and the "
                           "accuracy loss.")
-# Per-launch ncu metrics on the NCU launches sheets (metric, column label).
-NCU_DETAIL_METRICS = [
-    ("gpu__time_duration.sum", "Duration"),
-    ("sm__throughput.avg.pct_of_peak_sustained_elapsed", "SM throughput %"),
-    ("gpu__compute_memory_throughput.avg.pct_of_peak_sustained_elapsed", "Memory throughput %"),
-    ("gpu__dram_throughput.avg.pct_of_peak_sustained_elapsed", "DRAM throughput %"),
-    ("sm__warps_active.avg.pct_of_peak_sustained_active", "Achieved occupancy %"),
-    ("sm__maximum_warps_per_active_cycle_pct", "Theoretical occupancy %"),
-    ("launch__registers_per_thread", "Registers / thread"),
-    ("launch__grid_size", "Grid"),
-    ("launch__block_size", "Block"),
-    ("launch__waves_per_multiprocessor", "Waves / SM"),
-]
 # Launch configuration: kernels with different values are separate rows.
 NCU_CONFIG_METRICS = ["launch__grid_size", "launch__block_size", "launch__registers_per_thread",
                       "launch__shared_mem_per_block"]
@@ -875,7 +863,7 @@ def workbook(gpus):
     names = {m["folder"]: m["label"].split(" (")[0] for m, _ in gpus}
     base_rows = dict((m["folder"], rows) for m, rows in gpus)[BASELINE]
     targets = [m["folder"] for m, _ in gpus if m["folder"] != BASELINE]
-    shared = ["Sources", "GPU analysis", "Correctness", "Environment", "Contracts"]
+    shared = ["Sources", "GPU analysis", "NCU", "Correctness", "Environment", "Contracts"]
 
     # GPU analysis holds the cross-GPU ratios, so the summaries compare versions only.
     summary_headers = ["Workload", "Stage", "Problem size", "Metric", "Direct (us)",
@@ -1070,95 +1058,75 @@ def workbook(gpus):
         value(ws, 5, 1, "pending (only one GPU)")
     finish_table(ws)
 
+    ws = table_sheet("NCU", ["GPU", "Workload", "Version", "Kernel", "Launches",
+                             "Median duration (us)", "SM throughput %", "Memory throughput %",
+                             "ncu report"],
+                     [15, 24, 14, 46, 11, 16, 15, 16, 50],
+                     "Nsight Compute metrics of each kernel in one end-to-end invocation, after a "
+                     "warmup: one row per GPU, version, kernel and launch configuration, with "
+                     "medians over its launches. How to read it: SM throughput is how busy the "
+                     "compute units are and memory throughput how busy the busiest memory unit "
+                     "(DRAM, L2 or L1) is, each as a share of its peak. High memory with low SM "
+                     "means memory-bound, high SM means compute-bound, and both low means "
+                     "latency-bound (a small grid, or waiting). Direct is left out: it launches "
+                     "the same kernels as Graph, and ncu replays each launch alone. Replayed "
+                     "durations are not application times. The kernel's comment has its full "
+                     "name, configuration and occupancy; the report has every launch and metric.")
+    ws.freeze_panes = "E5"
+    nav(ws, [names[f] for f in GPUS if f in names] + ["Sources"])
     for manifest, rows in gpus:
-        title = names[manifest["folder"]]
-        metrics, raw_title = f"ncu metrics ({title})", f"NCU launches {title}"
-        headers = ["Workload", "Version", "Kernel", "Launches", "Median (us)", "Min (us)",
-                   "Max (us)", "SM throughput %\n(median)", "DRAM throughput %\n(median)",
-                   "Achieved occupancy %\n(median)", "Memory throughput %\n(median)",
-                   "Theoretical occupancy %\n(median)", "Grid (x y z)", "Block (x y z)",
-                   "Registers / thread", "Shared memory / block", "ncu report", "Launch details",
-                   "Problem size"]
-        ws = table_sheet(metrics, headers,
-                         [24, 14, 46, 11, 15, 15, 15, 17, 17, 18, 18, 19, 22, 22, 17, 22, 50, 20,
-                          30],
-                         "Large workloads; one row per report, kernel, and launch configuration. "
-                         "Each report covers one end-to-end invocation, after a warmup. "
-                         "Medians and min/max describe profiled launches, not application "
-                         "latency or total GPU utilization. Missing metrics stay blank.")
-        raw = table_sheet(raw_title, ["Workload", "Version", "ncu report", "Launch #", "Kernel"]
-                          + [label for _, label in NCU_DETAIL_METRICS],
-                          [24, 14, 50, 11, 46] + [18] * len(NCU_DETAIL_METRICS),
-                          "Every profiled launch in the selected reports, grouped by kernel and "
-                          "configuration; Launch # is the original report order (from zero). "
-                          "Durations and units are as Nsight Compute reports them.")
-        ws.freeze_panes = raw.freeze_panes = "D5"
-        nav(ws, [raw_title, title])
-        nav(raw, [metrics, title])
+        gpu = names[manifest["folder"]]
         reports = [(row, version, row["profiles"][("ncu", key)])
                    for row in rows for version, key in zip(VERSIONS, PROFILE_VERSIONS)
-                   if row["profiles"][("ncu", key)]]
-        if not reports:
-            for sheet in (ws, raw):
-                value(sheet, 5, 1, manifest.get("ncu_pending", NCU_PENDING))
+                   if version != "Direct"]
+        if not any(profile for _, _, profile in reports):
+            r = ws.max_row + 1
+            ws.cell(r, 1, gpu)
+            value(ws, r, 2, manifest.get("ncu_pending", NCU_PENDING))
+            continue
         for row, version, profile in reports:
             fill = fills[VERSIONS.index(version)]
             workload = PROBLEMS[row["app"]][0]
+            if profile is None:
+                r = ws.max_row + 1
+                for col, text in enumerate((gpu, workload, version), 1):
+                    ws.cell(r, col, text).fill = fill
+                value(ws, r, 4, manifest.get("ncu_pending", NCU_PENDING)).fill = fill
+                continue
             groups = {}
-            for i, launch in enumerate(ncu_rows(profile)):
+            for launch in ncu_rows(profile):
                 key = (launch["Kernel Name"][0],
                        tuple(launch.get(metric) for metric in NCU_CONFIG_METRICS))
-                groups.setdefault(key, []).append((i, launch))
-            for (kernel, _), indexed in groups.items():
-                launches = [launch for _, launch in indexed]
-                first = launches[0]
-                durations = [launch_us(launch) for launch in launches]
-                r, first_raw = ws.max_row + 1, raw.max_row + 1
-                values = [workload, version, short_kernel(kernel), len(launches),
-                          statistics.median(durations), min(durations), max(durations)]
-                values += [ncu_metric_median(launches, metric) for metric in (
-                    "sm__throughput.avg.pct_of_peak_sustained_elapsed",
-                    "gpu__dram_throughput.avg.pct_of_peak_sustained_elapsed",
-                    "sm__warps_active.avg.pct_of_peak_sustained_active",
-                    "gpu__compute_memory_throughput.avg.pct_of_peak_sustained_elapsed",
-                    "sm__maximum_warps_per_active_cycle_pct")]
-                values += [ncu_dimensions(first, "grid"), ncu_dimensions(first, "block"),
-                           ncu_metric_median(launches, "launch__registers_per_thread")]
+                groups.setdefault(key, []).append(launch)
+            for (kernel, _), launches in groups.items():
+                first, r = launches[0], ws.max_row + 1
+                for col, text in enumerate((gpu, workload, version, short_kernel(kernel),
+                                            len(launches)), 1):
+                    ws.cell(r, col, text)
+                value(ws, r, 6, statistics.median(launch_us(launch) for launch in launches))
+                for col, metric in ((7, "sm__throughput.avg.pct_of_peak_sustained_elapsed"),
+                                    (8, "gpu__compute_memory_throughput.avg."
+                                        "pct_of_peak_sustained_elapsed")):
+                    value(ws, r, col, ncu_metric_median(launches, metric))
+                put_link(ws, r, 9, profile["_path"], Path(profile["_path"]).name)
                 shared_mem, unit = first.get("launch__shared_mem_per_block", ("", ""))
-                values += [f"{shared_mem} {unit}".strip()]
-                for col, data in enumerate(values, 1):
-                    if isinstance(data, (int, float)) and col > 4:
-                        value(ws, r, col, data)
-                    else:
-                        ws.cell(r, col, data)
-                ws.cell(r, 3).comment = Comment(kernel, "build_report.py", width=540, height=160)
-                put_link(ws, r, 17, profile["_path"], Path(profile["_path"]).name)
-                c = ws.cell(r, 18, f"{len(launches)} launches")
-                c.hyperlink, c.font = f"#'{raw_title}'!A{first_raw}", blue
-                ws.cell(r, 19, problem_text(row["app"], row["contract"]))
-                for col in range(1, len(headers) + 1):
+                registers = ncu_metric_median(launches, "launch__registers_per_thread")
+                achieved, theoretical = (ncu_metric_median(launches, metric) for metric in (
+                    "sm__warps_active.avg.pct_of_peak_sustained_active",
+                    "sm__maximum_warps_per_active_cycle_pct"))
+                config = (f"Grid {ncu_dimensions(first, 'grid')}, block "
+                          f"{ncu_dimensions(first, 'block')}"
+                          + (f", {registers:g} registers/thread" if registers is not None else "")
+                          + (f", shared memory {number(shared_mem):g} {unit}"
+                             if shared_mem else "") + ".")
+                if achieved is not None and theoretical is not None:
+                    config += (f" Achieved occupancy {achieved:.0f}% of a theoretical "
+                               f"{theoretical:.0f}% (medians).")
+                ws.cell(r, 4).comment = Comment(f"{kernel}\n\n{config}", "build_report.py",
+                                                width=540, height=200)
+                for col in range(1, 10):
                     ws.cell(r, col).fill = fill
-                for i, launch in indexed:
-                    rr = raw.max_row + 1
-                    raw.cell(rr, 1, workload)
-                    raw.cell(rr, 2, version)
-                    put_link(raw, rr, 3, profile["_path"], Path(profile["_path"]).name)
-                    raw.cell(rr, 4, i)
-                    raw.cell(rr, 5, short_kernel(launch["Kernel Name"][0]))
-                    for col, (metric, _) in enumerate(NCU_DETAIL_METRICS, 6):
-                        if metric not in launch:
-                            continue
-                        data, unit = launch[metric]
-                        try:
-                            data = number(data)
-                        except ValueError:
-                            pass
-                        raw.cell(rr, col, f"{data} {unit}".strip() if unit and unit != "%"
-                                 else data)
-                    for col in range(1, raw.max_column + 1):
-                        raw.cell(rr, col).fill = fill
-        finish_table(ws)
-        finish_table(raw, height=30)
+    finish_table(ws)
 
     ws = table_sheet("Correctness", ["GPU", "Workload", "Version", "Contract SHA-256", "Status",
                                      "Direct", "Graph", "Direct = Graph", "Record"],
@@ -1220,15 +1188,13 @@ def workbook(gpus):
         ws.cell(r, 5, "No (direct port)" if extension is False else str(extension))
     finish_table(ws)
 
-    # Legacy order without its Latency sheets: summaries, then the per-kernel
-    # Nsys sheets, Sources, GPU analysis, and the ncu sheets; this report's own
-    # sheets come last. Single-iteration times stay in the bench records.
+    # Legacy order without its Latency sheets, and one NCU sheet for every GPU:
+    # summaries, then the per-kernel Nsys sheets, Sources, GPU analysis, and NCU;
+    # this report's own sheets come last. Single-iteration times stay in the
+    # bench records, and every ncu launch stays in its report.
     order = [names[f] for f in GPUS if f in names]
     order += [f"Nsys {names[f]}" for f in GPUS if f in names]
-    order += ["Sources", "GPU analysis"]
-    order += [s for f in GPUS if f in names
-              for s in (f"ncu metrics ({names[f]})", f"NCU launches {names[f]}")]
-    order += ["Correctness", "Environment", "Contracts"]
+    order += ["Sources", "GPU analysis", "NCU", "Correctness", "Environment", "Contracts"]
     book._sheets = [book[title] for title in order]
     return book
 

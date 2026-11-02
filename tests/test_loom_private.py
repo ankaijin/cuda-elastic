@@ -407,8 +407,7 @@ class ReportTests(unittest.TestCase):
         manifest, rows = self.select("check", self.write_record("check.json"))
         book = self.m.workbook([(manifest, rows)])
         self.assertEqual(book.sheetnames, ["RTX 3090", "Nsys RTX 3090",
-                                           "Sources", "GPU analysis", "ncu metrics (RTX 3090)",
-                                           "NCU launches RTX 3090", "Correctness",
+                                           "Sources", "GPU analysis", "NCU", "Correctness",
                                            "Environment", "Contracts"])
         ws = book["RTX 3090"]
         self.assertEqual(ws["A1"].value, "RTX 3090")
@@ -435,10 +434,16 @@ class ReportTests(unittest.TestCase):
                          ["k", 4, 0.4, 0.1, 1.0])  # 400 ns over 4 launches, all kernel time
         self.assertTrue(nsys["H6"].hyperlink.target.endswith("run-baseline-graph.nsys-rep"))
         self.assertIn("not wall-clock times", nsys["A2"].value)
-        metrics = book["ncu metrics (RTX 3090)"]
-        self.assertEqual([metrics.cell(5, c).value for c in (2, 3, 4, 5, 8)],
-                         ["Graph", "update", 2, 11.0, 50.0])
-        self.assertEqual(book["NCU launches RTX 3090"].max_row, 6)
+        ncu = book["NCU"]
+        # The two update launches share a configuration: one row of medians, Graph only.
+        self.assertEqual([ncu.cell(5, c).value for c in range(1, 9)],
+                         ["RTX 3090", "PageRank", "Graph", "update", 2, 11.0, 50.0, None])
+        self.assertIn("update(int)", ncu["D5"].comment.text)
+        self.assertIn("Grid 64, block 256.", ncu["D5"].comment.text)
+        self.assertTrue(ncu["I5"].hyperlink.target.endswith("run-baseline-graph.ncu-rep"))
+        self.assertEqual([ncu.cell(6, c).value for c in (3, 4)], ["Optimized", "pending"])
+        self.assertNotIn("Direct", [ncu.cell(r, 3).value for r in range(5, ncu.max_row + 1)])
+        self.assertEqual(ncu.max_row, 4 + len(self.m.APPS) * 2)
         self.assertEqual(book["GPU analysis"]["A5"].value, "pending")
 
     def test_gpu_comparison_is_left_to_gpu_analysis(self):
