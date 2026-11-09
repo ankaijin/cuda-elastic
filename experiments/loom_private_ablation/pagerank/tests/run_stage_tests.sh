@@ -2,10 +2,11 @@
 # GPU tests of the pagerank stages beyond the baseline's run_gpu_tests.sh,
 # run by `make test` under the GPU lock (this script does not lock).
 #   run_stage_tests.sh <build dir> <scratch dir>
-# <build dir> holds pagerank_stage{1,2,3} and their test-only builds: _shapes,
+# <build dir> holds pagerank_stage{1,2,3,4} and their test-only builds: _shapes,
 # in which LP_ABLATION_SHAPE=tiny forces a one-block, 64-thread grid, and the
 # readiness-protocol mutants of production's run_optimized_tests.sh
-# (_tag_mutant for stages 2 and 3, _no_reset_mutant for every stage).
+# (_tag_mutant for stages 2-4, _no_reset_mutant for every stage), and stage
+# 4's _delayed_map build and _no_map_wait_mutant.
 set -uo pipefail
 
 build=$1
@@ -34,7 +35,7 @@ expect() {
   fi
 }
 
-for s in 1 2 3; do
+for s in 1 2 3 4; do
   bin=$build/pagerank_stage$s
   shapes=$build/pagerank_stage${s}_shapes
   # The timed binary uses the default shape and names its stage.
@@ -79,8 +80,8 @@ expect_failure() {
 
 # Production's readiness-protocol mutants, on the same sizes. A tag that
 # alternates every sweep accepts the value from two sweeps earlier: the check
-# rejects it (stages 2 and 3, which have tags).
-for s in 2 3; do
+# rejects it (stages 2-4, which have tags).
+for s in 2 3 4; do
   for size in "4096 6" "65536 20"; do
     set -- $size
     expect_failure stage$s-tag-mutant-$1x$2 "1" "$build/pagerank_stage${s}_tag_mutant" \
@@ -95,13 +96,25 @@ done
 # Without the barrier counter reset the barriers pass at once and the sweeps
 # overlap: the check rejects the scores (exit 1) or a wait exceeds the spin
 # limit (exit 70), and the run never hangs (a timeout's 124 fails the test).
-for s in 1 2 3; do
+for s in 1 2 3 4; do
   for size in "4096 6" "65536 20"; do
     set -- $size
     expect_failure stage$s-no-reset-mutant-$1x$2 "1 70" \
       "$build/pagerank_stage${s}_no_reset_mutant" --set nodes=$1 --set iterations=$2
   done
 done
+
+# Stage 4 uploads the map on a side stream during the sweeps. As in
+# production's tests, a build that holds that upload back by 200 ms must pass
+# (20 sweeps, one sweep, and the large size), and its mutant without the last
+# sweep's wait for the map must fail the check.
+for size in "65536 20" "65536 1" "1048576 20"; do
+  set -- $size
+  expect stage4-delayed-map-$1x$2 0 "$1 nodes" "$build/pagerank_stage4_delayed_map" \
+    --set nodes=$1 --set iterations=$2
+done
+expect_failure stage4-no-map-wait-mutant "1" "$build/pagerank_stage4_no_map_wait_mutant" \
+  --set nodes=65536 --set iterations=20
 
 if [[ $failures -ne 0 ]]; then
   echo "stage tests FAILED ($failures)"

@@ -11,9 +11,15 @@
 //   -DLP_STAGE=3  stage 2 over the level-ordered layout (layout.cpp). This is
 //                 pagerank_optimized.cu's kernel, unchanged, with the
 //                 optimized variant's generic "default" launch shape instead
-//                 of the per-GPU tuning table.
+//                 of the per-GPU tuning table, and its serial uploads, as
+//                 the optimized variant had them before the map overlap.
+//   -DLP_STAGE=4  stage 3 with the map upload overlapped: the application
+//                 scope uploads the position-to-node map, which only the
+//                 last sweep reads, on a side stream during the sweeps, and
+//                 the last sweep waits for a flag copied after it. This is
+//                 pagerank_optimized.cu, unchanged, with the "default" shape.
 //
-// Stage 4, the per-GPU tuning, is the production optimized binary itself.
+// Stage 5, the per-GPU tuning, is the production optimized binary itself.
 // Every stage uses the "default" shape: 512 threads per block, at most 2
 // resident blocks per SM, graph arrays through the read-only cache (__ldg).
 //
@@ -21,8 +27,8 @@
 // sums each node's incoming list in order, in float, with the baseline's
 // operations, so every stage's scores equal the sequential loop bitwise.
 // Stages 1 and 2 write the scores as the baseline does (the 1/N initial
-// scores, then every sweep); stage 3 writes them only in the last sweep, as
-// the optimized variant does.
+// scores, then every sweep); stages 3 and 4 write them only in the last
+// sweep, as the optimized variant does.
 #include "lp_harness.cuh"
 
 #include "graph.h"
@@ -30,9 +36,13 @@
 #include "oracle.h"
 
 #include <cmath>
+#if defined(LP_PAGERANK_TEST_DELAY_NODES)
+#include <chrono>
+#include <thread>
+#endif
 
-#if !defined(LP_STAGE) || LP_STAGE < 1 || LP_STAGE > 3
-#error "build with -DLP_STAGE=1, 2 or 3"
+#if !defined(LP_STAGE) || LP_STAGE < 1 || LP_STAGE > 4
+#error "build with -DLP_STAGE=1, 2, 3 or 4"
 #endif
 
 namespace {
@@ -265,9 +275,11 @@ persistent_tags(const int *in_offsets, const int *in_sources, const int *out_deg
   }
 }
 
-#else // LP_STAGE == 3
-// Stage 3: pagerank_optimized.cu's kernel, copied unchanged (the run.py check
+#else // LP_STAGE 3 and 4
+// Stage 4: pagerank_optimized.cu's kernel, copied unchanged (the run.py check
 // compares its machine code with the production binary's gauss_seidel<false>).
+// Stage 3: the same kernel as it was before the map overlap: no flag, and the
+// map read through the read-only cache.
 
 template <bool kStream>
 __device__ __forceinline__ int load_graph(const int *address) {
@@ -308,9 +320,16 @@ __device__ __forceinline__ float in_sum(int begin, int end, const int *sources,
 
 template <bool kStream>
 __global__ void __launch_bounds__(1024)
+#if LP_STAGE >= 4
+gauss_seidel(const int *offsets, const int *sources, const int *out_degrees,
+             const int *nodes, const unsigned *nodes_ready, unsigned *contrib,
+             float *scores, unsigned *barrier, int count, int iterations,
+             float initial, float base, float damping) {
+#else
 gauss_seidel(const int *offsets, const int *sources, const int *out_degrees,
              const int *nodes, unsigned *contrib, float *scores, unsigned *barrier,
              int count, int iterations, float initial, float base, float damping) {
+#endif
   const int stride = gridDim.x * blockDim.x;
   const int first = blockIdx.x * blockDim.x + threadIdx.x;
   for (int p = first; p < count; p += stride) {
@@ -324,6 +343,25 @@ gauss_seidel(const int *offsets, const int *sources, const int *out_degrees,
     const unsigned *previous = contrib + (size_t)((sweep & 1) ^ 1) * count;
     const unsigned tag = sweep_tag(sweep);
     const bool last = sweep + 1 == iterations;
+#if LP_STAGE >= 4 && !defined(LP_PAGERANK_MUTANT_NO_NODES_WAIT)
+    // Test-only mutant (tests/), as in pagerank_optimized.cu: the last sweep
+    // scatters without waiting for the map's upload. The tests delay that
+    // upload and require a failure.
+    if (last && nodes_ready) {
+      if (threadIdx.x == 0) {
+        const long long start = clock64();
+        unsigned ready;
+        do {
+          asm volatile("ld.acquire.gpu.global.u32 %0, [%1];"
+                       : "=r"(ready)
+                       : "l"(nodes_ready)
+                       : "memory");
+          check_spin(start);
+        } while (ready == 0);
+      }
+      __syncthreads();
+    }
+#endif
     for (int p = first; p < count; p += stride) {
       const int degree = load_graph<kStream>(out_degrees + p);
       const float total =
@@ -332,7 +370,11 @@ gauss_seidel(const int *offsets, const int *sources, const int *out_degrees,
                           previous, tag);
       const float score = base + damping * total;
       store_relaxed(current + p, tag | __float_as_uint(score / (float)degree));
+#if LP_STAGE >= 4
+      if (last) scores[__ldcg(nodes + p)] = score;
+#else
       if (last) scores[__ldg(nodes + p)] = score;
+#endif
     }
     if (!last) grid_barrier(barrier, ++epoch);
   }
@@ -376,6 +418,13 @@ public:
     cudaFree(d_scores_);
     cudaFree(d_contrib_);
     cudaFree(d_barrier_);
+#if LP_STAGE >= 4
+    cudaFree(d_nodes_ready_);
+    cudaFreeHost(h_ready_);
+    if (side_) cudaStreamDestroy(side_);
+    if (fork_) cudaEventDestroy(fork_);
+    if (join_) cudaEventDestroy(join_);
+#endif
   }
 
   std::string identity() const override { return "loom-private/pagerank"; }
@@ -418,7 +467,7 @@ public:
     bounds_.count = levels_;
     std::copy(g.level_offsets.begin(), g.level_offsets.end(), bounds_.offsets);
 #endif
-#if LP_STAGE == 3
+#if LP_STAGE >= 3
     // The four arrays and byte counts of the baseline's upload, renumbered.
     const pagerank::LevelLayout layout = pagerank::build_level_layout(g);
     const std::vector<int> &offsets = layout.offsets, &sources = layout.sources,
@@ -475,8 +524,51 @@ public:
     LP_CUDA(cudaMalloc(&d_scores_, sizeof(float) * (size_t)nodes_));
     LP_CUDA(cudaMalloc(&d_contrib_, 2 * sizeof(unsigned) * (size_t)nodes_));
     LP_CUDA(cudaMalloc(&d_barrier_, sizeof(unsigned)));
+#if LP_STAGE >= 4
+    LP_CUDA(cudaMalloc(&d_nodes_ready_, sizeof(unsigned)));
+    LP_CUDA(cudaMallocHost(&h_ready_, sizeof(unsigned)));
+    *h_ready_ = 1;
+    LP_CUDA(cudaStreamCreateWithFlags(&side_, cudaStreamNonBlocking));
+    LP_CUDA(cudaEventCreateWithFlags(&fork_, cudaEventDisableTiming));
+    LP_CUDA(cudaEventCreateWithFlags(&join_, cudaEventDisableTiming));
+#endif
   }
 
+#if LP_STAGE >= 4
+  // As in the optimized variant: the map and its flag upload on a side stream
+  // that forks after the arrays the first sweep needs and joins before the
+  // score download.
+  void enqueue_application(cudaStream_t stream) override {
+    const size_t node_bytes = sizeof(int) * (size_t)nodes_;
+    LP_CUDA(cudaMemsetAsync(d_nodes_ready_, 0, sizeof(unsigned), stream));
+    LP_CUDA(cudaMemcpyAsync(d_offsets_, h_offsets_, node_bytes + sizeof(int),
+                            cudaMemcpyHostToDevice, stream));
+    LP_CUDA(cudaMemcpyAsync(d_sources_, h_sources_, sizeof(int) * (size_t)edges_,
+                            cudaMemcpyHostToDevice, stream));
+    LP_CUDA(cudaMemcpyAsync(d_out_degrees_, h_out_degrees_, node_bytes,
+                            cudaMemcpyHostToDevice, stream));
+    LP_CUDA(cudaEventRecord(fork_, stream));
+    LP_CUDA(cudaStreamWaitEvent(side_, fork_, 0));
+#if defined(LP_PAGERANK_TEST_DELAY_NODES)
+    // Test-only (tests/), as in pagerank_optimized.cu: hold the map upload
+    // back by 200 ms, so the last sweep certainly starts before it lands.
+    LP_CUDA(cudaLaunchHostFunc(
+        side_, [](void *) { std::this_thread::sleep_for(std::chrono::milliseconds(200)); },
+        nullptr));
+#endif
+    LP_CUDA(cudaMemcpyAsync(d_nodes_, h_nodes_, node_bytes, cudaMemcpyHostToDevice,
+                            side_));
+    LP_CUDA(cudaMemcpyAsync(d_nodes_ready_, h_ready_, sizeof(unsigned),
+                            cudaMemcpyHostToDevice, side_));
+    LP_CUDA(cudaEventRecord(join_, side_));
+    launch(stream, d_nodes_ready_);
+    LP_CUDA(cudaStreamWaitEvent(stream, join_, 0));
+    LP_CUDA(cudaMemcpyAsync(h_scores_, d_scores_, sizeof(float) * (size_t)nodes_,
+                            cudaMemcpyDeviceToHost, stream));
+  }
+
+  void enqueue_compute(cudaStream_t stream) override { launch(stream, nullptr); }
+#else
   void enqueue_application(cudaStream_t stream) override {
     const size_t node_bytes = sizeof(int) * (size_t)nodes_;
     LP_CUDA(cudaMemcpyAsync(d_offsets_, h_offsets_, node_bytes + sizeof(int),
@@ -491,7 +583,12 @@ public:
                             cudaMemcpyDeviceToHost, stream));
   }
 
-  void enqueue_compute(cudaStream_t stream) override {
+  void enqueue_compute(cudaStream_t stream) override { launch(stream, nullptr); }
+#endif
+
+  // nodes_ready (stage 4): the flag the last sweep waits for, or null when the
+  // map is resident. Earlier stages take no flag.
+  void launch(cudaStream_t stream, [[maybe_unused]] const unsigned *nodes_ready) {
     const float initial = 1.0f / (float)nodes_;
     const float base = (1.0f - kDamping) / (float)nodes_;
 #if !defined(LP_PAGERANK_MUTANT_NO_RESET)
@@ -519,10 +616,14 @@ public:
     LP_CUDA(cudaLaunchKernelEx(&config, persistent_tags, offsets, sources, degrees, nodes,
                                d_contrib_, d_scores_, d_barrier_, nodes_, iterations_,
                                initial, base, kDamping));
-#else
+#elif LP_STAGE == 3
     LP_CUDA(cudaLaunchKernelEx(&config, gauss_seidel<false>, offsets, sources, degrees, nodes,
                                d_contrib_, d_scores_, d_barrier_, nodes_, iterations_,
                                initial, base, kDamping));
+#else
+    LP_CUDA(cudaLaunchKernelEx(&config, gauss_seidel<false>, offsets, sources, degrees, nodes,
+                               nodes_ready, d_contrib_, d_scores_, d_barrier_, nodes_,
+                               iterations_, initial, base, kDamping));
 #endif
   }
 
@@ -539,6 +640,9 @@ public:
     LP_CUDA(cudaMemsetAsync(d_scores_, 0xFF, bytes, stream));
     LP_CUDA(cudaMemsetAsync(d_contrib_, 0xFF, 2 * bytes, stream));
     LP_CUDA(cudaMemsetAsync(d_barrier_, 0x40, sizeof(unsigned), stream));
+#if LP_STAGE >= 4
+    LP_CUDA(cudaMemsetAsync(d_nodes_ready_, 0xFF, sizeof(unsigned), stream));
+#endif
     std::memset(h_scores_, 0xFF, bytes);
   }
 
@@ -591,6 +695,11 @@ private:
       *d_nodes_ = nullptr;
   float *d_scores_ = nullptr;
   unsigned *d_contrib_ = nullptr, *d_barrier_ = nullptr;
+#if LP_STAGE >= 4
+  unsigned *d_nodes_ready_ = nullptr, *h_ready_ = nullptr;
+  cudaStream_t side_ = nullptr;
+  cudaEvent_t fork_ = nullptr, join_ = nullptr;
+#endif
 };
 
 std::unique_ptr<lp::Workload> make(lp::Options &options) {
