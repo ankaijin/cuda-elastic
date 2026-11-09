@@ -1,0 +1,157 @@
+{
+  "application": "decoder",
+  "title": "llama2c decoder",
+  "scope": "compute",
+  "arithmetic_changes": [],
+  "binaries": {
+    "baseline": {
+      "suite_variant": "baseline"
+    },
+    "stage1": {
+      "stage_binary": "decoder_stage1"
+    },
+    "stage2": {
+      "stage_binary": "decoder_stage2"
+    },
+    "stage3": {
+      "stage_binary": "decoder_stage3"
+    },
+    "stage4": {
+      "stage_binary": "decoder_stage4"
+    },
+    "optimized": {
+      "suite_variant": "optimized"
+    },
+    "reference-dp": {
+      "stage_binary": "decoder_optimized_hooks",
+      "timed": false,
+      "env": {
+        "DECODER_OPT_SCHEDULE": "dp",
+        "DECODER_OPT_TILE": "128x256x16"
+      }
+    },
+    "reference-streamk": {
+      "stage_binary": "decoder_optimized_hooks",
+      "timed": false,
+      "env": {
+        "DECODER_OPT_TILE": "128x256x16"
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "baseline-direct",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "direct",
+      "label": "Baseline, Direct",
+      "adds": "Reference: production decoder.cu with direct launches",
+      "detail": "A token-reset copy, then rmsnorm, classifier and softmax+argmax for each of the 4 steps: 12 kernel launches per invocation, each issued from the host. The classifier (98.7% of GPU time) is a 64 x 64 shared-memory tile with 4 x 4 outputs per thread and 16-column stages: 2,048 blocks of 256 threads.",
+      "change": "12 launches per invocation (3 kernels × 4 steps). 64×64 classifier tiles, 4×4 outputs per thread."
+    },
+    {
+      "id": "baseline-graph",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "graph",
+      "label": "Baseline, Graph",
+      "adds": "Reference: the same launches captured once as a CUDA Graph",
+      "detail": "Removes host launch overhead. The classifier still reaches only about 42% of the FP32 ceiling on the RTX 3090 (one multiply-add per two lane-cycles under --fmad=false).",
+      "change": "The same 12 launches and token reset, replayed as one CUDA Graph."
+    },
+    {
+      "id": "stage1-regtile",
+      "stage": 1,
+      "binary": "stage1",
+      "launch": "graph",
+      "label": "+ Register-tiled SGEMM",
+      "adds": "Register-tiled SGEMM",
+      "detail": "The production classifier's tile with a data-parallel schedule: 256 blocks of 8 warps compute 128 x 256 tiles (sequence tile fastest), and each thread owns 16 x 8 outputs, read with six conflict-free float4 shared loads per column from padded k-major arrays. Copies are synchronous: plain loads into registers, stores into one shared buffer, a barrier, 16 columns, a barrier. One block per SM. Default tile 128x256x16.",
+      "change": "128×256 block tiles, 16×8 outputs per thread from float4 shared loads. Synchronous copies into one buffer."
+    },
+    {
+      "id": "stage2-cpasync",
+      "stage": 2,
+      "binary": "stage2",
+      "launch": "graph",
+      "label": "+ cp.async multi-stage pipeline",
+      "adds": "cp.async multi-stage pipeline",
+      "detail": "4-byte cp.async copies fill a 3-slot shared ring two 16-column stages ahead of the arithmetic, issued around the arithmetic as in production (sequence lines before the columns, classifier lines before the last two). Each column's fragment is read from shared memory and then multiplied; the barrier that publishes the next stage follows the last column.",
+      "change": "cp.async copies run two 16-column stages ahead of the arithmetic (3-slot shared ring)."
+    },
+    {
+      "id": "stage3-fragments",
+      "stage": 3,
+      "binary": "stage3",
+      "launch": "graph",
+      "label": "+ Register fragment double-buffering",
+      "adds": "Register fragment double-buffering",
+      "detail": "Two register fragments: column k + 1 is read from shared memory while column k is multiplied, and the next stage's barrier moves before the current stage's last column so that its first fragment loads early. This is the production kernel, still data parallel; its machine code equals the production 128x256x16 classifier and its launches equal production's with the dp schedule and that tile.",
+      "change": "Column k+1's fragment loads while column k is multiplied. The production kernel, still data parallel."
+    },
+    {
+      "id": "stage4-streamk",
+      "stage": 4,
+      "binary": "stage4",
+      "launch": "graph",
+      "label": "+ Stream-K tail",
+      "adds": "Stream-K tail",
+      "detail": "A persistent grid of resident blocks (occupancy x SMs). Whole waves stay data parallel; the k-stages of the last one to two waves' tiles are split evenly over the blocks, and a split tile's running sums pass in order from block b to b + 1 (release store, acquire load), after a per-step flag memset. RTX 3090: 2 waves + 92 split tiles on 82 blocks; 4090: 2 waves on 128 blocks, nothing split; 5090: 256 tiles split over 170 blocks.",
+      "change": "Persistent grid. The ragged last wave's k-stages split evenly; each split sum is handed on in order."
+    },
+    {
+      "id": "stage5-tuned",
+      "stage": 5,
+      "binary": "optimized",
+      "launch": "graph",
+      "label": "+ Per-GPU tuning (= Optimized)",
+      "adds": "Per-GPU tuning",
+      "detail": "The production optimized binary. Its only per-GPU choice is the tile: the RTX 5090 uses 8-column stages four deep (128x256x8); the RTX 3090 and 4090 use the default 128x256x16 three deep, so on them this binary's launches equal stage 4's and the step changes nothing.",
+      "change": "This GPU's tile. 3090, 4090: the default (no change). 5090: 8-column stages, four deep."
+    }
+  ],
+  "sass_equal": [
+    {
+      "binary": "stage3",
+      "reference": "optimized",
+      "kernel": "17classifier_kernelINS_10TileConfigILi2ELi4ELi16ELi16ELi3ELi1EEEEE",
+      "why": "stage 3 is the production classifier with the default tile"
+    },
+    {
+      "binary": "stage4",
+      "reference": "optimized",
+      "kernel": "17classifier_kernelINS_10TileConfigILi2ELi4ELi16ELi16ELi3ELi1EEEEE",
+      "why": "stage 4 is the production classifier with the default tile"
+    },
+    {
+      "binary": "stage1",
+      "reference": "optimized",
+      "kernel": "14rmsnorm_kernel",
+      "why": "every stage keeps the production rmsnorm"
+    },
+    {
+      "binary": "stage1",
+      "reference": "optimized",
+      "kernel": "21softmax_argmax_kernel",
+      "why": "every stage keeps the production softmax+argmax"
+    }
+  ],
+  "host_equal": [
+    {
+      "binary": "stage3",
+      "reference": "reference-dp",
+      "why": "stage 3 is production with the dp schedule and the default tile"
+    },
+    {
+      "binary": "stage4",
+      "reference": "reference-streamk",
+      "why": "stage 4 is production with the default tile"
+    },
+    {
+      "binary": "stage4",
+      "reference": "optimized",
+      "why": "the RTX 3090 and 4090 tuning entries equal the default tile",
+      "gpus": ["rtx3090", "rtx4090"]
+    }
+  ]
+}
