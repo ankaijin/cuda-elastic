@@ -8,6 +8,11 @@ optimization's share of the speedup is measured, not estimated.
 | Directory | Workload | Stages |
 |---|---|---|
 | [`pagerank/`](pagerank) | `loom-private/pagerank` | persistent kernel, readiness tags, level-ordered layout, per-GPU tuning |
+| [`attention/`](attention) | `loom-private/multisensor-attention` | 64-row shared K/V tiles, context splits, one-pass bound shift, three-FMA score, cheaper math, overlapped transfers, per-GPU split count |
+| [`decoder/`](decoder) | `loom-private/llama2c-decoder` | register-tiled SGEMM, `cp.async` pipeline, register fragment double-buffering, Stream-K tail, per-GPU tile |
+| [`anomaly/`](anomaly) | `loom-private/mlperf-tiny-anomaly-model` | 16-sample dp4a tiles, proven binary32 requantization, int8 tensor cores, chunked multi-stream pipeline, per-GPU chunk count |
+| [`vecadd_memory/`](vecadd_memory) | `loom-private/vecadd-memory` | chunked multi-stream pipeline, one 2D copy, 16-byte vectors, streaming hints, per-GPU tuning |
+| [`vecadd_product/`](vecadd_product) | `loom-private/vecadd-product` | chunked multi-stream pipeline |
 
 The results are in `results/loom_private_ablation/opt_results.xlsx`.
 

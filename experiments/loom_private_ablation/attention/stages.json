@@ -147,7 +147,7 @@
       "label": "+ Per-GPU tuning (= Optimized)",
       "adds": "Per-GPU split count",
       "detail": "The production optimized binary, which reads its split count from the compute capability. The RTX 3090 (sm_86) uses 8 splits: 3,128 blocks over 164 resident slots, about 19.1 waves, and 8 IMU chunks. The RTX 4090 and RTX 5090 use 12, the generic default, so on them this stage runs the same work as stage 6.",
-      "change": "This GPU's split count. 3090: 8 splits (3,128 blocks). 4090 and 5090: 12, the default, so no change."
+      "change": "This GPU's split count. 3090: 8 splits (3,128 blocks); 4090 and 5090: 12, the default (no change)."
     }
   ],
   "sass_equal": [

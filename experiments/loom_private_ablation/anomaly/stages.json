@@ -96,7 +96,7 @@
       "label": "+ Per-GPU tuning (= Optimized)",
       "adds": "Per-GPU pipeline chunk count",
       "detail": "The production optimized binary. It selects 16 chunks on cc 12 and later, else 32. On the RTX 3090 and 4090 this is stage 4's 32 (no change). On the RTX 5090 an upload runs about 15% slower while a download runs (PCIe 5), so fewer, larger chunks overlap fewer downloads with the uploads.",
-      "change": "This GPU's chunk count. 3090 and 4090: 32 (= default, no change); 5090: 16 (an upload slows ~15% during a download)."
+      "change": "This GPU's chunk count. 3090 and 4090: 32, the default (no change); 5090: 16 (uploads slow during downloads)."
     }
   ],
   "sass_equal": [

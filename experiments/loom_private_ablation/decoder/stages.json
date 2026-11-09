@@ -107,7 +107,7 @@
       "label": "+ Per-GPU tuning (= Optimized)",
       "adds": "Per-GPU tuning",
       "detail": "The production optimized binary. Its only per-GPU choice is the tile: the RTX 5090 uses 8-column stages four deep (128x256x8); the RTX 3090 and 4090 use the default 128x256x16 three deep, so on them this binary's launches equal stage 4's and the step changes nothing.",
-      "change": "This GPU's tile. 3090, 4090: the default (no change). 5090: 8-column stages, four deep."
+      "change": "This GPU's tile. 3090 and 4090: the default (no change); 5090: 8-column stages, four deep."
     }
   ],
   "sass_equal": [
