@@ -1,0 +1,47 @@
+{
+  "application": "vecadd_product",
+  "title": "Vecadd product",
+  "scope": "application",
+  "arithmetic_changes": [],
+  "binaries": {
+    "baseline": {
+      "suite_variant": "baseline"
+    },
+    "optimized": {
+      "suite_variant": "optimized"
+    }
+  },
+  "cases": [
+    {
+      "id": "baseline-direct",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "direct",
+      "label": "Baseline, Direct",
+      "adds": "Reference: production vecadd_product.cu with direct launches",
+      "detail": "One stream per invocation: a 128 MiB host-to-device copy from pinned memory, one add_records launch over 2^20 records (16 Mi threads, 256 per block), then a 64 MiB device-to-host copy to pinned memory. The two copy directions never overlap, and the kernel is a few percent of the scope.",
+      "change": "One 128 MiB upload, one kernel, one 64 MiB download, in order on one stream."
+    },
+    {
+      "id": "baseline-graph",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "graph",
+      "label": "Baseline, Graph",
+      "adds": "Reference: the same three operations captured once as a CUDA Graph",
+      "detail": "Removes host launch overhead. The copies still run back to back, so the time is about upload + kernel + download.",
+      "change": "The same upload, kernel and download, replayed as one CUDA Graph."
+    },
+    {
+      "id": "stage1-pipeline",
+      "stage": 1,
+      "binary": "optimized",
+      "launch": "graph",
+      "label": "+ Chunked multi-stream pipeline (= Optimized)",
+      "adds": "Chunked multi-stream pipeline",
+      "detail": "The production optimized binary. The records are split into 16 equal chunks, each on its own non-blocking stream: upload its inputs, run the baseline kernel over its range (absolute indices), download its outputs. The harness stream forks with one event and joins on one event per chunk, so Direct and the Graph hold the same pipeline. Later uploads overlap earlier downloads on the other copy engine. The bytes moved are unchanged. 16 chunks is the same on the 3090, 4090 and 5090, so there is no per-GPU tuning step.",
+      "change": "16 chunks, each on its own stream (upload, kernel, download). Uploads overlap downloads. The same bytes are moved."
+    }
+  ],
+  "sass_equal": []
+}
