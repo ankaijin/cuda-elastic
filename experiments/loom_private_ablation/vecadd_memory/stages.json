@@ -1,0 +1,141 @@
+{
+  "application": "vecadd_memory",
+  "title": "Vecadd memory",
+  "scope": "application",
+  "arithmetic_changes": [],
+  "binaries": {
+    "baseline": {
+      "suite_variant": "baseline"
+    },
+    "stage1": {
+      "stage_binary": "vecadd_memory_stage1"
+    },
+    "stage2": {
+      "stage_binary": "vecadd_memory_stage2"
+    },
+    "stage3": {
+      "stage_binary": "vecadd_memory_stage3"
+    },
+    "stage4": {
+      "stage_binary": "vecadd_memory_stage4"
+    },
+    "reference_default": {
+      "stage_binary": "vecadd_memory_reference_tuning",
+      "timed": false,
+      "env": {
+        "LP_VECADD_CHUNKS": "8",
+        "LP_VECADD_KERNEL": "0"
+      }
+    },
+    "optimized": {
+      "suite_variant": "optimized"
+    }
+  },
+  "cases": [
+    {
+      "id": "baseline-direct",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "direct",
+      "label": "Baseline, Direct",
+      "adds": "Reference: production vecadd_memory.cu with direct launches",
+      "detail": "Two 4 MiB uploads (lhs, then rhs), one kernel of 4,096 blocks x 256 threads (one thread per element), and one 4 MiB download, in order on the harness stream, each issued from the host. The two copy directions never overlap.",
+      "change": "Two uploads, one scalar kernel (one thread per element), one download, in order on one stream, issued from the host."
+    },
+    {
+      "id": "baseline-graph",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "graph",
+      "label": "Baseline, Graph",
+      "adds": "Reference: the same four operations captured once as a CUDA Graph",
+      "detail": "Removes host launch overhead, but the copies still run one after another on one stream.",
+      "change": "The same four operations, replayed as one CUDA Graph."
+    },
+    {
+      "id": "stage1-pipeline",
+      "stage": 1,
+      "binary": "stage1",
+      "launch": "graph",
+      "label": "+ Chunked multi-stream pipeline",
+      "adds": "Chunked multi-stream pipeline",
+      "detail": "The harness stream forks to 8 non-blocking streams through an event and joins back on one event per chunk, so Direct launches and the captured Graph hold the same pipeline. Each chunk (131,072 elements) uploads its part of lhs and rhs with two cudaMemcpyAsync calls, runs the baseline's scalar kernel over its range (512 blocks x 256 threads), and downloads its results, so later uploads overlap earlier downloads. The baseline's separate lhs and rhs buffers: 16 upload copies, 8 kernels, and 8 downloads per invocation. The compute scope is unchanged: the baseline kernel over the whole length.",
+      "change": "8 chunks, each on its own stream: upload, scalar kernel, download. Later uploads overlap earlier downloads."
+    },
+    {
+      "id": "stage2-copy2d",
+      "stage": 2,
+      "binary": "stage2",
+      "launch": "graph",
+      "label": "+ One 2D copy for both inputs",
+      "adds": "One 2D copy for both inputs",
+      "detail": "The host and device inputs become one allocation each, with rhs one pitch after lhs (the length rounded up to 64 elements, a multiple of 256 bytes). One cudaMemcpy2DAsync of height 2 uploads a chunk of both, which halves the upload commands to 8. The same bytes move, and the kernel is unchanged.",
+      "change": "lhs and rhs share one pitched buffer, so one 2D copy uploads a chunk of both: 8 upload copies, not 16."
+    },
+    {
+      "id": "stage3-vector",
+      "stage": 3,
+      "binary": "stage3",
+      "launch": "graph",
+      "label": "+ 16-byte vector loads and stores",
+      "adds": "16-byte vector loads and stores",
+      "detail": "The optimized variant's kernel with one vector per thread and plain loads and stores: each thread loads lhs and rhs and stores the result as int4, four elements per access. Chunk starts are 16-byte aligned, so only the final (length mod 4) elements take a scalar loop in the first thread. 128 blocks per chunk instead of 512. The compute scope uses the same kernel over the whole length.",
+      "change": "Each thread adds four elements with 16-byte loads and stores; the last length mod 4 elements take a scalar tail."
+    },
+    {
+      "id": "stage4-streaming",
+      "stage": 4,
+      "binary": "stage4",
+      "launch": "graph",
+      "label": "+ Streaming cache hints",
+      "adds": "Streaming cache hints",
+      "detail": "Loads and stores use __ldcs and __stcs (ld.global.cs and st.global.cs, evict-first), because every element is used once. This is the production kernel vecadd_kernel<1, true> with the production generic default (8 chunks, kernel 0): its machine code equals the production binary's, and its launch structure equals production's with LP_VECADD_CHUNKS=8 LP_VECADD_KERNEL=0.",
+      "change": "Evict-first streaming hints (ld/st.global.cs). The production kernel with its default shape and 8 chunks."
+    },
+    {
+      "id": "stage5-tuned",
+      "stage": 5,
+      "binary": "optimized",
+      "launch": "graph",
+      "label": "+ Per-GPU tuning (= Optimized)",
+      "adds": "Per-GPU tuning",
+      "detail": "The production optimized binary, which selects this GPU's tuning entry. On the RTX 3090 the entry equals the generic default (8 chunks, 1 vector per thread, streaming hints), so this step changes nothing there and its launch structure equals stage 4's. The RTX 4090 uses 8 chunks with 4 vectors per thread and plain loads; the RTX 5090 uses 4 chunks with 2 vectors per thread and streaming hints.",
+      "change": "This GPU's tuning entry. 3090: the default (no change); 4090: 4 vectors per thread, no hints; 5090: 4 chunks, 2 vectors."
+    }
+  ],
+  "sass_equal": [
+    {
+      "binary": "stage4",
+      "reference": "optimized",
+      "kernel": "13vecadd_kernelILi1ELb1E",
+      "why": "stage 4 is the production kernel with the default shape"
+    },
+    {
+      "binary": "stage1",
+      "reference": "baseline",
+      "kernel": "13vecadd_kernelEPKi",
+      "why": "stage 1 runs the baseline kernel on each chunk"
+    },
+    {
+      "binary": "stage2",
+      "reference": "baseline",
+      "kernel": "13vecadd_kernelEPKi",
+      "why": "stage 2 keeps the baseline kernel"
+    }
+  ],
+  "host_equal": [
+    {
+      "binary": "stage4",
+      "reference": "reference_default",
+      "why": "stage 4 is production with its default tuning (8 chunks, kernel 0)"
+    },
+    {
+      "binary": "stage4",
+      "reference": "optimized",
+      "why": "the RTX 3090 tuning entry equals the default",
+      "gpus": [
+        "rtx3090"
+      ]
+    }
+  ]
+}
