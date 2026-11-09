@@ -1,6 +1,8 @@
 {
   "application": "pagerank",
   "title": "PageRank",
+  "scope": "compute",
+  "arithmetic_changes": [],
   "binaries": {
     "baseline": {
       "suite_variant": "baseline"

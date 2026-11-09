@@ -15,17 +15,39 @@ The results are in `results/loom_private_ablation/opt_results.xlsx`.
 
 - Stage 0 is the suite's baseline binary (Direct and Graph). The last stage is
   the suite's optimized binary. Both are built from the unchanged production
-  sources by the suite's own Makefile.
+  sources by the suite's own Makefile. The check records their hashes, build
+  commands, and the nvcc version, and refuses to run if the production sources
+  have changes. Bench and profile use exactly the binaries the check built.
 - Every stage in between is the previous stage with one more optimization. It
-  implements the same contract and passes the same large check. Every binary's
-  output digest must equal the baseline's.
+  implements the same contract and passes the same large check and the
+  application's full existing test suite. Stage sources link the application's
+  `oracle.cpp` and never define their own tolerance or comparison code.
+- Output digests: `stages.json` `arithmetic_changes` lists the stages that
+  change rounding (`{"stage": N, "why": ..., "gpus": [...]}`, where `gpus` is
+  optional). A listed stage may change the digest; every other stage must
+  reproduce the previous stage's digest exactly, so a difference starts only
+  where it is declared and is then inherited.
 - A stage that equals production code apart from one setting is checked
-  against the production machine code (`stages.json` `sass_equal`).
-- Timing and profiling use the suite's protocol unchanged: the harness's
-  `--action bench` (20 iterations after 3 warmups, three repetitions, median of
-  `batch_per_iteration_us`) and `tools/profile.py`'s nsys and ncu commands.
-  Stages after the baseline run as CUDA Graphs, like the report's Optimized
-  column.
+  against the production machine code (`sass_equal`) and against production's
+  host-side launch structure (`host_equal`: kernels with grid, block, and
+  shared memory; copies with kind and bytes; memsets). The reference is
+  production built from its unchanged source with its existing test hooks set
+  to the stage's setting: a binary with `"timed": false` and its `"env"`,
+  built by the stage Makefile and never timed. Where this GPU's tuning equals
+  the setting, a second entry with `"gpus"` compares with the plain production
+  binary.
+- `scope` (`compute` or `application`) names the timing scope whose savings the
+  report's step columns use.
+- Timing uses the suite's protocol unchanged: the harness's `--action bench`
+  (20 iterations after 3 warmups, `batch_per_iteration_us`), three
+  repetitions, median. Each repetition times every case once in a rotated
+  order and the Graph baseline once more before and after, which gives the
+  drift. Profiling (`tools/profile.py`'s nsys and ncu commands) is a separate
+  action. Stages after the baseline run as CUDA Graphs, like the report's
+  Optimized column.
+- The report flags a step as within noise when its saving is at most the
+  larger repetition range (max - min) of its two stages. This is a heuristic,
+  not a significance test.
 - Production sources, results, and the loom_private workbook are not changed.
 
 ## Running

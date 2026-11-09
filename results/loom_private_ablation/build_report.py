@@ -13,13 +13,20 @@ experiments/loom_private_ablation/run.py wrote for one recorded run:
 Paths are relative to the GPU folder; null means pending. The selected
 summaries must come from one source revision. The stages.json they used (read
 from git at that revision, and matching the hash they record) must define the
-same cases, binaries, and launches as the current one; only descriptions may
-differ. The bench binaries must be the ones the check validated.
+same cases, binaries, launches, and checks as the current one; only
+descriptions and the reporting scope may differ. The bench binaries must be the
+ones the check validated.
 
-The workbook has one sheet per application. It holds one table per GPU, in
-the order RTX 3090, RTX 4090, RTX 5090; a GPU without a selected run shows
-its table with pending values. Timings come only from bench records; the
-kernel launch count comes from the run's nsys trace of one invocation.
+The workbook has one sheet per application, in the loom_private workbook's
+order. Each sheet holds one table per GPU, in the order RTX 3090, RTX 4090,
+RTX 5090; a GPU without a selected run shows its table with pending values.
+Timings come only from bench records (the median over repetitions; bracket
+measurements of the Graph baseline only give the drift). The step columns use
+the application's "scope" from stages.json. A step is flagged as within noise
+when its saving is at most the larger repetition range (max - min) of its two
+stages; shares are undefined when the Graph->Optimized saving is not positive
+or is itself within noise. The kernel launch count comes from the run's nsys
+trace of one invocation.
 """
 
 import csv
@@ -36,9 +43,13 @@ OUT = HERE / "opt_results.xlsx"
 GITHUB = "https://github.com/ankaijin/cuda-elastic/blob"
 GPUS = {"rtx3090": "RTX 3090 (sm_86, 24 GB)", "rtx4090": "RTX 4090 (sm_89, 24 GB)",
         "rtx5090": "RTX 5090 (sm_120, 32 GB)"}
+# The loom_private workbook's application order (results/loom_private/build_report.py).
+APPS = ["pagerank", "attention", "decoder", "anomaly", "vecadd_memory", "vecadd_product"]
 SCOPES = ("application", "compute")
 FIELD = "batch_per_iteration_us"
 PENDING = "pending"
+UNDEFINED = "—"
+CHANGE_LIMIT = 130
 
 
 def read_json(path):
@@ -56,15 +67,21 @@ def resolve(folder, value):
     return path
 
 
+def scope_of(stages):
+    return stages.get("scope", "compute")
+
+
 def structure(stages):
     """What a run depends on: the binaries, the cases' ids, stages, binaries,
-    and launches, and the machine-code comparisons. Labels and descriptions
+    and launches, and the checks. Labels, descriptions, and the reporting scope
     are free to change."""
+    pick = lambda items, keys: [{k: i[k] for k in keys if k in i} for i in items]
     return {"binaries": stages["binaries"],
-            "cases": [{k: c[k] for k in ("id", "stage", "binary", "launch")}
-                      for c in stages["cases"]],
-            "sass_equal": [{k: s[k] for k in ("binary", "reference", "kernel")}
-                           for s in stages.get("sass_equal", [])]}
+            "cases": pick(stages["cases"], ("id", "stage", "binary", "launch")),
+            "sass_equal": pick(stages.get("sass_equal", []), ("binary", "reference", "kernel")),
+            "host_equal": pick(stages.get("host_equal", []), ("binary", "reference", "gpus")),
+            "arithmetic_changes": pick(stages.get("arithmetic_changes", []),
+                                       ("stage", "gpus"))}
 
 
 def stages_at(commit, app, expected_sha256):
@@ -75,6 +92,30 @@ def stages_at(commit, app, expected_sha256):
     if hashlib.sha256(text).hexdigest() != expected_sha256:
         raise ValueError(f"{relative} at {commit[:7]} does not match the run's hash")
     return json.loads(text)
+
+
+def timed_records(bench):
+    """The bench entries that are case timings (not drift brackets)."""
+    return [r for r in bench["records"] if r.get("role", "case") == "case"]
+
+
+def digest_stages(stages, check):
+    """[(first stage, digest, declared)] where each distinct digest begins."""
+    if "digest_rule" in check:
+        rule = check["digest_rule"]
+    else:  # summaries before the digest rule: derive it from the binaries
+        seen, rule = {}, []
+        for case in stages["cases"]:
+            if case["stage"] not in seen:
+                seen[case["stage"]] = True
+                rule.append({"stage": case["stage"], "declared_change": False,
+                             "digest": check["binaries"][case["binary"]]["output_digest"]})
+    starts, previous = [], None
+    for item in rule:
+        if item["digest"] != previous:
+            starts.append((item["stage"], item["digest"], item["declared_change"]))
+            previous = item["digest"]
+    return starts
 
 
 def load_app(folder, app, selection):
@@ -100,22 +141,54 @@ def load_app(folder, app, selection):
     for case in stages["cases"]:
         row = dict(case)
         if bench:
-            records = [read_json(REPO / r["record"]) for r in bench["records"]
+            records = [read_json(REPO / r["record"]) for r in timed_records(bench)
                        if r["case"] == case["id"]]
             row["dimensions"] = records[0]["dimensions"]
             for scope in SCOPES:
+                values = [r["timing"][scope][FIELD] for r in records]
                 ranked = sorted(records, key=lambda r: r["timing"][scope][FIELD])
-                row[scope] = statistics.median(r["timing"][scope][FIELD] for r in records)
+                row[scope] = statistics.median(values)
+                row[f"{scope}_values"] = values
+                row[f"{scope}_range"] = max(values) - min(values)
                 row[f"{scope}_record"] = ranked[(len(ranked) - 1) // 2]["_path"]
         if check:
             row["check"] = check["binaries"][case["binary"]]
         if profile:
-            entry = next(p for p in profile["profiles"] if p["case"] == case["id"])
+            entry = next(p for p in profile["profiles"] if p.get("case") == case["id"])
             with open(REPO / entry["nsys_kernels"]) as stream:
                 row["launches"] = sum(int(r["Instances"]) for r in csv.DictReader(stream))
             row["nsys"] = entry["nsys"]
         cases.append(row)
-    return {"stages": stages, "cases": cases, "check": check, "bench": bench}
+    return {"stages": stages, "cases": cases, "check": check, "bench": bench,
+            "profile": profile}
+
+
+def step_metrics(cases, scope):
+    """Per case (in order): speedups vs the Graph baseline, and the step
+    columns in `scope` against the previous stage. Stage 1's previous stage is
+    the Graph baseline; both baseline rows have no step. Shares are None when
+    undefined (the total saving is not positive or is within noise)."""
+    last = max(c["stage"] for c in cases)
+    graph = next(c for c in cases if c["stage"] == 0 and c["launch"] == "graph")
+    final = next(c for c in cases if c["stage"] == last)
+    total = graph[scope] - final[scope]
+    total_noise = abs(total) <= max(graph[f"{scope}_range"], final[f"{scope}_range"])
+    shares = total > 0 and not total_noise
+    out, previous = [], None
+    for case in cases:
+        m = {"application_vs_graph": graph["application"] / case["application"],
+             "compute_vs_graph": graph["compute"] / case["compute"], "step": None}
+        if previous is not None:
+            saved = previous[scope] - case[scope]
+            m["step"] = {"speedup": previous[scope] / case[scope], "saved": saved,
+                         "share": saved / total if shares else None,
+                         "within_noise": abs(saved) <= max(previous[f"{scope}_range"],
+                                                           case[f"{scope}_range"])}
+        out.append(m)
+        if case["stage"] >= 1 or case["launch"] == "graph":
+            previous = case
+    return {"rows": out, "total": total, "shares_defined": shares,
+            "total_within_noise": total_noise}
 
 
 def load_inputs():
@@ -141,11 +214,81 @@ def link(path):
     return f"{GITHUB}/{log or 'main'}/{path}"
 
 
-def workbook(inputs):
+def headers(scope):
+    word = scope.capitalize()
+    return ["Stage", "Version", "What changed", "Launch", "Application (us)",
+            "Compute (us)", "Application speedup vs Graph", "Compute speedup vs Graph",
+            f"{word} speedup over previous stage", f"{word} time saved by this step (us)",
+            f"Share of Graph→Optimized {scope} saving", "Kernel launches per invocation"]
+
+
+WIDTHS = [7, 30, 62, 8, 13, 13, 13, 13, 14, 15, 15, 12]
+
+
+def short_label(case):
+    return case["launch"].capitalize() if case["stage"] == 0 else f"stage {case['stage']}"
+
+
+def run_line(folder, data):
+    """The run description above a GPU's table."""
+    bench, check, profile, cases = data["bench"], data["check"], data["profile"], data["cases"]
+    meta, meta_path = metadata(folder, bench["stamp"])
+    nvcc = ((meta or {}).get("installed_tools", {}).get("nvcc") or "").strip()
+    order = "a rotated order with a Graph baseline bracket" if bench.get("order") == "rotated" \
+        else "a fixed stage order"
+    text = (f"Run {bench['stamp']} at source {bench['source_commit'][:7]}, driver "
+            f"{bench['device']['driver']}, "
+            f"{nvcc.splitlines()[-1] if nvcc else 'unknown toolkit'}. "
+            f"Median of {bench['repeat']} repetitions in {order}.")
+    if check:
+        starts = digest_stages(data["stages"], check)
+        if len(starts) == 1:
+            text += f" Every binary passed the large check with digest {starts[0][1]}"
+        else:
+            parts = [f"{d} from stage {s}" + (" (declared arithmetic change)" if declared
+                                              else "") for s, d, declared in starts]
+            text += " Every binary passed the large check; digests " + ", ".join(parts)
+        same = [f"{s['binary']} matches {s['reference']} instruction for instruction in "
+                f"{s['kernel']} ({s['instructions'][0]})"
+                for s in check.get("sass_equal", []) if s["identical"]]
+        text += ("; " + "; ".join(same) + "." if same else ".")
+    else:
+        text += " Check pending."
+    host = [f"{h['binary']} launches exactly like {h['reference']}"
+            for h in (profile or {}).get("host_equal", []) if h["identical"]]
+    if host:
+        text += " Host-side launch structure: " + "; ".join(host) + "."
+    return text, meta_path
+
+
+def note_line(data, scope, metrics):
+    bench, cases = data["bench"], data["cases"]
+    ranges = ", ".join(f"{short_label(c)} {c[f'{scope}_range']:,.1f}" for c in cases)
+    text = (f"Grey italic step cells are within noise: the step's saving is at most the larger "
+            f"repetition range (max − min) of its two stages. This is a heuristic flag; "
+            f"{bench['repeat']} repetitions do not establish statistical significance. "
+            f"Ranges ({scope}, us): {ranges}. ")
+    if bench.get("drift_us"):
+        drift = ", ".join(f"{d[scope]:+,.1f}" for d in bench["drift_us"])
+        text += (f"Drift of the Graph baseline ({scope}, end − start of each repetition, us): "
+                 f"{drift}.")
+    else:
+        text += "Drift: not measured (this run timed the stages in a fixed order, without a "\
+                "Graph baseline bracket)."
+    if not metrics["shares_defined"]:
+        text += (" Shares are undefined because the Graph→Optimized saving is not positive or "
+                 "is within noise.")
+    return text
+
+
+def render(sheets, labels=None):
+    """The workbook for [(app, stages, {folder: data})]."""
     from openpyxl import Workbook
+    from openpyxl.comments import Comment
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     from openpyxl.utils import get_column_letter
 
+    labels = labels or {}
     blue = Font(color="0563C1", underline="single")
     bold = Font(bold=True)
     grey = Font(italic=True, color="808080")
@@ -160,11 +303,6 @@ def workbook(inputs):
     thin = Side(style="thin", color="BFBFBF")
     box = Border(left=thin, right=thin, top=thin, bottom=thin)
     wrap = Alignment(wrap_text=True, vertical="top")
-    headers = ["Stage", "Version", "What changed", "Launch", "Application (us)",
-               "Compute (us)", "Application speedup vs Graph", "Compute speedup vs Graph",
-               "Compute speedup over previous stage", "Compute time saved by this step (us)",
-               "Share of Graph→Optimized compute saving", "Kernel launches per invocation"]
-    widths = [7, 30, 62, 8, 13, 13, 13, 13, 14, 15, 15, 12]
     links = {}
     book = Workbook()
     book.remove(book.active)
@@ -175,7 +313,7 @@ def workbook(inputs):
         return links[path]
 
     def text_row(ws, row, text, height=30, font=None):
-        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=len(headers))
+        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=len(WIDTHS))
         c = ws.cell(row, 1, text)
         c.alignment = wrap
         if font:
@@ -183,56 +321,42 @@ def workbook(inputs):
         ws.row_dimensions[row].height = height
         return c
 
-    def cell(ws, row, col, value, fmt=None, fill=None, source=None):
+    def cell(ws, row, col, value, fmt=None, fill=None, source=None, faint=False):
         c = ws.cell(row, col, value)
         c.border, c.alignment = box, wrap
         if fill:
             c.fill = fill
-        if value == PENDING:
+        if value == PENDING or faint:
             c.font = grey
-        elif fmt and isinstance(value, (int, float)):
+        if fmt and isinstance(value, (int, float)):
             c.number_format = fmt
-            if source:
+            if source and not faint:
                 c.hyperlink, c.font = github(source), blue
         return c
 
-    def gpu_table(ws, row, folder, label, data):
-        """One GPU's title, run line, and stage table from `row`; returns the
-        next free row."""
-        cases, bench, check = data["cases"], data["bench"], data["check"]
+    def gpu_table(ws, row, folder, label, data, scope):
+        """One GPU's title, run line, stage table, and note from `row`; returns
+        the next free row."""
+        cases, bench = data["cases"], data["bench"]
         last = max(c["stage"] for c in cases)
-        graph = next(c for c in cases if c["stage"] == 0 and c["launch"] == "graph")
-        final = next(c for c in cases if c["stage"] == last)
         ws.cell(row, 1, label).font = Font(bold=True, size=13)
         row += 1
+        metrics = step_metrics(cases, scope) if bench else None
         if bench:
-            meta, meta_path = metadata(folder, bench["stamp"])
-            nvcc = ((meta or {}).get("installed_tools", {}).get("nvcc") or "").strip()
-            digests = sorted({c["check"]["output_digest"] for c in cases if "check" in c})
-            sass = "; ".join(f"{s['binary']} matches {s['reference']} instruction for "
-                             f"instruction ({s['instructions'][0]})"
-                             for s in (check or {}).get("sass_equal", []) if s["identical"])
-            c = text_row(ws, row,
-                         f"Run {bench['stamp']} at source {bench['source_commit'][:7]}, driver "
-                         f"{bench['device']['driver']}, "
-                         f"{nvcc.splitlines()[-1] if nvcc else 'unknown toolkit'}. "
-                         f"Median of {bench['repeat']} repetitions. Every binary passed the "
-                         f"large check with digest {', '.join(digests) or PENDING}"
-                         + (f"; {sass}." if sass else "."), 30)
+            text, meta_path = run_line(folder, data)
+            c = text_row(ws, row, text, 44)
             if meta_path:
                 c.hyperlink, c.font = github(meta_path), blue
         else:
             text_row(ws, row, "Pending: no run selected in "
                      f"results/loom_private_ablation/inputs/{folder}.json.", 16, grey)
         row += 1
-        for i, header in enumerate(headers, 1):
+        for i, header in enumerate(headers(scope), 1):
             c = ws.cell(row, i, header)
             c.font, c.fill, c.border = header_font, header_fill, box
             c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         ws.row_dimensions[row].height = 44
-        total = graph["compute"] - final["compute"] if bench else None
-        previous = None
-        for case in cases:
+        for index, case in enumerate(cases):
             row += 1
             f = fills[case["launch"]] if case["stage"] == 0 else \
                 fills["optimized"] if case["stage"] == last else fills["stage"]
@@ -241,37 +365,42 @@ def workbook(inputs):
             cell(ws, row, 3, case["change"], fill=f)
             cell(ws, row, 4, case["launch"].capitalize(), fill=f)
             if bench:
-                cell(ws, row, 5, round(case["application"], 1), "#,##0.0", f,
-                     case["application_record"])
-                cell(ws, row, 6, round(case["compute"], 1), "#,##0.0", f, case["compute_record"])
-                cell(ws, row, 7, graph["application"] / case["application"], '0.00"x"', f)
-                cell(ws, row, 8, graph["compute"] / case["compute"], '0.00"x"', f)
-                if previous is None:
+                m = metrics["rows"][index]
+                for col, scope_name in ((5, "application"), (6, "compute")):
+                    c = cell(ws, row, col, round(case[scope_name], 1), "#,##0.0", f,
+                             case[f"{scope_name}_record"])
+                    c.comment = Comment("Repetitions (us): " + ", ".join(
+                        f"{v:,.1f}" for v in case[f"{scope_name}_values"]), "build_report")
+                cell(ws, row, 7, m["application_vs_graph"], '0.00"x"', f)
+                cell(ws, row, 8, m["compute_vs_graph"], '0.00"x"', f)
+                step = m["step"]
+                if step is None:
                     for col in (9, 10, 11):
-                        cell(ws, row, col, "—", fill=f)
+                        cell(ws, row, col, UNDEFINED, fill=f)
                 else:
-                    saved = previous["compute"] - case["compute"]
-                    cell(ws, row, 9, previous["compute"] / case["compute"], '0.00"x"', f)
-                    cell(ws, row, 10, round(saved, 1), "#,##0.0", f)
-                    cell(ws, row, 11, saved / total, "0.0%", f)
+                    faint = step["within_noise"]
+                    cell(ws, row, 9, step["speedup"], '0.00"x"', f, faint=faint)
+                    cell(ws, row, 10, round(step["saved"], 1), "#,##0.0", f, faint=faint)
+                    if step["share"] is None:
+                        cell(ws, row, 11, UNDEFINED, fill=f, faint=faint)
+                    else:
+                        cell(ws, row, 11, step["share"], "0.0%", f, faint=faint)
             else:
                 for col in range(5, 12):
                     cell(ws, row, col, PENDING, fill=f)
             cell(ws, row, 12, case.get("launches", PENDING), "#,##0", f, case.get("nsys"))
             ws.row_dimensions[row].height = 30
-            if case["stage"] >= 1 or case["launch"] == "graph":
-                previous = case
+        row += 1
+        if bench:
+            text_row(ws, row, note_line(data, scope, metrics), 44, grey)
+        else:
+            text_row(ws, row, "Ranges and drift pending.", 16, grey)
         return row + 2
 
-    apps = sorted(p.parent.name for p in EXPERIMENTS.glob("*/stages.json"))
-    for app in apps:
-        stages = json.loads((EXPERIMENTS / app / "stages.json").read_text())
-        tables = {}
-        for folder in GPUS:
-            selection = inputs.get(folder, {}).get("applications", {}).get(app)
-            tables[folder] = load_app(folder, app, selection)
+    for app, stages, tables in sheets:
+        scope = scope_of(stages)
         ws = book.create_sheet(stages["title"])
-        for i, width in enumerate(widths, 1):
+        for i, width in enumerate(WIDTHS, 1):
             ws.column_dimensions[get_column_letter(i)].width = width
         ws.sheet_view.showGridLines = False
         ws.cell(1, 1, f"{stages['title']}: optimizations added one at a time").font = \
@@ -290,17 +419,32 @@ def workbook(inputs):
                  "scope includes the transfers; compute scope is the kernels with resident "
                  "inputs. Stages after the baseline run as CUDA Graphs.", 44)
         text_row(ws, 3,
-                 "Speedups divide the Graph baseline's (or the previous stage's) compute time by "
-                 "this row's; stage 1's previous stage is the Graph baseline. The shares split "
-                 "the Graph→Optimized compute saving in this order; the optimizations interact, "
-                 "so another order could split it differently. Kernel launches come from an "
-                 "nsys trace of one invocation. Design notes: "
-                 f"experiments/loom_private_ablation/{app}/README.md.", 44)
+                 "Speedups divide the Graph baseline's (or the previous stage's) time by this "
+                 f"row's. The step columns use the {scope} scope; stage 1's previous stage is "
+                 f"the Graph baseline. The shares split the Graph→Optimized {scope} saving in "
+                 "this order: they are order-dependent cumulative contributions, so another "
+                 "order could split it differently, and a step that slows the run shows a "
+                 "negative saving. Kernel launches come from an nsys trace of one invocation. "
+                 f"Design notes: experiments/loom_private_ablation/{app}/README.md.", 44)
         row = 5
         for folder, label in GPUS.items():
-            row = gpu_table(ws, row, folder, inputs.get(folder, {}).get("label", label),
-                            tables[folder])
+            row = gpu_table(ws, row, folder, labels.get(folder, label), tables[folder], scope)
     return book
+
+
+def workbook(inputs):
+    present = {p.parent.name for p in EXPERIMENTS.glob("*/stages.json")}
+    unknown = present - set(APPS)
+    if unknown:
+        raise ValueError(f"stages.json for applications outside APPS: {sorted(unknown)}")
+    sheets = []
+    for app in (a for a in APPS if a in present):
+        stages = json.loads((EXPERIMENTS / app / "stages.json").read_text())
+        tables = {folder: load_app(folder, app,
+                                   inputs.get(folder, {}).get("applications", {}).get(app))
+                  for folder in GPUS}
+        sheets.append((app, stages, tables))
+    return render(sheets, {f: m["label"] for f, m in inputs.items() if "label" in m})
 
 
 def main():
