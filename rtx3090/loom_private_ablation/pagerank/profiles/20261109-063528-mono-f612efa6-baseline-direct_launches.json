@@ -1,0 +1,224 @@
+{
+ "kernel_fields": [
+  "name",
+  "grid_x",
+  "grid_y",
+  "grid_z",
+  "block_x",
+  "block_y",
+  "block_z",
+  "static_shared",
+  "dynamic_shared",
+  "count"
+ ],
+ "kernels": [
+  [
+   "initialize(const int *, float *, float *, int, float)",
+   4096,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   1
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   1,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   60
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   2,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   3,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   5,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   11,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   28,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   58,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   109,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   196,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   322,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   497,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   693,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   976,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ],
+  [
+   "update_level(const int *, const int *, const int *, const int *, int, int, const float *, float *, float *, float, float)",
+   1203,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   20
+  ]
+ ],
+ "copies": [
+  [
+   "Device-to-Host",
+   4194304,
+   1
+  ],
+  [
+   "Host-to-Device",
+   4194304,
+   2
+  ],
+  [
+   "Host-to-Device",
+   4194308,
+   1
+  ],
+  [
+   "Host-to-Device",
+   8388604,
+   1
+  ]
+ ],
+ "memsets": [],
+ "totals": {
+  "kernels": 321,
+  "copies": 5,
+  "memsets": 0
+ }
+}

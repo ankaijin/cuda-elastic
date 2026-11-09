@@ -1,0 +1,101 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "vecadd_product",
+ "action": "check",
+ "stamp": "20261109-063528-mono-f612efa6",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "716cf57d97baee49a4b3ea30514290a8ec6b0d7b",
+ "stages_sha256": "43b0606b07a3ca04f4274ade60ec2bfa0a1902b8cbb1c973ea7b6c472ed318db",
+ "steps": [
+  {
+   "step": "legacy freeze",
+   "exit_code": 0,
+   "command": "/usr/bin/python3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/tools/legacy_freeze.py verify"
+  },
+  {
+   "step": "build suite baseline",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product build VARIANT=baseline"
+  },
+  {
+   "step": "build suite optimized",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product build VARIANT=optimized"
+  },
+  {
+   "step": "build stages",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_product build"
+  },
+  {
+   "step": "stage tests",
+   "exit_code": 0,
+   "command": "make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_product test"
+  },
+  {
+   "step": "large check baseline",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/results/20261109-063528-mono-f612efa6-check-baseline.json"
+  },
+  {
+   "step": "large check optimized",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_optimized --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/results/20261109-063528-mono-f612efa6-check-optimized.json"
+  }
+ ],
+ "log": "rtx3090/loom_private_ablation/vecadd_product/results/20261109-063528-mono-f612efa6-check.log",
+ "nvcc": "Build cuda_13.3.r13.3/compiler.38244171_0",
+ "production_sources": {
+  "paths": [
+   "applications/loom_private/vecadd_product",
+   "applications/loom_private/common",
+   "applications/loom_private/common.mk"
+  ],
+  "clean": true,
+  "status": []
+ },
+ "binaries": {
+  "baseline": {
+   "path": "rtx3090/loom_private/vecadd_product/build/vecadd_product",
+   "sha256": "fdf2efda091d773be6e7ff74a239a963865d59ef2d1cebdd81bec5a2f21b8a46",
+   "variant": "baseline",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product build VARIANT=baseline",
+   "check_record": "rtx3090/loom_private_ablation/vecadd_product/results/20261109-063528-mono-f612efa6-check-baseline.json",
+   "output_digest": "835827d0e01d0383"
+  },
+  "optimized": {
+   "path": "rtx3090/loom_private/vecadd_product/build/vecadd_product_optimized",
+   "sha256": "6a89e2c69617b1b2f17d8d73d67a60f783d08ab7175bdafd6afb006aac37ac4a",
+   "variant": "optimized",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product build VARIANT=optimized",
+   "check_record": "rtx3090/loom_private_ablation/vecadd_product/results/20261109-063528-mono-f612efa6-check-optimized.json",
+   "output_digest": "835827d0e01d0383"
+  }
+ },
+ "digest_rule": [
+  {
+   "stage": 0,
+   "binary": "baseline",
+   "digest": "835827d0e01d0383",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 1,
+   "binary": "optimized",
+   "digest": "835827d0e01d0383",
+   "declared_change": false,
+   "equal_to_previous": true
+  }
+ ],
+ "sass_equal": []
+}

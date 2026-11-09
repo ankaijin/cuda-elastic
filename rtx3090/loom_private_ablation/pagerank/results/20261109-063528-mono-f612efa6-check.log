@@ -1,0 +1,188 @@
+$ /usr/bin/python3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/tools/legacy_freeze.py verify
+400/400 legacy files match 4ce57c7c0a333b74e9e6e2bd78142604c4c2cf39
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank build VARIANT=baseline
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/pagerank.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank'
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank build VARIANT=optimized
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/pagerank_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/layout.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank_optimized
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank'
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank build
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank'
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"stage1-persistent\" -DLP_STAGE=1 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank/pagerank_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/layout.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage1
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"stage2-tags\" -DLP_STAGE=2 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank/pagerank_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/layout.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage2
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank -DLP_APP=\"pagerank\" -DLP_CONTRACT_SHA256=\"c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb\" -DLP_VARIANT=\"stage3-layout\" -DLP_STAGE=3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank/pagerank_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/layout.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/graph.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage3
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank'
+$ make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank test
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank'
+== stage 1: baseline GPU tests
+PASS small-16x3 (exit 0)
+PASS small-4096x6 (exit 0)
+PASS small-65536x20 (exit 0)
+PASS small-8192x1-direct (exit 0)
+PASS result-record
+PASS jacobi-mutant-4096x6 (exit 1)
+PASS jacobi-mutant-65536x20 (exit 1)
+PASS jacobi-mutant-reports-mismatches
+PASS non-power-of-two (exit 2)
+PASS too-small (exit 2)
+PASS zero-nodes (exit 2)
+PASS negative-nodes (exit 2)
+PASS too-large (exit 2)
+PASS zero-iterations (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+GPU tests passed
+== stage 2: baseline GPU tests
+PASS small-16x3 (exit 0)
+PASS small-4096x6 (exit 0)
+PASS small-65536x20 (exit 0)
+PASS small-8192x1-direct (exit 0)
+PASS result-record
+PASS jacobi-mutant-4096x6 (exit 1)
+PASS jacobi-mutant-65536x20 (exit 1)
+PASS jacobi-mutant-reports-mismatches
+PASS non-power-of-two (exit 2)
+PASS too-small (exit 2)
+PASS zero-nodes (exit 2)
+PASS negative-nodes (exit 2)
+PASS too-large (exit 2)
+PASS zero-iterations (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+GPU tests passed
+== stage 3: baseline GPU tests
+PASS small-16x3 (exit 0)
+PASS small-4096x6 (exit 0)
+PASS small-65536x20 (exit 0)
+PASS small-8192x1-direct (exit 0)
+PASS result-record
+PASS jacobi-mutant-4096x6 (exit 1)
+PASS jacobi-mutant-65536x20 (exit 1)
+PASS jacobi-mutant-reports-mismatches
+PASS non-power-of-two (exit 2)
+PASS too-small (exit 2)
+PASS zero-nodes (exit 2)
+PASS negative-nodes (exit 2)
+PASS too-large (exit 2)
+PASS zero-iterations (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+GPU tests passed
+flock /tmp/cuda-elastic-gpu.lock timeout 1800 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank/tests/run_stage_tests.sh /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/test-output-stages
+PASS stage1-default (exit 0)
+PASS stage1-ignores-shape (exit 0)
+PASS stage1-tiny-4x9 (exit 0)
+PASS stage1-tiny-16x3 (exit 0)
+PASS stage1-tiny-32x5 (exit 0)
+PASS stage1-tiny-4096x6 (exit 0)
+PASS stage1-tiny-65536x20 (exit 0)
+PASS stage1-unknown-shape (exit 2)
+PASS stage1-large-x1 (exit 0)
+PASS stage1-large-x2 (exit 0)
+PASS stage1-large-x3 (exit 0)
+PASS stage1-large-x4 (exit 0)
+PASS stage1-large-x5 (exit 0)
+PASS stage2-default (exit 0)
+PASS stage2-ignores-shape (exit 0)
+PASS stage2-tiny-4x9 (exit 0)
+PASS stage2-tiny-16x3 (exit 0)
+PASS stage2-tiny-32x5 (exit 0)
+PASS stage2-tiny-4096x6 (exit 0)
+PASS stage2-tiny-65536x20 (exit 0)
+PASS stage2-unknown-shape (exit 2)
+PASS stage2-large-x1 (exit 0)
+PASS stage2-large-x2 (exit 0)
+PASS stage2-large-x3 (exit 0)
+PASS stage2-large-x4 (exit 0)
+PASS stage2-large-x5 (exit 0)
+PASS stage3-default (exit 0)
+PASS stage3-ignores-shape (exit 0)
+PASS stage3-tiny-4x9 (exit 0)
+PASS stage3-tiny-16x3 (exit 0)
+PASS stage3-tiny-32x5 (exit 0)
+PASS stage3-tiny-4096x6 (exit 0)
+PASS stage3-tiny-65536x20 (exit 0)
+PASS stage3-unknown-shape (exit 2)
+PASS stage3-large-x1 (exit 0)
+PASS stage3-large-x2 (exit 0)
+PASS stage3-large-x3 (exit 0)
+PASS stage3-large-x4 (exit 0)
+PASS stage3-large-x5 (exit 0)
+stage tests passed
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank'
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/results/20261109-063528-mono-f612efa6-check-baseline.json
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.02 s
+pagerank: CPU oracle 0.08 s
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 1: PASS, digest 97eb70ad937006ab (0.01 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 2: PASS, digest 97eb70ad937006ab (0.01 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 1: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 2: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/pagerank", "variant": "baseline", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb", "preset": "large", "overrides": {}, "dimensions": {"nodes": 1048576, "iterations": 20, "edges": 2097151, "damping": 0.850000024, "epsilon": 0, "schedule_levels": 16}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload of the incoming CSR (offsets and sources), out-degrees and level schedule from pinned host memory, score and contribution initialization, all ordered Gauss-Seidel sweeps (one launch per dependency level per sweep), and the score download to pinned host memory", "compute": "score and contribution initialization and all ordered Gauss-Seidel sweeps with the graph and schedule resident; no transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage1 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/results/20261109-063528-mono-f612efa6-check-stage1.json
+pagerank: stage 1: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+pagerank: CPU oracle 0.08 s
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 1: PASS, digest 97eb70ad937006ab (0.01 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 2: PASS, digest 97eb70ad937006ab (0.01 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 1: PASS, digest 97eb70ad937006ab (0.01 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 2: PASS, digest 97eb70ad937006ab (0.01 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/pagerank", "variant": "stage1-persistent", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb", "preset": "large", "overrides": {}, "dimensions": {"nodes": 1048576, "iterations": 20, "edges": 2097151, "damping": 0.850000024, "epsilon": 0, "schedule_levels": 16}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload of the incoming CSR (offsets and sources), out-degrees and level schedule from pinned host memory, score and contribution initialization, all ordered Gauss-Seidel sweeps (one launch per dependency level per sweep), and the score download to pinned host memory", "compute": "score and contribution initialization and all ordered Gauss-Seidel sweeps with the graph and schedule resident; no transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage2 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/results/20261109-063528-mono-f612efa6-check-stage2.json
+pagerank: stage 2: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+pagerank: CPU oracle 0.08 s
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 1: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 2: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 1: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 2: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/pagerank", "variant": "stage2-tags", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb", "preset": "large", "overrides": {}, "dimensions": {"nodes": 1048576, "iterations": 20, "edges": 2097151, "damping": 0.850000024, "epsilon": 0, "schedule_levels": 16}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload of the incoming CSR (offsets and sources), out-degrees and level schedule from pinned host memory, score and contribution initialization, all ordered Gauss-Seidel sweeps (one launch per dependency level per sweep), and the score download to pinned host memory", "compute": "score and contribution initialization and all ordered Gauss-Seidel sweeps with the graph and schedule resident; no transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage3 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/results/20261109-063528-mono-f612efa6-check-stage3.json
+pagerank: stage 3: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+pagerank: CPU oracle 0.08 s
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 1: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 2: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 1: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 2: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/pagerank", "variant": "stage3-layout", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb", "preset": "large", "overrides": {}, "dimensions": {"nodes": 1048576, "iterations": 20, "edges": 2097151, "damping": 0.850000024, "epsilon": 0, "schedule_levels": 16}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload of the incoming CSR (offsets and sources), out-degrees and level schedule from pinned host memory, score and contribution initialization, all ordered Gauss-Seidel sweeps (one launch per dependency level per sweep), and the score download to pinned host memory", "compute": "score and contribution initialization and all ordered Gauss-Seidel sweeps with the graph and schedule resident; no transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank_optimized --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/results/20261109-063528-mono-f612efa6-check-optimized.json
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels; sm_86 tuning: 164 blocks x 768 threads, streamed graph loads
+pagerank: setup 0.03 s
+pagerank: CPU oracle 0.07 s
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 1: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: direct invocation 2: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 1: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+pagerank: 0 of 1048576 scores outside |a-e| <= 1e-5*e; 1048576 bitwise identical to the oracle; max relative error 0
+pagerank: graph invocation 2: PASS, digest 97eb70ad937006ab (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/pagerank", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "c6d38a8f418469dc6581efaf287d5898563d001182685883dbb4a9ccd3b463cb", "preset": "large", "overrides": {}, "dimensions": {"nodes": 1048576, "iterations": 20, "edges": 2097151, "damping": 0.850000024, "epsilon": 0, "schedule_levels": 16}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload of the incoming CSR (offsets and sources), out-degrees and level schedule from pinned host memory, score and contribution initialization, all ordered Gauss-Seidel sweeps (one launch per dependency level per sweep), and the score download to pinned host memory", "compute": "score and contribution initialization and all ordered Gauss-Seidel sweeps with the graph and schedule resident; no transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "97eb70ad937006ab"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "97eb70ad937006ab"}], "outputs_agree": true, "timing": null, "status": "pass"}

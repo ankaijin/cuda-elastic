@@ -1,0 +1,598 @@
+$ /usr/bin/python3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/tools/legacy_freeze.py verify
+400/400 legacy files match 4ce57c7c0a333b74e9e6e2bd78142604c4c2cf39
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention build VARIANT=baseline
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention'
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/attention.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention'
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention build VARIANT=optimized
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention'
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/attention_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention_optimized
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention'
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention build
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention'
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage1-tiles\" -DLP_STAGE=1 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage1
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage2-splits\" -DLP_STAGE=2 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage2
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage3-bound\" -DLP_STAGE=3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage3
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage4-fma-score\" -DLP_STAGE=4 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage4
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage5-cheaper-math\" -DLP_STAGE=5 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage5
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage6-overlap\" -DLP_STAGE=6 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage6
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"optimized\" -DLP_ATTENTION_TUNING_HOOKS \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/attention_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_hooks_reference
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention'
+$ make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention test
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention'
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage1-tiles\" -DLP_STAGE=1 -DLP_ABLATION_TEST_HOOKS /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage1_hooks
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage2-splits\" -DLP_STAGE=2 -DLP_ABLATION_TEST_HOOKS /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage2_hooks
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage3-bound\" -DLP_STAGE=3 -DLP_ABLATION_TEST_HOOKS /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage3_hooks
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage4-fma-score\" -DLP_STAGE=4 -DLP_ABLATION_TEST_HOOKS /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage4_hooks
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage5-cheaper-math\" -DLP_STAGE=5 -DLP_ABLATION_TEST_HOOKS /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage5_hooks
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage6-overlap\" -DLP_STAGE=6 -DLP_ABLATION_TEST_HOOKS /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage6_hooks
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage1-tiles\" -DLP_STAGE=1 -DLP_ATTENTION_MUTANT_SKIP_TILE_LAST_KEY /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage1_skip_key_mutant
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage2-splits\" -DLP_STAGE=2 -DLP_ATTENTION_MUTANT_SKIP_TILE_LAST_KEY /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage2_skip_key_mutant
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage3-bound\" -DLP_STAGE=3 -DLP_ATTENTION_MUTANT_SKIP_TILE_LAST_KEY /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage3_skip_key_mutant
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage4-fma-score\" -DLP_STAGE=4 -DLP_ATTENTION_MUTANT_SKIP_TILE_LAST_KEY /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage4_skip_key_mutant
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage5-cheaper-math\" -DLP_STAGE=5 -DLP_ATTENTION_MUTANT_SKIP_TILE_LAST_KEY /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage5_skip_key_mutant
+nvcc -O3 -lineinfo -Xcompiler -pthread -lpthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention -DLP_APP=\"attention\" -DLP_CONTRACT_SHA256=\"e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190\" -DLP_VARIANT=\"stage6-overlap\" -DLP_STAGE=6 -DLP_ATTENTION_MUTANT_SKIP_TILE_LAST_KEY /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/attention_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage6_skip_key_mutant
+== stage 1: baseline tests
+PASS single_token_each (exit 0)
+PASS few_queries_long_context (exit 0)
+PASS many_queries_short_ctx (exit 0)
+PASS equal_extent_variant1 (exit 0)
+PASS unequal_variant2 (exit 0)
+PASS stride_edges (exit 0)
+PASS medium_unequal (exit 0)
+PASS direct_only (exit 0)
+PASS graph_only (exit 0)
+PASS zero_queries (exit 2)
+PASS negative_context (exit 2)
+PASS too_many_queries (exit 2)
+PASS too_much_context (exit 2)
+PASS bad_variant (exit 2)
+PASS non_integer (exit 2)
+PASS unknown_key (exit 2)
+PASS unknown_preset (exit 2)
+PASS bench_with_set (exit 2)
+attention tests: 18 passed, 0 failed
+== stage 2: baseline tests
+PASS single_token_each (exit 0)
+PASS few_queries_long_context (exit 0)
+PASS many_queries_short_ctx (exit 0)
+PASS equal_extent_variant1 (exit 0)
+PASS unequal_variant2 (exit 0)
+PASS stride_edges (exit 0)
+PASS medium_unequal (exit 0)
+PASS direct_only (exit 0)
+PASS graph_only (exit 0)
+PASS zero_queries (exit 2)
+PASS negative_context (exit 2)
+PASS too_many_queries (exit 2)
+PASS too_much_context (exit 2)
+PASS bad_variant (exit 2)
+PASS non_integer (exit 2)
+PASS unknown_key (exit 2)
+PASS unknown_preset (exit 2)
+PASS bench_with_set (exit 2)
+attention tests: 18 passed, 0 failed
+== stage 3: baseline tests
+PASS single_token_each (exit 0)
+PASS few_queries_long_context (exit 0)
+PASS many_queries_short_ctx (exit 0)
+PASS equal_extent_variant1 (exit 0)
+PASS unequal_variant2 (exit 0)
+PASS stride_edges (exit 0)
+PASS medium_unequal (exit 0)
+PASS direct_only (exit 0)
+PASS graph_only (exit 0)
+PASS zero_queries (exit 2)
+PASS negative_context (exit 2)
+PASS too_many_queries (exit 2)
+PASS too_much_context (exit 2)
+PASS bad_variant (exit 2)
+PASS non_integer (exit 2)
+PASS unknown_key (exit 2)
+PASS unknown_preset (exit 2)
+PASS bench_with_set (exit 2)
+attention tests: 18 passed, 0 failed
+== stage 4: baseline tests
+PASS single_token_each (exit 0)
+PASS few_queries_long_context (exit 0)
+PASS many_queries_short_ctx (exit 0)
+PASS equal_extent_variant1 (exit 0)
+PASS unequal_variant2 (exit 0)
+PASS stride_edges (exit 0)
+PASS medium_unequal (exit 0)
+PASS direct_only (exit 0)
+PASS graph_only (exit 0)
+PASS zero_queries (exit 2)
+PASS negative_context (exit 2)
+PASS too_many_queries (exit 2)
+PASS too_much_context (exit 2)
+PASS bad_variant (exit 2)
+PASS non_integer (exit 2)
+PASS unknown_key (exit 2)
+PASS unknown_preset (exit 2)
+PASS bench_with_set (exit 2)
+attention tests: 18 passed, 0 failed
+== stage 5: baseline tests
+PASS single_token_each (exit 0)
+PASS few_queries_long_context (exit 0)
+PASS many_queries_short_ctx (exit 0)
+PASS equal_extent_variant1 (exit 0)
+PASS unequal_variant2 (exit 0)
+PASS stride_edges (exit 0)
+PASS medium_unequal (exit 0)
+PASS direct_only (exit 0)
+PASS graph_only (exit 0)
+PASS zero_queries (exit 2)
+PASS negative_context (exit 2)
+PASS too_many_queries (exit 2)
+PASS too_much_context (exit 2)
+PASS bad_variant (exit 2)
+PASS non_integer (exit 2)
+PASS unknown_key (exit 2)
+PASS unknown_preset (exit 2)
+PASS bench_with_set (exit 2)
+attention tests: 18 passed, 0 failed
+== stage 6: baseline tests
+PASS single_token_each (exit 0)
+PASS few_queries_long_context (exit 0)
+PASS many_queries_short_ctx (exit 0)
+PASS equal_extent_variant1 (exit 0)
+PASS unequal_variant2 (exit 0)
+PASS stride_edges (exit 0)
+PASS medium_unequal (exit 0)
+PASS direct_only (exit 0)
+PASS graph_only (exit 0)
+PASS zero_queries (exit 2)
+PASS negative_context (exit 2)
+PASS too_many_queries (exit 2)
+PASS too_much_context (exit 2)
+PASS bad_variant (exit 2)
+PASS non_integer (exit 2)
+PASS unknown_key (exit 2)
+PASS unknown_preset (exit 2)
+PASS bench_with_set (exit 2)
+attention tests: 18 passed, 0 failed
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention/tests/run_stage_tests.sh /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/test-output-stages
+PASS s1-default (exit 0)
+PASS s1-ignores-hooks (exit 0)
+PASS s1-one-split (exit 0)
+PASS s1-three-splits (exit 0)
+PASS s1-many-splits (exit 0)
+PASS s1-largest-query (exit 0)
+PASS s1-largest-context (exit 0)
+PASS s1-invalid-splits-zero (exit 2)
+PASS s1-invalid-splits-text (exit 2)
+PASS s1-mutant-skip-key (exit 1)
+PASS s1-mutant-skip-key-large (exit 1)
+PASS s2-default (exit 0)
+PASS s2-ignores-hooks (exit 0)
+PASS s2-one-split (exit 0)
+PASS s2-three-splits (exit 0)
+PASS s2-many-splits (exit 0)
+PASS s2-largest-query (exit 0)
+PASS s2-largest-context (exit 0)
+PASS s2-invalid-splits-zero (exit 2)
+PASS s2-invalid-splits-text (exit 2)
+PASS s2-mutant-skip-key (exit 1)
+PASS s2-mutant-skip-key-large (exit 1)
+PASS s3-default (exit 0)
+PASS s3-ignores-hooks (exit 0)
+PASS s3-one-split (exit 0)
+PASS s3-three-splits (exit 0)
+PASS s3-many-splits (exit 0)
+PASS s3-largest-query (exit 0)
+PASS s3-largest-context (exit 0)
+PASS s3-invalid-splits-zero (exit 2)
+PASS s3-invalid-splits-text (exit 2)
+PASS s3-mutant-skip-key (exit 1)
+PASS s3-mutant-skip-key-large (exit 1)
+PASS s4-default (exit 0)
+PASS s4-ignores-hooks (exit 0)
+PASS s4-one-split (exit 0)
+PASS s4-three-splits (exit 0)
+PASS s4-many-splits (exit 0)
+PASS s4-largest-query (exit 0)
+PASS s4-largest-context (exit 0)
+PASS s4-invalid-splits-zero (exit 2)
+PASS s4-invalid-splits-text (exit 2)
+PASS s4-mutant-skip-key (exit 1)
+PASS s4-mutant-skip-key-large (exit 1)
+PASS s5-default (exit 0)
+PASS s5-ignores-hooks (exit 0)
+PASS s5-one-split (exit 0)
+PASS s5-three-splits (exit 0)
+PASS s5-many-splits (exit 0)
+PASS s5-largest-query (exit 0)
+PASS s5-largest-context (exit 0)
+PASS s5-invalid-splits-zero (exit 2)
+PASS s5-invalid-splits-text (exit 2)
+PASS s5-mutant-skip-key (exit 1)
+PASS s5-mutant-skip-key-large (exit 1)
+PASS s6-default (exit 0)
+PASS s6-ignores-hooks (exit 0)
+PASS s6-one-split (exit 0)
+PASS s6-three-splits (exit 0)
+PASS s6-many-splits (exit 0)
+PASS s6-largest-query (exit 0)
+PASS s6-largest-context (exit 0)
+PASS s6-invalid-splits-zero (exit 2)
+PASS s6-invalid-splits-text (exit 2)
+PASS s6-mutant-skip-key (exit 1)
+PASS s6-mutant-skip-key-large (exit 1)
+PASS s1-largest-context-default (exit 0)
+PASS s3-exact-splits5 (exit 0)
+PASS s3-exact-short (exit 0)
+PASS s3-exact-small (exit 0)
+PASS s3-invalid-exact (exit 2)
+PASS s4-exact-splits5 (exit 0)
+PASS s4-exact-short (exit 0)
+PASS s4-exact-small (exit 0)
+PASS s4-invalid-exact (exit 2)
+PASS s5-exact-splits5 (exit 0)
+PASS s5-exact-short (exit 0)
+PASS s5-exact-small (exit 0)
+PASS s5-invalid-exact (exit 2)
+PASS s6-exact-splits5 (exit 0)
+PASS s6-exact-short (exit 0)
+PASS s6-exact-small (exit 0)
+PASS s6-invalid-exact (exit 2)
+PASS s6-overlap-1 (exit 0)
+PASS s6-overlap-2 (exit 0)
+PASS s6-compute-path (exit 0)
+PASS s6-compute-path-splits (exit 0)
+PASS s6-invalid-check-compute (exit 2)
+PASS s3-timed-2000x65537v0 (exit 0)
+PASS s4-timed-2000x65537v0 (exit 0)
+PASS s5-timed-2000x65537v0 (exit 0)
+PASS s6-timed-2000x65537v0 (exit 0)
+PASS s3-timed-37x37v1 (exit 0)
+PASS s4-timed-37x37v1 (exit 0)
+PASS s5-timed-37x37v1 (exit 0)
+PASS s6-timed-37x37v1 (exit 0)
+PASS s3-timed-1x1v0 (exit 0)
+PASS s4-timed-1x1v0 (exit 0)
+PASS s5-timed-1x1v0 (exit 0)
+PASS s6-timed-1x1v0 (exit 0)
+PASS ref-default (exit 0)
+PASS ref-timed-2000x65537v0 (exit 0)
+PASS ref-timed-37x37v1 (exit 0)
+PASS ref-timed-1x1v0 (exit 0)
+PASS ref-one-split (exit 0)
+PASS ref-three-splits (exit 0)
+PASS ref-many-splits (exit 0)
+PASS ref-exact-splits5 (exit 0)
+PASS ref-exact-short (exit 0)
+PASS ref-exact-small (exit 0)
+PASS digest-s4-eq-s3-default (9762f94fe637fbf1)
+PASS digest-s6-eq-s5-default (e504499890103779)
+PASS digest-s6-eq-reference-default (e504499890103779)
+PASS digest-s4-eq-s3-timed-2000x65537v0 (00e0a1ae6177b657)
+PASS digest-s6-eq-s5-timed-2000x65537v0 (7180e6a56755315f)
+PASS digest-s6-eq-reference-timed-2000x65537v0 (7180e6a56755315f)
+PASS digest-s4-eq-s3-timed-37x37v1 (453bdec5b0b592d5)
+PASS digest-s6-eq-s5-timed-37x37v1 (e21c0875fd12f85d)
+PASS digest-s6-eq-reference-timed-37x37v1 (e21c0875fd12f85d)
+PASS digest-s4-eq-s3-timed-1x1v0 (82b6abe447b02372)
+PASS digest-s6-eq-s5-timed-1x1v0 (82b6abe447b02372)
+PASS digest-s6-eq-reference-timed-1x1v0 (82b6abe447b02372)
+PASS digest-s4-eq-s3-one-split (34a24d3fd68e7fe7)
+PASS digest-s6-eq-s5-one-split (c27191dd16e67000)
+PASS digest-s6-eq-reference-one-split (c27191dd16e67000)
+PASS digest-s4-eq-s3-three-splits (ee876e93140e937e)
+PASS digest-s6-eq-s5-three-splits (fc70b7dd6a73e132)
+PASS digest-s6-eq-reference-three-splits (fc70b7dd6a73e132)
+PASS digest-s4-eq-s3-many-splits (94bdce3be5f9182f)
+PASS digest-s6-eq-s5-many-splits (ae3f2f66ec8c26f8)
+PASS digest-s6-eq-reference-many-splits (ae3f2f66ec8c26f8)
+PASS digest-s4-eq-s3-exact-splits5 (16ffb6ee80662bcc)
+PASS digest-s6-eq-s5-exact-splits5 (05c3deb254217f76)
+PASS digest-s6-eq-reference-exact-splits5 (05c3deb254217f76)
+PASS digest-s4-eq-s3-exact-short (4f142d8df9cb933b)
+PASS digest-s6-eq-s5-exact-short (0c45bead968c5dc3)
+PASS digest-s6-eq-reference-exact-short (0c45bead968c5dc3)
+PASS digest-s4-eq-s3-exact-small (9557aaa8d61905e9)
+PASS digest-s6-eq-s5-exact-small (c01391390a19f7f7)
+PASS digest-s6-eq-reference-exact-small (c01391390a19f7f7)
+PASS digest-s6-compute-path-eq-application (7180e6a56755315f)
+attention stage tests: 141 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention'
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-check-baseline.json
+attention: setup 0.00 s
+attention: CPU oracle 1.70 s
+attention: output worst |error|/tolerance 0.00447
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865356, |error|/tolerance 0.00516
+attention: weighted_sum: expected 34930094.3, actual 34930076, |error|/tolerance 0.00523
+attention: max_abs_attention: expected 0.614218135, actual 0.614218235, |error|/tolerance 0.000617
+attention: combined_checksum: expected 35066971.6, actual 35066956, |error|/tolerance 0.00445
+attention: direct invocation 1: PASS, digest 5d1575bb929d28d1 (0.03 s, untimed)
+attention: output worst |error|/tolerance 0.00447
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865356, |error|/tolerance 0.00516
+attention: weighted_sum: expected 34930094.3, actual 34930076, |error|/tolerance 0.00523
+attention: max_abs_attention: expected 0.614218135, actual 0.614218235, |error|/tolerance 0.000617
+attention: combined_checksum: expected 35066971.6, actual 35066956, |error|/tolerance 0.00445
+attention: direct invocation 2: PASS, digest 5d1575bb929d28d1 (0.03 s, untimed)
+attention: output worst |error|/tolerance 0.00447
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865356, |error|/tolerance 0.00516
+attention: weighted_sum: expected 34930094.3, actual 34930076, |error|/tolerance 0.00523
+attention: max_abs_attention: expected 0.614218135, actual 0.614218235, |error|/tolerance 0.000617
+attention: combined_checksum: expected 35066971.6, actual 35066956, |error|/tolerance 0.00445
+attention: graph invocation 1: PASS, digest 5d1575bb929d28d1 (0.03 s, untimed)
+attention: output worst |error|/tolerance 0.00447
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865356, |error|/tolerance 0.00516
+attention: weighted_sum: expected 34930094.3, actual 34930076, |error|/tolerance 0.00523
+attention: max_abs_attention: expected 0.614218135, actual 0.614218235, |error|/tolerance 0.000617
+attention: combined_checksum: expected 35066971.6, actual 35066956, |error|/tolerance 0.00445
+attention: graph invocation 2: PASS, digest 5d1575bb929d28d1 (0.03 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "baseline", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "5d1575bb929d28d1"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "5d1575bb929d28d1"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "5d1575bb929d28d1"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "5d1575bb929d28d1"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage1 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-check-stage1.json
+attention: stage 1 (stage1-tiles), shape rows8_warps8_tile1024, 1 context splits of 250112 keys
+attention: setup 0.00 s
+attention: CPU oracle 1.72 s
+attention: output worst |error|/tolerance 0.0443
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.862488, |error|/tolerance 0.0461
+attention: weighted_sum: expected 34930094.3, actual 34929940, |error|/tolerance 0.0442
+attention: max_abs_attention: expected 0.614218135, actual 0.614217639, |error|/tolerance 0.00308
+attention: combined_checksum: expected 35066971.6, actual 35066820, |error|/tolerance 0.0432
+attention: direct invocation 1: PASS, digest d206ff0baff82a3a (0.02 s, untimed)
+attention: output worst |error|/tolerance 0.0443
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.862488, |error|/tolerance 0.0461
+attention: weighted_sum: expected 34930094.3, actual 34929940, |error|/tolerance 0.0442
+attention: max_abs_attention: expected 0.614218135, actual 0.614217639, |error|/tolerance 0.00308
+attention: combined_checksum: expected 35066971.6, actual 35066820, |error|/tolerance 0.0432
+attention: direct invocation 2: PASS, digest d206ff0baff82a3a (0.02 s, untimed)
+attention: output worst |error|/tolerance 0.0443
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.862488, |error|/tolerance 0.0461
+attention: weighted_sum: expected 34930094.3, actual 34929940, |error|/tolerance 0.0442
+attention: max_abs_attention: expected 0.614218135, actual 0.614217639, |error|/tolerance 0.00308
+attention: combined_checksum: expected 35066971.6, actual 35066820, |error|/tolerance 0.0432
+attention: graph invocation 1: PASS, digest d206ff0baff82a3a (0.02 s, untimed)
+attention: output worst |error|/tolerance 0.0443
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.862488, |error|/tolerance 0.0461
+attention: weighted_sum: expected 34930094.3, actual 34929940, |error|/tolerance 0.0442
+attention: max_abs_attention: expected 0.614218135, actual 0.614217639, |error|/tolerance 0.00308
+attention: combined_checksum: expected 35066971.6, actual 35066820, |error|/tolerance 0.0432
+attention: graph invocation 2: PASS, digest d206ff0baff82a3a (0.02 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "stage1-tiles", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "d206ff0baff82a3a"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "d206ff0baff82a3a"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "d206ff0baff82a3a"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "d206ff0baff82a3a"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage2 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-check-stage2.json
+attention: stage 2 (stage2-splits), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+attention: CPU oracle 1.73 s
+attention: output worst |error|/tolerance 0.00265
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865479, |error|/tolerance 0.00341
+attention: weighted_sum: expected 34930094.3, actual 34930080, |error|/tolerance 0.00408
+attention: max_abs_attention: expected 0.614218135, actual 0.614218414, |error|/tolerance 0.00172
+attention: combined_checksum: expected 35066971.6, actual 35066960, |error|/tolerance 0.00331
+attention: direct invocation 1: PASS, digest 63134db680e83c73 (0.02 s, untimed)
+attention: output worst |error|/tolerance 0.00265
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865479, |error|/tolerance 0.00341
+attention: weighted_sum: expected 34930094.3, actual 34930080, |error|/tolerance 0.00408
+attention: max_abs_attention: expected 0.614218135, actual 0.614218414, |error|/tolerance 0.00172
+attention: combined_checksum: expected 35066971.6, actual 35066960, |error|/tolerance 0.00331
+attention: direct invocation 2: PASS, digest 63134db680e83c73 (0.02 s, untimed)
+attention: output worst |error|/tolerance 0.00265
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865479, |error|/tolerance 0.00341
+attention: weighted_sum: expected 34930094.3, actual 34930080, |error|/tolerance 0.00408
+attention: max_abs_attention: expected 0.614218135, actual 0.614218414, |error|/tolerance 0.00172
+attention: combined_checksum: expected 35066971.6, actual 35066960, |error|/tolerance 0.00331
+attention: graph invocation 1: PASS, digest 63134db680e83c73 (0.02 s, untimed)
+attention: output worst |error|/tolerance 0.00265
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865479, |error|/tolerance 0.00341
+attention: weighted_sum: expected 34930094.3, actual 34930080, |error|/tolerance 0.00408
+attention: max_abs_attention: expected 0.614218135, actual 0.614218414, |error|/tolerance 0.00172
+attention: combined_checksum: expected 35066971.6, actual 35066960, |error|/tolerance 0.00331
+attention: graph invocation 2: PASS, digest 63134db680e83c73 (0.02 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "stage2-splits", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "63134db680e83c73"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "63134db680e83c73"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "63134db680e83c73"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "63134db680e83c73"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage3 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-check-stage3.json
+attention: stage 3 (stage3-bound), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+attention: CPU oracle 1.73 s
+attention: output worst |error|/tolerance 0.00942
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.866272, |error|/tolerance 0.00793
+attention: weighted_sum: expected 34930094.3, actual 34930120, |error|/tolerance 0.00737
+attention: max_abs_attention: expected 0.614218135, actual 0.614218116, |error|/tolerance 0.000122
+attention: combined_checksum: expected 35066971.6, actual 35067000, |error|/tolerance 0.0081
+attention: direct invocation 1: PASS, digest c41971b817c0da05 (0.01 s, untimed)
+attention: output worst |error|/tolerance 0.00942
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.866272, |error|/tolerance 0.00793
+attention: weighted_sum: expected 34930094.3, actual 34930120, |error|/tolerance 0.00737
+attention: max_abs_attention: expected 0.614218135, actual 0.614218116, |error|/tolerance 0.000122
+attention: combined_checksum: expected 35066971.6, actual 35067000, |error|/tolerance 0.0081
+attention: direct invocation 2: PASS, digest c41971b817c0da05 (0.01 s, untimed)
+attention: output worst |error|/tolerance 0.00942
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.866272, |error|/tolerance 0.00793
+attention: weighted_sum: expected 34930094.3, actual 34930120, |error|/tolerance 0.00737
+attention: max_abs_attention: expected 0.614218135, actual 0.614218116, |error|/tolerance 0.000122
+attention: combined_checksum: expected 35066971.6, actual 35067000, |error|/tolerance 0.0081
+attention: graph invocation 1: PASS, digest c41971b817c0da05 (0.01 s, untimed)
+attention: output worst |error|/tolerance 0.00942
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.866272, |error|/tolerance 0.00793
+attention: weighted_sum: expected 34930094.3, actual 34930120, |error|/tolerance 0.00737
+attention: max_abs_attention: expected 0.614218135, actual 0.614218116, |error|/tolerance 0.000122
+attention: combined_checksum: expected 35066971.6, actual 35067000, |error|/tolerance 0.0081
+attention: graph invocation 2: PASS, digest c41971b817c0da05 (0.01 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "stage3-bound", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "c41971b817c0da05"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "c41971b817c0da05"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "c41971b817c0da05"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "c41971b817c0da05"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage4 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-check-stage4.json
+attention: stage 4 (stage4-fma-score), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+attention: CPU oracle 1.73 s
+attention: output worst |error|/tolerance 0.00942
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.866272, |error|/tolerance 0.00793
+attention: weighted_sum: expected 34930094.3, actual 34930120, |error|/tolerance 0.00737
+attention: max_abs_attention: expected 0.614218135, actual 0.614218116, |error|/tolerance 0.000122
+attention: combined_checksum: expected 35066971.6, actual 35067000, |error|/tolerance 0.0081
+attention: direct invocation 1: PASS, digest c41971b817c0da05 (0.01 s, untimed)
+attention: output worst |error|/tolerance 0.00942
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.866272, |error|/tolerance 0.00793
+attention: weighted_sum: expected 34930094.3, actual 34930120, |error|/tolerance 0.00737
+attention: max_abs_attention: expected 0.614218135, actual 0.614218116, |error|/tolerance 0.000122
+attention: combined_checksum: expected 35066971.6, actual 35067000, |error|/tolerance 0.0081
+attention: direct invocation 2: PASS, digest c41971b817c0da05 (0.01 s, untimed)
+attention: output worst |error|/tolerance 0.00942
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.866272, |error|/tolerance 0.00793
+attention: weighted_sum: expected 34930094.3, actual 34930120, |error|/tolerance 0.00737
+attention: max_abs_attention: expected 0.614218135, actual 0.614218116, |error|/tolerance 0.000122
+attention: combined_checksum: expected 35066971.6, actual 35067000, |error|/tolerance 0.0081
+attention: graph invocation 1: PASS, digest c41971b817c0da05 (0.01 s, untimed)
+attention: output worst |error|/tolerance 0.00942
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.866272, |error|/tolerance 0.00793
+attention: weighted_sum: expected 34930094.3, actual 34930120, |error|/tolerance 0.00737
+attention: max_abs_attention: expected 0.614218135, actual 0.614218116, |error|/tolerance 0.000122
+attention: combined_checksum: expected 35066971.6, actual 35067000, |error|/tolerance 0.0081
+attention: graph invocation 2: PASS, digest c41971b817c0da05 (0.01 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "stage4-fma-score", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "c41971b817c0da05"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "c41971b817c0da05"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "c41971b817c0da05"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "c41971b817c0da05"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage5 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-check-stage5.json
+attention: stage 5 (stage5-cheaper-math), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+attention: CPU oracle 1.72 s
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: direct invocation 1: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: direct invocation 2: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: graph invocation 1: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: graph invocation 2: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "stage5-cheaper-math", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "9ca5f117f9ae05e7"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "9ca5f117f9ae05e7"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "9ca5f117f9ae05e7"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "9ca5f117f9ae05e7"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage6 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-check-stage6.json
+attention: stage 6 (stage6-overlap), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+attention: CPU oracle 1.72 s
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: direct invocation 1: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: direct invocation 2: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: graph invocation 1: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: graph invocation 2: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "stage6-overlap", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "9ca5f117f9ae05e7"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "9ca5f117f9ae05e7"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "9ca5f117f9ae05e7"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "9ca5f117f9ae05e7"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ LP_ATTENTION_SPLITS=12 flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_hooks_reference --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-check-hooks_reference.json
+attention: optimized shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+attention: CPU oracle 1.72 s
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: direct invocation 1: PASS, digest 9ca5f117f9ae05e7 (0.01 s, untimed)
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: direct invocation 2: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: graph invocation 1: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00316
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865784, |error|/tolerance 0.000949
+attention: weighted_sum: expected 34930094.3, actual 34930108, |error|/tolerance 0.00393
+attention: max_abs_attention: expected 0.614218135, actual 0.614218354, |error|/tolerance 0.00136
+attention: combined_checksum: expected 35066971.6, actual 35066988, |error|/tolerance 0.00467
+attention: graph invocation 2: PASS, digest 9ca5f117f9ae05e7 (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "9ca5f117f9ae05e7"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "9ca5f117f9ae05e7"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "9ca5f117f9ae05e7"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "9ca5f117f9ae05e7"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention_optimized --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-check-optimized.json
+attention: optimized shape rows8_warps8_tile1024, 8 context splits of 31488 keys
+attention: setup 0.00 s
+attention: CPU oracle 1.72 s
+attention: output worst |error|/tolerance 0.00401
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865479, |error|/tolerance 0.00341
+attention: weighted_sum: expected 34930094.3, actual 34930088, |error|/tolerance 0.00179
+attention: max_abs_attention: expected 0.614218135, actual 0.614217997, |error|/tolerance 0.00086
+attention: combined_checksum: expected 35066971.6, actual 35066968, |error|/tolerance 0.00103
+attention: direct invocation 1: PASS, digest 0cf8e37a97f08081 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00401
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865479, |error|/tolerance 0.00341
+attention: weighted_sum: expected 34930094.3, actual 34930088, |error|/tolerance 0.00179
+attention: max_abs_attention: expected 0.614218135, actual 0.614217997, |error|/tolerance 0.00086
+attention: combined_checksum: expected 35066971.6, actual 35066968, |error|/tolerance 0.00103
+attention: direct invocation 2: PASS, digest 0cf8e37a97f08081 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00401
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865479, |error|/tolerance 0.00341
+attention: weighted_sum: expected 34930094.3, actual 34930088, |error|/tolerance 0.00179
+attention: max_abs_attention: expected 0.614218135, actual 0.614217997, |error|/tolerance 0.00086
+attention: combined_checksum: expected 35066971.6, actual 35066968, |error|/tolerance 0.00103
+attention: graph invocation 1: PASS, digest 0cf8e37a97f08081 (0.00 s, untimed)
+attention: output worst |error|/tolerance 0.00401
+attention: projection_energy: expected 43992.8438, actual 43992.8438, |error|/tolerance 0
+attention: attention_sum: expected 698.865717, actual 698.865479, |error|/tolerance 0.00341
+attention: weighted_sum: expected 34930094.3, actual 34930088, |error|/tolerance 0.00179
+attention: max_abs_attention: expected 0.614218135, actual 0.614217997, |error|/tolerance 0.00086
+attention: combined_checksum: expected 35066971.6, actual 35066968, |error|/tolerance 0.00103
+attention: graph invocation 2: PASS, digest 0cf8e37a97f08081 (0.00 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/multisensor-attention", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "e8f7a56bcebdd1408c2c1956027717fa2a9039da1d43cb553b390c1e16640190", "preset": "large", "overrides": {}, "dimensions": {"query_tokens": 25000, "context_tokens": 250000, "sensor_lanes": 3, "feature_lanes": 4, "statistics": 4, "input_variant": 0, "input_scale": 1, "score_pairs": 6250000000, "output_elements": 100000}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload audio [Q][3] and IMU [C][3] float32 from pinned host memory; audio and IMU projections; streaming attention; residual and statistics; download output [Q][4] and the 4 statistics", "compute": "audio and IMU projections, streaming attention, residual and statistics with the sensor inputs resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "0cf8e37a97f08081"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "0cf8e37a97f08081"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "0cf8e37a97f08081"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "0cf8e37a97f08081"}], "outputs_agree": true, "timing": null, "status": "pass"}

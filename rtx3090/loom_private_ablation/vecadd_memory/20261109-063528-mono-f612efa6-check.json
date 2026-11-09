@@ -1,0 +1,241 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "vecadd_memory",
+ "action": "check",
+ "stamp": "20261109-063528-mono-f612efa6",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "716cf57d97baee49a4b3ea30514290a8ec6b0d7b",
+ "stages_sha256": "6b1cf604d810ba65472f6044d11fa2d96d5ecef2a28c4ef85b9c5b5b14183289",
+ "steps": [
+  {
+   "step": "legacy freeze",
+   "exit_code": 0,
+   "command": "/usr/bin/python3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/tools/legacy_freeze.py verify"
+  },
+  {
+   "step": "build suite baseline",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_memory build VARIANT=baseline"
+  },
+  {
+   "step": "build suite optimized",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_memory build VARIANT=optimized"
+  },
+  {
+   "step": "build stages",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_memory build"
+  },
+  {
+   "step": "stage tests",
+   "exit_code": 0,
+   "command": "make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_memory test"
+  },
+  {
+   "step": "large check baseline",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_memory/build/vecadd_memory --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-baseline.json"
+  },
+  {
+   "step": "large check stage1",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage1 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-stage1.json"
+  },
+  {
+   "step": "large check stage2",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage2 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-stage2.json"
+  },
+  {
+   "step": "large check stage3",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage3 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-stage3.json"
+  },
+  {
+   "step": "large check stage4",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage4 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-stage4.json"
+  },
+  {
+   "step": "large check reference_default",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_reference_tuning --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-reference_default.json"
+  },
+  {
+   "step": "large check optimized",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_optimized --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-optimized.json"
+  }
+ ],
+ "log": "rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check.log",
+ "nvcc": "Build cuda_13.3.r13.3/compiler.38244171_0",
+ "production_sources": {
+  "paths": [
+   "applications/loom_private/vecadd_memory",
+   "applications/loom_private/common",
+   "applications/loom_private/common.mk"
+  ],
+  "clean": true,
+  "status": []
+ },
+ "binaries": {
+  "baseline": {
+   "path": "rtx3090/loom_private/vecadd_memory/build/vecadd_memory",
+   "sha256": "43441287b93ed0af467ead1953ad58efb8fd030b4d79d976be5b1194b48136a7",
+   "variant": "baseline",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_memory build VARIANT=baseline",
+   "check_record": "rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-baseline.json",
+   "output_digest": "32d2e23d1f459f93"
+  },
+  "stage1": {
+   "path": "rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage1",
+   "sha256": "7bed9b91f2b345cef1861f772b6c4e57f44dfe8f2b9cfb7d6941ac4468a59de8",
+   "variant": "stage1-pipeline",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_memory build",
+   "check_record": "rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-stage1.json",
+   "output_digest": "32d2e23d1f459f93"
+  },
+  "stage2": {
+   "path": "rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage2",
+   "sha256": "8a2bb7ba7e9087c1915440cfdddff5c995575b7a25f261d3fd42a345607936f4",
+   "variant": "stage2-copy2d",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_memory build",
+   "check_record": "rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-stage2.json",
+   "output_digest": "32d2e23d1f459f93"
+  },
+  "stage3": {
+   "path": "rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage3",
+   "sha256": "7c5785d756f5fae1b8d4d6d9f415c1e655e7eaf32c8e6354bc59147c78896697",
+   "variant": "stage3-vector",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_memory build",
+   "check_record": "rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-stage3.json",
+   "output_digest": "32d2e23d1f459f93"
+  },
+  "stage4": {
+   "path": "rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage4",
+   "sha256": "a13ada0cc37f00a92976330151a99c8374896434534572d62798329cd66e5762",
+   "variant": "stage4-streaming",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_memory build",
+   "check_record": "rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-stage4.json",
+   "output_digest": "32d2e23d1f459f93"
+  },
+  "reference_default": {
+   "path": "rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_reference_tuning",
+   "sha256": "7f1136093755094d3143665d42b91bbc0a8aea0d06de2973ee28e90392bde140",
+   "variant": "optimized",
+   "timed": false,
+   "env": {
+    "LP_VECADD_CHUNKS": "8",
+    "LP_VECADD_KERNEL": "0"
+   },
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_memory build",
+   "check_record": "rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-reference_default.json",
+   "output_digest": "32d2e23d1f459f93"
+  },
+  "optimized": {
+   "path": "rtx3090/loom_private/vecadd_memory/build/vecadd_memory_optimized",
+   "sha256": "a135352d9ca075d8e8d355bf5ddf0784ebf2fb869fb3992bbdce82e9a7c5a144",
+   "variant": "optimized",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_memory build VARIANT=optimized",
+   "check_record": "rtx3090/loom_private_ablation/vecadd_memory/results/20261109-063528-mono-f612efa6-check-optimized.json",
+   "output_digest": "32d2e23d1f459f93"
+  }
+ },
+ "digest_rule": [
+  {
+   "stage": 0,
+   "binary": "baseline",
+   "digest": "32d2e23d1f459f93",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 1,
+   "binary": "stage1",
+   "digest": "32d2e23d1f459f93",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 2,
+   "binary": "stage2",
+   "digest": "32d2e23d1f459f93",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 3,
+   "binary": "stage3",
+   "digest": "32d2e23d1f459f93",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 4,
+   "binary": "stage4",
+   "digest": "32d2e23d1f459f93",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 5,
+   "binary": "optimized",
+   "digest": "32d2e23d1f459f93",
+   "declared_change": false,
+   "equal_to_previous": true
+  }
+ ],
+ "sass_equal": [
+  {
+   "binary": "stage4",
+   "reference": "optimized",
+   "kernel": "13vecadd_kernelILi1ELb1E",
+   "why": "stage 4 is the production kernel with the default shape",
+   "instructions": [
+    256,
+    256
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage1",
+   "reference": "baseline",
+   "kernel": "13vecadd_kernelEPKi",
+   "why": "stage 1 runs the baseline kernel on each chunk",
+   "instructions": [
+    32,
+    32
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage2",
+   "reference": "baseline",
+   "kernel": "13vecadd_kernelEPKi",
+   "why": "stage 2 keeps the baseline kernel",
+   "instructions": [
+    32,
+    32
+   ],
+   "identical": true
+  }
+ ]
+}

@@ -1,0 +1,343 @@
+$ /usr/bin/python3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/tools/legacy_freeze.py verify
+400/400 legacy files match 4ce57c7c0a333b74e9e6e2bd78142604c4c2cf39
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly build VARIANT=baseline
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/anomaly.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/anomaly/build/anomaly
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly'
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly build VARIANT=optimized
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/anomaly_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/anomaly/build/anomaly_optimized
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly'
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly build
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly'
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage1-tiles\" -DLP_STAGE=1 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage1
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage2-binary32\" -DLP_STAGE=2 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage2
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage3-tensor-cores\" -DLP_STAGE=3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage3
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage4-pipeline\" -DLP_STAGE=4 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage4
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" -DLP_ANOMALY_FORCE_CHUNKS=32 \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/anomaly_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_optimized_chunks32
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly'
+$ make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly test
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly'
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage1-tiles\" -DLP_STAGE=1 -DLP_ANOMALY_MUTANT_SKIP_LAST_SAMPLE /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage1_skip_last_mutant
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage2-binary32\" -DLP_STAGE=2 -DLP_ANOMALY_MUTANT_SKIP_LAST_SAMPLE /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage2_skip_last_mutant
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage3-tensor-cores\" -DLP_STAGE=3 -DLP_ANOMALY_MUTANT_SKIP_LAST_SAMPLE /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage3_skip_last_mutant
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage4-pipeline\" -DLP_STAGE=4 -DLP_ANOMALY_MUTANT_SKIP_LAST_SAMPLE /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage4_skip_last_mutant
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage1-tiles\" -DLP_STAGE=1 -DLP_ABLATION_MUTANT_NO_CORRECTION /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage1_no_correction_mutant
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage2-binary32\" -DLP_STAGE=2 -DLP_ABLATION_MUTANT_NO_CORRECTION /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage2_no_correction_mutant
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage3-tensor-cores\" -DLP_STAGE=3 -DLP_ABLATION_MUTANT_NO_CORRECTION /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage3_no_correction_mutant
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage4-pipeline\" -DLP_STAGE=4 -DLP_ABLATION_MUTANT_NO_CORRECTION /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage4_no_correction_mutant
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage2-binary32\" -DLP_STAGE=2 -DLP_ANOMALY_BASELINE_ARITHMETIC /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage2_baseline_arithmetic
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage3-tensor-cores\" -DLP_STAGE=3 -DLP_ANOMALY_BASELINE_ARITHMETIC /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage3_baseline_arithmetic
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage4-pipeline\" -DLP_STAGE=4 -DLP_ANOMALY_BASELINE_ARITHMETIC /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/stage4-tests/anomaly_optimized_baseline_arithmetic
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage4-pipeline\" -DLP_STAGE=4 -DLP_ANOMALY_FORCE_CHUNKS=1 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/stage4-tests/anomaly_optimized_chunks1
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu(528): warning #177-D: variable "<unnamed>::kDefaultChunks" was declared but never referenced
+  constexpr int kDefaultChunks = 32;
+                ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage4-pipeline\" -DLP_STAGE=4 -DLP_ANOMALY_FORCE_CHUNKS=3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/stage4-tests/anomaly_optimized_chunks3
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu(528): warning #177-D: variable "<unnamed>::kDefaultChunks" was declared but never referenced
+  constexpr int kDefaultChunks = 32;
+                ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage4-pipeline\" -DLP_STAGE=4 -DLP_ANOMALY_FORCE_CHUNKS=16 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/stage4-tests/anomaly_optimized_chunks16
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu(528): warning #177-D: variable "<unnamed>::kDefaultChunks" was declared but never referenced
+  constexpr int kDefaultChunks = 32;
+                ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"stage4-pipeline\" -DLP_STAGE=4 -DLP_ANOMALY_FORCE_CHUNKS=32 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/stage4-tests/anomaly_optimized_chunks32
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/anomaly_stages.cu(528): warning #177-D: variable "<unnamed>::kDefaultChunks" was declared but never referenced
+  constexpr int kDefaultChunks = 32;
+                ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/tests/test_requant.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/stage4-tests/test_requant
+nvcc -O3 -lineinfo -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly -DLP_APP=\"anomaly\" -DLP_CONTRACT_SHA256=\"7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde\" -DLP_VARIANT=\"optimized\" -DLP_ANOMALY_MUTANT_NO_MARGIN \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/tests/test_requant.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/stage4-tests/test_requant_no_margin_mutant
+g++ -O2 -std=c++17 -ffp-contract=off -Wall -Wextra /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/tests/test_host.cpp \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/model.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/oracle.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/assets.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/test_host
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/test_host ${LOOM_PRIVATE_ASSET_CACHE:-$HOME/.cache/cuda-elastic/loom-private-assets}
+PASS sha256-empty
+PASS sha256-abc
+PASS sha256-448-bit
+PASS model-asset-present
+PASS dataset-asset-present
+PASS parse-pinned-model
+PASS model-structure
+PASS reject-identifier
+PASS reject-size
+PASS reject-root-offset
+PASS reject-zero-root
+PASS reject-schema-version
+    20596 single-byte corruptions, 2805 rejected
+PASS corruption-robustness
+PASS oracle-sample-0-matches-smoke-reference
+PASS oracle-rejects-non-finite
+PASS reference-parser-rejects-bad-line
+anomaly host tests: 16 passed, 0 failed
+== stage 1: production run_tests.sh
+PASS samples-7 (exit 0)
+PASS samples-93 (exit 0)
+PASS samples-41-direct (exit 0)
+PASS samples-1003-graph (exit 0)
+PASS result-record
+PASS result-record-assets
+PASS result-record-widths
+PASS mutant-skip-last (exit 1)
+PASS corrupt-model (exit 3)
+PASS missing-model (exit 3)
+PASS missing-dataset (exit 3)
+PASS truncated-dataset (exit 3)
+PASS oversized-dataset (exit 3)
+PASS corrupt-reference (exit 3)
+PASS zero-samples (exit 2)
+PASS negative-samples (exit 2)
+PASS too-many-samples (exit 2)
+PASS non-integer-samples (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS unknown-asset (exit 2)
+PASS bench-with-set (exit 2)
+anomaly tests: 22 passed, 0 failed
+== stage 2: production run_tests.sh
+PASS samples-7 (exit 0)
+PASS samples-93 (exit 0)
+PASS samples-41-direct (exit 0)
+PASS samples-1003-graph (exit 0)
+PASS result-record
+PASS result-record-assets
+PASS result-record-widths
+PASS mutant-skip-last (exit 1)
+PASS corrupt-model (exit 3)
+PASS missing-model (exit 3)
+PASS missing-dataset (exit 3)
+PASS truncated-dataset (exit 3)
+PASS oversized-dataset (exit 3)
+PASS corrupt-reference (exit 3)
+PASS zero-samples (exit 2)
+PASS negative-samples (exit 2)
+PASS too-many-samples (exit 2)
+PASS non-integer-samples (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS unknown-asset (exit 2)
+PASS bench-with-set (exit 2)
+anomaly tests: 22 passed, 0 failed
+== stage 3: production run_tests.sh
+PASS samples-7 (exit 0)
+PASS samples-93 (exit 0)
+PASS samples-41-direct (exit 0)
+PASS samples-1003-graph (exit 0)
+PASS result-record
+PASS result-record-assets
+PASS result-record-widths
+PASS mutant-skip-last (exit 1)
+PASS corrupt-model (exit 3)
+PASS missing-model (exit 3)
+PASS missing-dataset (exit 3)
+PASS truncated-dataset (exit 3)
+PASS oversized-dataset (exit 3)
+PASS corrupt-reference (exit 3)
+PASS zero-samples (exit 2)
+PASS negative-samples (exit 2)
+PASS too-many-samples (exit 2)
+PASS non-integer-samples (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS unknown-asset (exit 2)
+PASS bench-with-set (exit 2)
+anomaly tests: 22 passed, 0 failed
+== stage 4: production run_tests.sh
+PASS samples-7 (exit 0)
+PASS samples-93 (exit 0)
+PASS samples-41-direct (exit 0)
+PASS samples-1003-graph (exit 0)
+PASS result-record
+PASS result-record-assets
+PASS result-record-widths
+PASS mutant-skip-last (exit 1)
+PASS corrupt-model (exit 3)
+PASS missing-model (exit 3)
+PASS missing-dataset (exit 3)
+PASS truncated-dataset (exit 3)
+PASS oversized-dataset (exit 3)
+PASS corrupt-reference (exit 3)
+PASS zero-samples (exit 2)
+PASS negative-samples (exit 2)
+PASS too-many-samples (exit 2)
+PASS non-integer-samples (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS unknown-asset (exit 2)
+PASS bench-with-set (exit 2)
+anomaly tests: 22 passed, 0 failed
+== stage 4: production run_optimized_tests.sh
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock timeout 3600 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/anomaly/tests/run_optimized_tests.sh \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage4 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/stage4-tests "1 3 16 32" ${LOOM_PRIVATE_ASSET_CACHE:-$HOME/.cache/cuda-elastic/loom-private-assets} \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/test-output-stage4
+PASS fast-path-exactness (exit 0)
+PASS fast-path-no-margin-mutant (exit 1)
+PASS fast-path-no-margin-mutant-input
+PASS samples-1 (exit 0)
+PASS samples-16 (exit 0)
+PASS samples-33 (exit 0)
+PASS samples-4099-config (exit 0)
+PASS baseline-arithmetic-1003 (exit 0)
+PASS chunks1-samples-4099 (exit 0)
+PASS chunks1-samples-17 (exit 0)
+PASS chunks3-samples-4099 (exit 0)
+PASS chunks3-samples-17 (exit 0)
+PASS chunks16-samples-4099 (exit 0)
+PASS chunks16-samples-17 (exit 0)
+PASS chunks32-samples-4099 (exit 0)
+PASS chunks32-samples-17 (exit 0)
+PASS chunks3-pipeline (exit 0)
+PASS chunks32-pipeline (exit 0)
+anomaly optimized tests: 18 passed, 0 failed
+GPU_LOCK=/tmp/cuda-elastic-gpu.lock timeout 3600 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly/tests/run_stage_tests.sh /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/test-output-stages
+PASS stage-source-reads-no-environment
+PASS stage1-config (exit 0)
+PASS stage1-samples-1 (exit 0)
+PASS stage1-samples-15 (exit 0)
+PASS stage1-samples-16 (exit 0)
+PASS stage1-samples-17 (exit 0)
+PASS stage1-samples-33 (exit 0)
+PASS stage1-samples-4099 (exit 0)
+PASS stage1-no-correction-mutant (exit 1)
+PASS stage2-config (exit 0)
+PASS stage2-samples-1 (exit 0)
+PASS stage2-samples-15 (exit 0)
+PASS stage2-samples-16 (exit 0)
+PASS stage2-samples-17 (exit 0)
+PASS stage2-samples-33 (exit 0)
+PASS stage2-samples-4099 (exit 0)
+PASS stage2-no-correction-mutant (exit 1)
+PASS stage3-config (exit 0)
+PASS stage3-samples-1 (exit 0)
+PASS stage3-samples-15 (exit 0)
+PASS stage3-samples-16 (exit 0)
+PASS stage3-samples-17 (exit 0)
+PASS stage3-samples-33 (exit 0)
+PASS stage3-samples-4099 (exit 0)
+PASS stage3-no-correction-mutant (exit 1)
+PASS stage4-config (exit 0)
+PASS stage4-samples-1 (exit 0)
+PASS stage4-samples-15 (exit 0)
+PASS stage4-samples-16 (exit 0)
+PASS stage4-samples-17 (exit 0)
+PASS stage4-samples-33 (exit 0)
+PASS stage4-samples-4099 (exit 0)
+PASS stage4-no-correction-mutant (exit 1)
+PASS stage2-baseline-arithmetic (exit 0)
+PASS stage3-baseline-arithmetic (exit 0)
+PASS stage1-samples-max (exit 0)
+PASS stage4-samples-max (exit 0)
+anomaly stage tests: 37 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/anomaly'
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/anomaly/build/anomaly --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/results/20261109-063528-mono-f612efa6-check-baseline.json
+anomaly: setup 0.09 s
+anomaly: CPU oracle matches upstream reference bytes for dataset samples 0, 2, 3
+anomaly: CPU oracle 0.00 s
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 1: PASS, digest c3b71bd7273b080c (0.50 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 2: PASS, digest c3b71bd7273b080c (0.51 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 1: PASS, digest c3b71bd7273b080c (0.51 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 2: PASS, digest c3b71bd7273b080c (0.51 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/mlperf-tiny-anomaly-model", "variant": "baseline", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde", "preset": "large", "overrides": {}, "dimensions": {"samples": 104858, "sample_elements": 640, "dataset_samples": 40, "layers": 10, "layer_widths": [640, 128, 128, 128, 128, 8, 128, 128, 128, 128, 640], "macs_per_sample": 264192, "input_float32_elements": 67109120, "output_int8_bytes": 67109120}, "asset_sha256": {"mlperf-tiny-ad01-int8-model": "87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24", "mlperf-tiny-ad01-dataset": "31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa", "anomaly-upstream-expected-smoke": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897", "anomaly-upstream-expected-validation": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload the float32 samples [samples][640] from pinned host memory; int8 inference of every sample through the 10 FC layers; download the int8 outputs [samples][640]", "compute": "int8 inference of every sample through the 10 FC layers with the samples resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage1 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/results/20261109-063528-mono-f612efa6-check-stage1.json
+anomaly: stage 1 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, dp4a dot products, binary64 requantization, unpipelined
+anomaly: setup 0.09 s
+anomaly: CPU oracle matches upstream reference bytes for dataset samples 0, 2, 3
+anomaly: CPU oracle 0.00 s
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 1: PASS, digest c3b71bd7273b080c (0.03 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 2: PASS, digest c3b71bd7273b080c (0.03 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 1: PASS, digest c3b71bd7273b080c (0.03 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 2: PASS, digest c3b71bd7273b080c (0.03 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/mlperf-tiny-anomaly-model", "variant": "stage1-tiles", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde", "preset": "large", "overrides": {}, "dimensions": {"samples": 104858, "sample_elements": 640, "dataset_samples": 40, "layers": 10, "layer_widths": [640, 128, 128, 128, 128, 8, 128, 128, 128, 128, 640], "macs_per_sample": 264192, "input_float32_elements": 67109120, "output_int8_bytes": 67109120}, "asset_sha256": {"mlperf-tiny-ad01-int8-model": "87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24", "mlperf-tiny-ad01-dataset": "31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa", "anomaly-upstream-expected-smoke": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897", "anomaly-upstream-expected-validation": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload the float32 samples [samples][640] from pinned host memory; int8 inference of every sample through the 10 FC layers; download the int8 outputs [samples][640]", "compute": "int8 inference of every sample through the 10 FC layers with the samples resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage2 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/results/20261109-063528-mono-f612efa6-check-stage2.json
+anomaly: stage 2 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, dp4a dot products, binary32 fast-path requantization, unpipelined
+anomaly: setup 0.09 s
+anomaly: CPU oracle matches upstream reference bytes for dataset samples 0, 2, 3
+anomaly: CPU oracle 0.00 s
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 1: PASS, digest c3b71bd7273b080c (0.02 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 2: PASS, digest c3b71bd7273b080c (0.02 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 1: PASS, digest c3b71bd7273b080c (0.02 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 2: PASS, digest c3b71bd7273b080c (0.02 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/mlperf-tiny-anomaly-model", "variant": "stage2-binary32", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde", "preset": "large", "overrides": {}, "dimensions": {"samples": 104858, "sample_elements": 640, "dataset_samples": 40, "layers": 10, "layer_widths": [640, 128, 128, 128, 128, 8, 128, 128, 128, 128, 640], "macs_per_sample": 264192, "input_float32_elements": 67109120, "output_int8_bytes": 67109120}, "asset_sha256": {"mlperf-tiny-ad01-int8-model": "87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24", "mlperf-tiny-ad01-dataset": "31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa", "anomaly-upstream-expected-smoke": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897", "anomaly-upstream-expected-validation": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload the float32 samples [samples][640] from pinned host memory; int8 inference of every sample through the 10 FC layers; download the int8 outputs [samples][640]", "compute": "int8 inference of every sample through the 10 FC layers with the samples resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage3 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/results/20261109-063528-mono-f612efa6-check-stage3.json
+anomaly: stage 3 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, int8 tensor-core dot products, binary32 fast-path requantization, unpipelined
+anomaly: setup 0.09 s
+anomaly: CPU oracle matches upstream reference bytes for dataset samples 0, 2, 3
+anomaly: CPU oracle 0.00 s
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 1: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 2: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 1: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 2: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/mlperf-tiny-anomaly-model", "variant": "stage3-tensor-cores", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde", "preset": "large", "overrides": {}, "dimensions": {"samples": 104858, "sample_elements": 640, "dataset_samples": 40, "layers": 10, "layer_widths": [640, 128, 128, 128, 128, 8, 128, 128, 128, 128, 640], "macs_per_sample": 264192, "input_float32_elements": 67109120, "output_int8_bytes": 67109120}, "asset_sha256": {"mlperf-tiny-ad01-int8-model": "87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24", "mlperf-tiny-ad01-dataset": "31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa", "anomaly-upstream-expected-smoke": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897", "anomaly-upstream-expected-validation": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload the float32 samples [samples][640] from pinned host memory; int8 inference of every sample through the 10 FC layers; download the int8 outputs [samples][640]", "compute": "int8 inference of every sample through the 10 FC layers with the samples resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage4 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/results/20261109-063528-mono-f612efa6-check-stage4.json
+anomaly: stage 4 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, 32 pipeline chunks
+anomaly: setup 0.09 s
+anomaly: CPU oracle matches upstream reference bytes for dataset samples 0, 2, 3
+anomaly: CPU oracle 0.00 s
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 1: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 2: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 1: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 2: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/mlperf-tiny-anomaly-model", "variant": "stage4-pipeline", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde", "preset": "large", "overrides": {}, "dimensions": {"samples": 104858, "sample_elements": 640, "dataset_samples": 40, "layers": 10, "layer_widths": [640, 128, 128, 128, 128, 8, 128, 128, 128, 128, 640], "macs_per_sample": 264192, "input_float32_elements": 67109120, "output_int8_bytes": 67109120}, "asset_sha256": {"mlperf-tiny-ad01-int8-model": "87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24", "mlperf-tiny-ad01-dataset": "31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa", "anomaly-upstream-expected-smoke": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897", "anomaly-upstream-expected-validation": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload the float32 samples [samples][640] from pinned host memory; int8 inference of every sample through the 10 FC layers; download the int8 outputs [samples][640]", "compute": "int8 inference of every sample through the 10 FC layers with the samples resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_optimized_chunks32 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/results/20261109-063528-mono-f612efa6-check-chunks32.json
+anomaly: optimized configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, 32 pipeline chunks
+anomaly: setup 0.09 s
+anomaly: CPU oracle matches upstream reference bytes for dataset samples 0, 2, 3
+anomaly: CPU oracle 0.00 s
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 1: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 2: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 1: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 2: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/mlperf-tiny-anomaly-model", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde", "preset": "large", "overrides": {}, "dimensions": {"samples": 104858, "sample_elements": 640, "dataset_samples": 40, "layers": 10, "layer_widths": [640, 128, 128, 128, 128, 8, 128, 128, 128, 128, 640], "macs_per_sample": 264192, "input_float32_elements": 67109120, "output_int8_bytes": 67109120}, "asset_sha256": {"mlperf-tiny-ad01-int8-model": "87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24", "mlperf-tiny-ad01-dataset": "31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa", "anomaly-upstream-expected-smoke": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897", "anomaly-upstream-expected-validation": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload the float32 samples [samples][640] from pinned host memory; int8 inference of every sample through the 10 FC layers; download the int8 outputs [samples][640]", "compute": "int8 inference of every sample through the 10 FC layers with the samples resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/anomaly/build/anomaly_optimized --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/results/20261109-063528-mono-f612efa6-check-optimized.json
+anomaly: optimized configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, 32 pipeline chunks
+anomaly: setup 0.09 s
+anomaly: CPU oracle matches upstream reference bytes for dataset samples 0, 2, 3
+anomaly: CPU oracle 0.00 s
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 1: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: direct invocation 2: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 1: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+anomaly: all 67109120 output bytes match the oracle
+anomaly: graph invocation 2: PASS, digest c3b71bd7273b080c (0.01 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/mlperf-tiny-anomaly-model", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "7a3e32a8349e2d198d7a7d995cba546603594751b7dc8df3b8d9234dbb12adde", "preset": "large", "overrides": {}, "dimensions": {"samples": 104858, "sample_elements": 640, "dataset_samples": 40, "layers": 10, "layer_widths": [640, 128, 128, 128, 128, 8, 128, 128, 128, 128, 640], "macs_per_sample": 264192, "input_float32_elements": 67109120, "output_int8_bytes": 67109120}, "asset_sha256": {"mlperf-tiny-ad01-int8-model": "87cf24194ef93d1d9b11a591d805526b98008e351655d29883c825c9c106ba24", "mlperf-tiny-ad01-dataset": "31bc130d27e3732e1c09db946ccc7bfa130f98739bcd90cfa39d590f61f4d6fa", "anomaly-upstream-expected-smoke": "212195d59044c9d88ebd46de3eb445ed10e3be98311b5449ea240837d8e10897", "anomaly-upstream-expected-validation": "f1bc2c6d5c498d352b62457ab4220db463aa573afb2d7c459a3299e072331d80"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload the float32 samples [samples][640] from pinned host memory; int8 inference of every sample through the 10 FC layers; download the int8 outputs [samples][640]", "compute": "int8 inference of every sample through the 10 FC layers with the samples resident on the device; no host-device transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "c3b71bd7273b080c"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "c3b71bd7273b080c"}], "outputs_agree": true, "timing": null, "status": "pass"}

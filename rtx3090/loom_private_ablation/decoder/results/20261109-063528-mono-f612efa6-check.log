@@ -1,0 +1,1402 @@
+$ /usr/bin/python3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/tools/legacy_freeze.py verify
+400/400 legacy files match 4ce57c7c0a333b74e9e6e2bd78142604c4c2cf39
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder build VARIANT=baseline
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder'
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/decoder.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder'
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder build VARIANT=optimized
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder'
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/decoder_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder_optimized
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder'
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder build
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder'
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage1-regtile\" -DLP_STAGE=1 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage1
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=4, WarpsN=2, TM=8, BK=8, Stages=4, MinBlocks=2]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=2, WarpsN=4, TM=16, BK=8, Stages=4, MinBlocks=1]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=2, WarpsN=4, TM=16, BK=16, Stages=3, MinBlocks=1]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(154): warning #177-D: function "<unnamed>::cp_async4" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) void cp_async4(float *shared, const float *global,
+                                                                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(160): warning #177-D: function "<unnamed>::cp_async_commit" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) void cp_async_commit() {
+                                                                         ^
+
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage2-cpasync\" -DLP_STAGE=2 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage2
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage3-fragments\" -DLP_STAGE=3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage3
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage4-streamk\" -DLP_STAGE=4 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"optimized\" -DLP_DECODER_TEST_TUNING /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/decoder_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_optimized_hooks
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder'
+$ make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder test
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder'
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage1-regtile\" -DLP_STAGE=1 -DLP_DECODER_TEST_TUNING /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage1_tuning
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=4, WarpsN=2, TM=8, BK=8, Stages=4, MinBlocks=2]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=2, WarpsN=4, TM=16, BK=8, Stages=4, MinBlocks=1]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=2, WarpsN=4, TM=16, BK=16, Stages=3, MinBlocks=1]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(154): warning #177-D: function "<unnamed>::cp_async4" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) void cp_async4(float *shared, const float *global,
+                                                                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(160): warning #177-D: function "<unnamed>::cp_async_commit" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) void cp_async_commit() {
+                                                                         ^
+
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage2-cpasync\" -DLP_STAGE=2 -DLP_DECODER_TEST_TUNING /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage2_tuning
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage3-fragments\" -DLP_STAGE=3 -DLP_DECODER_TEST_TUNING /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage3_tuning
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage4-streamk\" -DLP_STAGE=4 -DLP_DECODER_TEST_TUNING /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4_tuning
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage1-regtile\" -DLP_STAGE=1 -DLP_DECODER_TEST_TUNING -DDECODER_OPT_MUTANT=1 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage1_mutant1
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=4, WarpsN=2, TM=8, BK=8, Stages=4, MinBlocks=2]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=2, WarpsN=4, TM=16, BK=8, Stages=4, MinBlocks=1]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=2, WarpsN=4, TM=16, BK=16, Stages=3, MinBlocks=1]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(154): warning #177-D: function "<unnamed>::cp_async4" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) void cp_async4(float *shared, const float *global,
+                                                                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(160): warning #177-D: function "<unnamed>::cp_async_commit" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) void cp_async_commit() {
+                                                                         ^
+
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage1-regtile\" -DLP_STAGE=1 -DLP_DECODER_TEST_TUNING -DDECODER_OPT_MUTANT=2 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage1_mutant2
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=4, WarpsN=2, TM=8, BK=8, Stages=4, MinBlocks=2]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=2, WarpsN=4, TM=16, BK=8, Stages=4, MinBlocks=1]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(131): warning #177-D: member "<unnamed>::TileConfig<WarpsM, WarpsN, TM, BK, Stages, MinBlocks>::kStages [with WarpsM=2, WarpsN=4, TM=16, BK=16, Stages=3, MinBlocks=1]" was declared but never referenced
+    static constexpr int kStages = Stages, kMinBlocks = MinBlocks;
+                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(154): warning #177-D: function "<unnamed>::cp_async4" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) void cp_async4(float *shared, const float *global,
+                                                                         ^
+
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu(160): warning #177-D: function "<unnamed>::cp_async_commit" was declared but never referenced
+  __attribute__((device)) __inline__ __attribute__((always_inline)) void cp_async_commit() {
+                                                                         ^
+
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage2-cpasync\" -DLP_STAGE=2 -DLP_DECODER_TEST_TUNING -DDECODER_OPT_MUTANT=1 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage2_mutant1
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage2-cpasync\" -DLP_STAGE=2 -DLP_DECODER_TEST_TUNING -DDECODER_OPT_MUTANT=2 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage2_mutant2
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage3-fragments\" -DLP_STAGE=3 -DLP_DECODER_TEST_TUNING -DDECODER_OPT_MUTANT=1 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage3_mutant1
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage3-fragments\" -DLP_STAGE=3 -DLP_DECODER_TEST_TUNING -DDECODER_OPT_MUTANT=2 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage3_mutant2
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage4-streamk\" -DLP_STAGE=4 -DLP_DECODER_TEST_TUNING -DDECODER_OPT_MUTANT=1 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4_mutant1
+nvcc -O3 -lineinfo -Xcompiler -pthread -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder -DLP_APP=\"decoder\" -DLP_CONTRACT_SHA256=\"847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d\" -DLP_VARIANT=\"stage4-streamk\" -DLP_STAGE=4 -DLP_DECODER_TEST_TUNING -DDECODER_OPT_MUTANT=2 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder/decoder_stages.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4_mutant2
+== stage 1: the baseline's tests
+PASS wraparound (exit 0)
+PASS minimum (exit 0)
+PASS square (exit 0)
+PASS wide (exit 0)
+PASS graph-only (exit 0)
+PASS vocab-1 (exit 2)
+PASS vocab-gt-width (exit 2)
+PASS steps-1 (exit 2)
+PASS batch-0 (exit 2)
+PASS width-0 (exit 2)
+PASS width-over-exact (exit 2)
+PASS too-large (exit 2)
+PASS not-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS fault-token (exit 1)
+PASS fault-activation (exit 1)
+PASS fault-probability (exit 1)
+decoder tests: 18 passed, 0 failed
+== stage 2: the baseline's tests
+PASS wraparound (exit 0)
+PASS minimum (exit 0)
+PASS square (exit 0)
+PASS wide (exit 0)
+PASS graph-only (exit 0)
+PASS vocab-1 (exit 2)
+PASS vocab-gt-width (exit 2)
+PASS steps-1 (exit 2)
+PASS batch-0 (exit 2)
+PASS width-0 (exit 2)
+PASS width-over-exact (exit 2)
+PASS too-large (exit 2)
+PASS not-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS fault-token (exit 1)
+PASS fault-activation (exit 1)
+PASS fault-probability (exit 1)
+decoder tests: 18 passed, 0 failed
+== stage 3: the baseline's tests
+PASS wraparound (exit 0)
+PASS minimum (exit 0)
+PASS square (exit 0)
+PASS wide (exit 0)
+PASS graph-only (exit 0)
+PASS vocab-1 (exit 2)
+PASS vocab-gt-width (exit 2)
+PASS steps-1 (exit 2)
+PASS batch-0 (exit 2)
+PASS width-0 (exit 2)
+PASS width-over-exact (exit 2)
+PASS too-large (exit 2)
+PASS not-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS fault-token (exit 1)
+PASS fault-activation (exit 1)
+PASS fault-probability (exit 1)
+decoder tests: 18 passed, 0 failed
+== stage 4: the optimized variant's tests (including the baseline's)
+flock /tmp/cuda-elastic-gpu.lock timeout 1800 bash /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder/tests/run_optimized_tests.sh \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4_tuning /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4_mutant1 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4_mutant2
+PASS wraparound (exit 0)
+PASS minimum (exit 0)
+PASS square (exit 0)
+PASS wide (exit 0)
+PASS graph-only (exit 0)
+PASS vocab-1 (exit 2)
+PASS vocab-gt-width (exit 2)
+PASS steps-1 (exit 2)
+PASS batch-0 (exit 2)
+PASS width-0 (exit 2)
+PASS width-over-exact (exit 2)
+PASS too-large (exit 2)
+PASS not-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS fault-token (exit 1)
+PASS fault-activation (exit 1)
+PASS fault-probability (exit 1)
+decoder tests: 18 passed, 0 failed
+PASS baseline test cases
+PASS optimized binary ignores the tuning hooks
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 default
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_CTAS=1
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_CTAS=5
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_CTAS=7
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_CTAS=11
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 default
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_CTAS=1
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_CTAS=5
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_CTAS=7
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_CTAS=11
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 default
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_CTAS=1
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_CTAS=5
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_CTAS=7
+PASS digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_CTAS=11
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 default
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_CTAS=1
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_CTAS=5
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_CTAS=7
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_CTAS=11
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 default
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_CTAS=1
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_CTAS=5
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_CTAS=7
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_CTAS=11
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 default
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_CTAS=1
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_CTAS=5
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_CTAS=7
+PASS digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_CTAS=11
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 default
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_CTAS=1
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_CTAS=5
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_CTAS=7
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_CTAS=11
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 default
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_CTAS=1
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_CTAS=5
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_CTAS=7
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_CTAS=11
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 default
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_CTAS=1
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_CTAS=5
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_CTAS=7
+PASS digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_CTAS=11
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 default
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_CTAS=1
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_CTAS=5
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_CTAS=7
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_CTAS=11
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 default
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_CTAS=1
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_CTAS=5
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_CTAS=7
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_CTAS=11
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 default
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_CTAS=1
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_CTAS=5
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_CTAS=7
+PASS digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_CTAS=11
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 default
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_CTAS=1
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_CTAS=5
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_CTAS=7
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_CTAS=11
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 default
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_CTAS=1
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_CTAS=5
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_CTAS=7
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_CTAS=11
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 default
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_CTAS=1
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_CTAS=5
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_CTAS=7
+PASS digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_CTAS=11
+PASS stream-K split with 5 blocks, tile 128x256x16 [batch=300 width=1001 vocab=999 steps=3]
+PASS stream-K split with 7 blocks, tile 128x256x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS stream-K split with 11 blocks, tile 128x128x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS unknown-tile
+PASS empty-tile
+PASS bad-schedule
+PASS ctas-zero
+PASS ctas-text
+PASS ctas-too-many
+PASS mutant-handoff
+PASS mutant-last-stage tile=128x256x16
+PASS mutant-last-stage tile=128x256x8
+PASS mutant-last-stage tile=128x128x8
+decoder optimized tests: 105 passed, 0 failed
+== stage 1: stage tests
+PASS stage 1: timed binary uses the default plan and ignores the hooks
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 default
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 default
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 default
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 default
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 default
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 default
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 default
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 default
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 default
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 default
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 default
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 default
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 default
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 default
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 default
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 default
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 default
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 default
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 default
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 default
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 default
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 default
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 default
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 default
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 default
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 default
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 default
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 default
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 default
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 default
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 default
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 default
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 default
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 default
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 default
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 default
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 default
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 default
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 default
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 1: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 1: stream-K split with 5 blocks, tile 128x256x16 [batch=300 width=1001 vocab=999 steps=3]
+PASS stage 1: stream-K split with 7 blocks, tile 128x256x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS stage 1: stream-K split with 11 blocks, tile 128x128x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS stage 1: unknown-tile
+PASS stage 1: bad-schedule
+PASS stage 1: ctas-zero
+PASS stage 1: mutant-handoff
+PASS stage 1: mutant-last-stage tile=128x256x16
+PASS stage 1: mutant-last-stage tile=128x256x8
+PASS stage 1: mutant-last-stage tile=128x128x8
+decoder stage 1 tests: 245 passed, 0 failed
+== stage 2: stage tests
+PASS stage 2: timed binary uses the default plan and ignores the hooks
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 default
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 default
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 default
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 default
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 default
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 default
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 default
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 default
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 default
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 default
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 default
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 default
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 default
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 default
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 default
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 default
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 default
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 default
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 default
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 default
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 default
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 default
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 default
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 default
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 default
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 default
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 default
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 default
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 default
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 default
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 default
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 default
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 default
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 default
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 default
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 default
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 default
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 default
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 default
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 2: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 2: stream-K split with 5 blocks, tile 128x256x16 [batch=300 width=1001 vocab=999 steps=3]
+PASS stage 2: stream-K split with 7 blocks, tile 128x256x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS stage 2: stream-K split with 11 blocks, tile 128x128x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS stage 2: unknown-tile
+PASS stage 2: bad-schedule
+PASS stage 2: ctas-zero
+PASS stage 2: mutant-handoff
+PASS stage 2: mutant-last-stage tile=128x256x16
+PASS stage 2: mutant-last-stage tile=128x256x8
+PASS stage 2: mutant-last-stage tile=128x128x8
+decoder stage 2 tests: 245 passed, 0 failed
+== stage 3: stage tests
+PASS stage 3: timed binary uses the default plan and ignores the hooks
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 default
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 default
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 default
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 default
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 default
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 default
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 default
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 default
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 default
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 default
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 default
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 default
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 default
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 default
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 default
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 default
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 default
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 default
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 default
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 default
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 default
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 default
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 default
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 default
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 default
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 default
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 default
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 default
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 default
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 default
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 default
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 default
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 default
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 default
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 default
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 default
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 default
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 default
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 default
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 3: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 3: stream-K split with 5 blocks, tile 128x256x16 [batch=300 width=1001 vocab=999 steps=3]
+PASS stage 3: stream-K split with 7 blocks, tile 128x256x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS stage 3: stream-K split with 11 blocks, tile 128x128x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS stage 3: unknown-tile
+PASS stage 3: bad-schedule
+PASS stage 3: ctas-zero
+PASS stage 3: mutant-handoff
+PASS stage 3: mutant-last-stage tile=128x256x16
+PASS stage 3: mutant-last-stage tile=128x256x8
+PASS stage 3: mutant-last-stage tile=128x128x8
+decoder stage 3 tests: 245 passed, 0 failed
+== stage 4: stage tests
+PASS stage 4: timed binary uses the default plan and ignores the hooks
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 default
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 default
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 default
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=300 width=1001 vocab=999 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 default
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 default
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 default
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=1030 width=1000 vocab=1000 steps=3] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 default
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 default
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 default
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=257 width=520 vocab=513 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 default
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 default
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 default
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=40 width=96 vocab=16 steps=5] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 default
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 default
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 default
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=3 width=2 vocab=2 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 default
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 default
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 default
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=8 vocab=8 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 default
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 default
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 default
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=9 vocab=9 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 default
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 default
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 default
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=16 vocab=16 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 default
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 default
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 default
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=17 vocab=17 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 default
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 default
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 default
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=24 vocab=24 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 default
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 default
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 default
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=40 vocab=40 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 default
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 default
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 default
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=48 vocab=48 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 default
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x16 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 default
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x256x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 default
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=dp
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=1
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=5
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=7
+PASS stage 4: digest [batch=130 width=49 vocab=49 steps=2] tile=128x128x8 DECODER_OPT_SCHEDULE=streamk DECODER_OPT_CTAS=11
+PASS stage 4: stream-K split with 5 blocks, tile 128x256x16 [batch=300 width=1001 vocab=999 steps=3]
+PASS stage 4: stream-K split with 7 blocks, tile 128x256x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS stage 4: stream-K split with 11 blocks, tile 128x128x8 [batch=1030 width=1000 vocab=1000 steps=3]
+PASS stage 4: unknown-tile
+PASS stage 4: bad-schedule
+PASS stage 4: ctas-zero
+PASS stage 4: mutant-handoff
+PASS stage 4: mutant-last-stage tile=128x256x16
+PASS stage 4: mutant-last-stage tile=128x256x8
+PASS stage 4: mutant-last-stage tile=128x128x8
+decoder stage 4 tests: 245 passed, 0 failed
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder'
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-check-baseline.json
+decoder: setup 0.12 s
+decoder: CPU oracle 0.26 s
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 1: PASS, digest 4fcc3e102976547b (0.15 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 2: PASS, digest 4fcc3e102976547b (0.15 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 1: PASS, digest 4fcc3e102976547b (0.14 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 2: PASS, digest 4fcc3e102976547b (0.15 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/llama2c-decoder", "variant": "baseline", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d", "preset": "large", "overrides": {}, "dimensions": {"batch": 1024, "width": 16384, "vocab": 8192, "steps": 4, "generated_tokens": 4096, "classifier_macs_per_step": 137438953472, "model_bytes": 1073807360}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "prompt upload (pinned H2D, batch int32), token reset from the prompts, every step (rmsnorm, dense classifier matmul, softmax+argmax with on-device token feedback), generated-token download (pinned D2H, batch x steps int32); model weights and working buffers stay resident", "compute": "token reset from the resident prompts and every step (rmsnorm, dense classifier matmul, softmax+argmax)"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage1 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-check-stage1.json
+decoder stage 1: tile 128x256x16, schedule dp, grid 256, 1 data-parallel waves, stream-K tiles 0
+decoder: setup 0.12 s
+decoder: CPU oracle 0.25 s
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 1: PASS, digest 4fcc3e102976547b (0.11 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 2: PASS, digest 4fcc3e102976547b (0.10 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 1: PASS, digest 4fcc3e102976547b (0.11 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 2: PASS, digest 4fcc3e102976547b (0.11 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/llama2c-decoder", "variant": "stage1-regtile", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d", "preset": "large", "overrides": {}, "dimensions": {"batch": 1024, "width": 16384, "vocab": 8192, "steps": 4, "generated_tokens": 4096, "classifier_macs_per_step": 137438953472, "model_bytes": 1073807360}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "prompt upload (pinned H2D, batch int32), token reset from the prompts, every step (rmsnorm, dense classifier matmul, softmax+argmax with on-device token feedback), generated-token download (pinned D2H, batch x steps int32); model weights and working buffers stay resident", "compute": "token reset from the resident prompts and every step (rmsnorm, dense classifier matmul, softmax+argmax)"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage2 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-check-stage2.json
+decoder stage 2: tile 128x256x16, schedule dp, grid 256, 1 data-parallel waves, stream-K tiles 0
+decoder: setup 0.12 s
+decoder: CPU oracle 0.23 s
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 1: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 2: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 1: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 2: PASS, digest 4fcc3e102976547b (0.10 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/llama2c-decoder", "variant": "stage2-cpasync", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d", "preset": "large", "overrides": {}, "dimensions": {"batch": 1024, "width": 16384, "vocab": 8192, "steps": 4, "generated_tokens": 4096, "classifier_macs_per_step": 137438953472, "model_bytes": 1073807360}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "prompt upload (pinned H2D, batch int32), token reset from the prompts, every step (rmsnorm, dense classifier matmul, softmax+argmax with on-device token feedback), generated-token download (pinned D2H, batch x steps int32); model weights and working buffers stay resident", "compute": "token reset from the resident prompts and every step (rmsnorm, dense classifier matmul, softmax+argmax)"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage3 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-check-stage3.json
+decoder stage 3: tile 128x256x16, schedule dp, grid 256, 1 data-parallel waves, stream-K tiles 0
+decoder: setup 0.12 s
+decoder: CPU oracle 0.23 s
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 1: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 2: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 1: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 2: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/llama2c-decoder", "variant": "stage3-fragments", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d", "preset": "large", "overrides": {}, "dimensions": {"batch": 1024, "width": 16384, "vocab": 8192, "steps": 4, "generated_tokens": 4096, "classifier_macs_per_step": 137438953472, "model_bytes": 1073807360}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "prompt upload (pinned H2D, batch int32), token reset from the prompts, every step (rmsnorm, dense classifier matmul, softmax+argmax with on-device token feedback), generated-token download (pinned D2H, batch x steps int32); model weights and working buffers stay resident", "compute": "token reset from the resident prompts and every step (rmsnorm, dense classifier matmul, softmax+argmax)"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-check-stage4.json
+decoder stage 4: tile 128x256x16, schedule streamk, grid 82, 2 data-parallel waves, stream-K tiles 92
+decoder: setup 0.12 s
+decoder: CPU oracle 0.28 s
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 1: PASS, digest 4fcc3e102976547b (0.08 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 2: PASS, digest 4fcc3e102976547b (0.08 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 1: PASS, digest 4fcc3e102976547b (0.08 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 2: PASS, digest 4fcc3e102976547b (0.07 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/llama2c-decoder", "variant": "stage4-streamk", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d", "preset": "large", "overrides": {}, "dimensions": {"batch": 1024, "width": 16384, "vocab": 8192, "steps": 4, "generated_tokens": 4096, "classifier_macs_per_step": 137438953472, "model_bytes": 1073807360}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "prompt upload (pinned H2D, batch int32), token reset from the prompts, every step (rmsnorm, dense classifier matmul, softmax+argmax with on-device token feedback), generated-token download (pinned D2H, batch x steps int32); model weights and working buffers stay resident", "compute": "token reset from the resident prompts and every step (rmsnorm, dense classifier matmul, softmax+argmax)"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder_optimized --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-check-optimized.json
+decoder: setup 0.12 s
+decoder: CPU oracle 0.30 s
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 1: PASS, digest 4fcc3e102976547b (0.08 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 2: PASS, digest 4fcc3e102976547b (0.08 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 1: PASS, digest 4fcc3e102976547b (0.08 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 2: PASS, digest 4fcc3e102976547b (0.07 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/llama2c-decoder", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d", "preset": "large", "overrides": {}, "dimensions": {"batch": 1024, "width": 16384, "vocab": 8192, "steps": 4, "generated_tokens": 4096, "classifier_macs_per_step": 137438953472, "model_bytes": 1073807360}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "prompt upload (pinned H2D, batch int32), token reset from the prompts, every step (rmsnorm, dense classifier matmul, softmax+argmax with on-device token feedback), generated-token download (pinned D2H, batch x steps int32); model weights and working buffers stay resident", "compute": "token reset from the resident prompts and every step (rmsnorm, dense classifier matmul, softmax+argmax)"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ DECODER_OPT_SCHEDULE=dp DECODER_OPT_TILE=128x256x16 flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_optimized_hooks --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-check-reference-dp.json
+decoder test tuning: sm_86, 82 SMs, tile 128x256x16, schedule dp, ctas 82, 1 blocks/SM, 256 tiles x 1024 stages, grid 256, 1 data-parallel waves, stream-K tiles 0, split tiles 0
+decoder: setup 0.12 s
+decoder: CPU oracle 0.28 s
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 1: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 2: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 1: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 2: PASS, digest 4fcc3e102976547b (0.09 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/llama2c-decoder", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d", "preset": "large", "overrides": {}, "dimensions": {"batch": 1024, "width": 16384, "vocab": 8192, "steps": 4, "generated_tokens": 4096, "classifier_macs_per_step": 137438953472, "model_bytes": 1073807360}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "prompt upload (pinned H2D, batch int32), token reset from the prompts, every step (rmsnorm, dense classifier matmul, softmax+argmax with on-device token feedback), generated-token download (pinned D2H, batch x steps int32); model weights and working buffers stay resident", "compute": "token reset from the resident prompts and every step (rmsnorm, dense classifier matmul, softmax+argmax)"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ DECODER_OPT_TILE=128x256x16 flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_optimized_hooks --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-check-reference-streamk.json
+decoder test tuning: sm_86, 82 SMs, tile 128x256x16, schedule streamk, ctas 82, 1 blocks/SM, 256 tiles x 1024 stages, grid 82, 2 data-parallel waves, stream-K tiles 92, split tiles 80
+decoder: setup 0.12 s
+decoder: CPU oracle 0.21 s
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 1: PASS, digest 4fcc3e102976547b (0.08 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: direct invocation 2: PASS, digest 4fcc3e102976547b (0.07 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 1: PASS, digest 4fcc3e102976547b (0.08 s, untimed)
+decoder: PASS: 0/4096 tokens wrong; 0/4096 (sequence, step) invariant failures (worst passing |mean square - 1| 9.95e-06, |probability sum - 1| 1.79e-07); dense check of 8 sequences x 4 steps: 0 mismatches (worst passing relative error normalized 2.99e-08, logits 2.99e-08, probabilities 2.05e-07)
+decoder: graph invocation 2: PASS, digest 4fcc3e102976547b (0.08 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/llama2c-decoder", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "847d3367d564ef22250df7f929c1871067c0ac048f92429d03a7e4f15165340d", "preset": "large", "overrides": {}, "dimensions": {"batch": 1024, "width": 16384, "vocab": 8192, "steps": 4, "generated_tokens": 4096, "classifier_macs_per_step": 137438953472, "model_bytes": 1073807360}, "asset_sha256": {}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "prompt upload (pinned H2D, batch int32), token reset from the prompts, every step (rmsnorm, dense classifier matmul, softmax+argmax with on-device token feedback), generated-token download (pinned D2H, batch x steps int32); model weights and working buffers stay resident", "compute": "token reset from the resident prompts and every step (rmsnorm, dense classifier matmul, softmax+argmax)"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "4fcc3e102976547b"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "4fcc3e102976547b"}], "outputs_agree": true, "timing": null, "status": "pass"}

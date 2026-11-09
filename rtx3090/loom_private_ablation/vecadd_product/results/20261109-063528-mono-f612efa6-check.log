@@ -1,0 +1,258 @@
+$ /usr/bin/python3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/tools/legacy_freeze.py verify
+400/400 legacy files match 4ce57c7c0a333b74e9e6e2bd78142604c4c2cf39
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product build VARIANT=baseline
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product'
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product build VARIANT=optimized
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_optimized
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product'
+$ make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_product build
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_product'
+vecadd_product: no stage binaries (stage 0 and stage 1 are the suite's)
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_product'
+$ make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_product test
+make: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_product'
+make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product test VARIANT=baseline
+make[1]: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_MUTANT=1  \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant1
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_MUTANT=2  \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant2
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_MUTANT=3  \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant3
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_MUTANT=4  \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant4
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"baseline\" -DLP_VECADD_TEST_SLOW_WARMUP \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_slow_warmup
+g++ -O2 -std=c++17 -pthread -Wall -Wextra \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/tests/test_host.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/test_host
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/test_host
+lanes over one 256-record period: 8165 wrap, 8219 do not
+host tests passed
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/tests/run_gpu_tests.sh /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/test-output baseline
+PASS records-1 (exit 0)
+PASS records-2 (exit 0)
+PASS records-3 (exit 0)
+PASS records-7 (exit 0)
+PASS records-63 (exit 0)
+PASS records-64 (exit 0)
+PASS records-255 (exit 0)
+PASS records-256 (exit 0)
+PASS records-257 (exit 0)
+PASS records-1000 (exit 0)
+PASS records-4097 (exit 0)
+PASS records-65537 (exit 0)
+PASS records-1000003 (exit 0)
+PASS records-257-direct (exit 0)
+PASS records-257-graph (exit 0)
+PASS records-1000-json (exit 0)
+PASS result-record
+PASS check-reports-canary
+PASS mutant1-saturating (exit 1)
+PASS mutant1-reports-mismatch
+PASS mutant2-overrun (exit 1)
+PASS mutant2-reports-canary
+PASS mutant3-neighbour-slot (exit 1)
+PASS mutant4-skipped-slots (exit 1)
+PASS mutant4-skipped-slot-is-record-255
+PASS mutant4-below-first-skip (exit 0)
+PASS memcheck-1000 (exit 0)
+PASS memcheck-65537 (exit 0)
+PASS asset-missing (exit 3)
+PASS asset-truncated (exit 3)
+PASS asset-extended (exit 3)
+PASS asset-corrupt (exit 3)
+PASS asset-corrupt-message
+PASS reference-corrupt (exit 3)
+PASS zero-records (exit 2)
+PASS negative-records (exit 2)
+PASS too-many-records (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+PASS bench-direct (exit 0)
+PASS bench-graph (exit 0)
+PASS bench-record-unvalidated
+PASS slow-warmup-3 (exit 0)
+PASS slow-warmup-0 (exit 0)
+PASS warmups-outside-timed-interval (batch 24.8929272 ms with warmups, 924.992981 ms without)
+GPU tests passed
+make[1]: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product'
+make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product test VARIANT=optimized
+make[1]: Entering directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product'
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=1 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant1_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=2 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant2_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=3 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant3_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=4 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant4_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=5 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant5_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=6 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant6_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_MUTANT=7 -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_mutant7_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_TEST_TUNING \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_tuning_optimized
+nvcc -O3 -lineinfo  -std=c++17 -arch=sm_86 --fmad=false -Xcompiler -ffp-contract=off -I/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/common -DLP_APP=\"vecadd_product\" -DLP_CONTRACT_SHA256=\"d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae\" -DLP_VARIANT=\"optimized\" -DLP_VECADD_TEST_SLOW_WARMUP \
+  /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/vecadd_product_optimized.cu /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/fixtures.cpp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/oracle.cpp -o /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_slow_warmup_optimized
+/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/test_host
+lanes over one 256-record period: 8165 wrap, 8219 do not
+host tests passed
+flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product/tests/run_gpu_tests.sh /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_optimized /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/test-output_optimized optimized
+PASS records-1 (exit 0)
+PASS records-2 (exit 0)
+PASS records-3 (exit 0)
+PASS records-7 (exit 0)
+PASS records-63 (exit 0)
+PASS records-64 (exit 0)
+PASS records-255 (exit 0)
+PASS records-256 (exit 0)
+PASS records-257 (exit 0)
+PASS records-1000 (exit 0)
+PASS records-4097 (exit 0)
+PASS records-65537 (exit 0)
+PASS records-1000003 (exit 0)
+PASS records-257-direct (exit 0)
+PASS records-257-graph (exit 0)
+PASS records-1000-json (exit 0)
+PASS result-record
+PASS check-reports-canary
+PASS mutant1-saturating (exit 1)
+PASS mutant1-reports-mismatch
+PASS mutant2-overrun (exit 1)
+PASS mutant2-reports-canary
+PASS mutant3-neighbour-slot (exit 1)
+PASS mutant4-skipped-slots (exit 1)
+PASS mutant4-skipped-slot-is-record-255
+PASS mutant4-below-first-skip (exit 0)
+PASS memcheck-1000 (exit 0)
+PASS memcheck-65537 (exit 0)
+PASS asset-missing (exit 3)
+PASS asset-truncated (exit 3)
+PASS asset-extended (exit 3)
+PASS asset-corrupt (exit 3)
+PASS asset-corrupt-message
+PASS reference-corrupt (exit 3)
+PASS zero-records (exit 2)
+PASS negative-records (exit 2)
+PASS too-many-records (exit 2)
+PASS non-integer (exit 2)
+PASS unknown-key (exit 2)
+PASS unknown-preset (exit 2)
+PASS bench-with-set (exit 2)
+PASS bench-direct (exit 0)
+PASS bench-graph (exit 0)
+PASS bench-record-unvalidated
+PASS slow-warmup-3 (exit 0)
+PASS slow-warmup-0 (exit 0)
+PASS warmups-outside-timed-interval (batch 18.0858879 ms with warmups, 918.375061 ms without)
+PASS suite-binary-ignores-tuning-env (exit 0)
+PASS chunks-1-records-1 (exit 0)
+PASS chunks-1-records-2 (exit 0)
+PASS chunks-1-records-3 (exit 0)
+PASS chunks-1-records-7 (exit 0)
+PASS chunks-1-records-255 (exit 0)
+PASS chunks-1-records-257 (exit 0)
+PASS chunks-1-records-1000 (exit 0)
+PASS chunks-1-records-65537 (exit 0)
+PASS chunks-1-records-1000003 (exit 0)
+PASS chunks-2-records-1 (exit 0)
+PASS chunks-2-records-2 (exit 0)
+PASS chunks-2-records-3 (exit 0)
+PASS chunks-2-records-7 (exit 0)
+PASS chunks-2-records-255 (exit 0)
+PASS chunks-2-records-257 (exit 0)
+PASS chunks-2-records-1000 (exit 0)
+PASS chunks-2-records-65537 (exit 0)
+PASS chunks-2-records-1000003 (exit 0)
+PASS chunks-3-records-1 (exit 0)
+PASS chunks-3-records-2 (exit 0)
+PASS chunks-3-records-3 (exit 0)
+PASS chunks-3-records-7 (exit 0)
+PASS chunks-3-records-255 (exit 0)
+PASS chunks-3-records-257 (exit 0)
+PASS chunks-3-records-1000 (exit 0)
+PASS chunks-3-records-65537 (exit 0)
+PASS chunks-3-records-1000003 (exit 0)
+PASS chunks-5-records-1 (exit 0)
+PASS chunks-5-records-2 (exit 0)
+PASS chunks-5-records-3 (exit 0)
+PASS chunks-5-records-7 (exit 0)
+PASS chunks-5-records-255 (exit 0)
+PASS chunks-5-records-257 (exit 0)
+PASS chunks-5-records-1000 (exit 0)
+PASS chunks-5-records-65537 (exit 0)
+PASS chunks-5-records-1000003 (exit 0)
+PASS chunks-16-records-1 (exit 0)
+PASS chunks-16-records-2 (exit 0)
+PASS chunks-16-records-3 (exit 0)
+PASS chunks-16-records-7 (exit 0)
+PASS chunks-16-records-255 (exit 0)
+PASS chunks-16-records-257 (exit 0)
+PASS chunks-16-records-1000 (exit 0)
+PASS chunks-16-records-65537 (exit 0)
+PASS chunks-16-records-1000003 (exit 0)
+PASS chunks-64-records-1 (exit 0)
+PASS chunks-64-records-2 (exit 0)
+PASS chunks-64-records-3 (exit 0)
+PASS chunks-64-records-7 (exit 0)
+PASS chunks-64-records-255 (exit 0)
+PASS chunks-64-records-257 (exit 0)
+PASS chunks-64-records-1000 (exit 0)
+PASS chunks-64-records-65537 (exit 0)
+PASS chunks-64-records-1000003 (exit 0)
+PASS tuning-chunks-0 (exit 2)
+PASS tuning-chunks-65 (exit 2)
+PASS tuning-chunks-text (exit 2)
+PASS mutant5-skip-upload-chunks-1 (exit 1)
+PASS mutant6-skip-download-chunks-1 (exit 1)
+PASS mutant5-skip-upload-chunks-4 (exit 1)
+PASS mutant6-skip-download-chunks-4 (exit 1)
+PASS mutant5-skip-upload-chunks-64 (exit 1)
+PASS mutant6-skip-download-chunks-64 (exit 1)
+PASS mutant5-large (exit 1)
+PASS mutant6-large (exit 1)
+PASS mutant7-no-join-direct (exit 1)
+PASS mutant7-no-join-graph (exit 70)
+PASS mutant1-chunked (exit 1)
+PASS mutant2-chunked (exit 1)
+PASS mutant3-chunked (exit 1)
+PASS mutant4-chunked (exit 1)
+PASS memcheck-chunks-64 (exit 0)
+PASS memcheck-chunks-3 (exit 0)
+PASS bench-record-names-variant
+GPU tests passed
+make[1]: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/vecadd_product'
+make: Leaving directory '/home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/vecadd_product'
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/results/20261109-063528-mono-f612efa6-check-baseline.json
+vecadd_product: setup 0.06 s
+vecadd_product: CPU oracle 0.01 s
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: direct invocation 1: PASS, digest 835827d0e01d0383 (0.01 s, untimed)
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: direct invocation 2: PASS, digest 835827d0e01d0383 (0.01 s, untimed)
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: graph invocation 1: PASS, digest 835827d0e01d0383 (0.01 s, untimed)
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: graph invocation 2: PASS, digest 835827d0e01d0383 (0.01 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/vecadd-product", "variant": "baseline", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae", "preset": "large", "overrides": {}, "dimensions": {"records": 1048576, "operand_bytes": 64, "input_bytes": 134217728, "output_bytes": 67108864}, "asset_sha256": {"vecadd-product-operands": "89712b453849a8d420cce0c7a5afff97c7c5f5a84509abef8fd47b67075815fb", "vecadd-product-upstream-expected-smoke": "39a9a7849bacd718ad79ac23efb85bdc6dcd7a1e18fcf0a5302ccf04a914b39b"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload of the 128-byte-per-record inputs from pinned host memory, the lane-wise byte-sum kernel over all records, and the download of the 64-byte-per-record outputs to pinned host memory", "compute": "the lane-wise byte-sum kernel over all records with the inputs resident; no transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "835827d0e01d0383"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "835827d0e01d0383"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "835827d0e01d0383"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "835827d0e01d0383"}], "outputs_agree": true, "timing": null, "status": "pass"}
+$ flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_optimized --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/results/20261109-063528-mono-f612efa6-check-optimized.json
+vecadd_product: setup 0.06 s
+vecadd_product: CPU oracle 0.01 s
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: direct invocation 1: PASS, digest 835827d0e01d0383 (0.01 s, untimed)
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: direct invocation 2: PASS, digest 835827d0e01d0383 (0.01 s, untimed)
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: graph invocation 1: PASS, digest 835827d0e01d0383 (0.01 s, untimed)
+vecadd_product: 0 of 67108864 output bytes differ from the oracle; 0 canary bytes damaged
+vecadd_product: graph invocation 2: PASS, digest 835827d0e01d0383 (0.01 s, untimed)
+RESULT {"schema": "loom_private.result/1", "suite_version": "v1", "identity": "loom-private/vecadd-product", "variant": "optimized", "loom_commit": "4a75f8d743ef7fe755822bab0ea0fb78009c145b", "contract_sha256": "d26fb78405a3ac250ae3866803b22e871a2083bf60292024cc2e2e0bd0e110ae", "preset": "large", "overrides": {}, "dimensions": {"records": 1048576, "operand_bytes": 64, "input_bytes": 134217728, "output_bytes": 67108864}, "asset_sha256": {"vecadd-product-operands": "89712b453849a8d420cce0c7a5afff97c7c5f5a84509abef8fd47b67075815fb", "vecadd-product-upstream-expected-smoke": "39a9a7849bacd718ad79ac23efb85bdc6dcd7a1e18fcf0a5302ccf04a914b39b"}, "action": "check", "launch": "both", "device": {"name": "NVIDIA GeForce RTX 3090", "cc": "8.6", "cuda_runtime": 13030, "cuda_driver": 13030}, "timing_scope": {"application": "upload of the 128-byte-per-record inputs from pinned host memory, the lane-wise byte-sum kernel over all records, and the download of the 64-byte-per-record outputs to pinned host memory", "compute": "the lane-wise byte-sum kernel over all records with the inputs resident; no transfers"}, "checks": [{"launch": "direct", "invocation": 1, "pass": true, "digest": "835827d0e01d0383"}, {"launch": "direct", "invocation": 2, "pass": true, "digest": "835827d0e01d0383"}, {"launch": "graph", "invocation": 1, "pass": true, "digest": "835827d0e01d0383"}, {"launch": "graph", "invocation": 2, "pass": true, "digest": "835827d0e01d0383"}], "outputs_agree": true, "timing": null, "status": "pass"}

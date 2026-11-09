@@ -1,0 +1,478 @@
+r1 bracket-start        application    5061.8 us  compute    3929.2 us
+r1 baseline-direct      application    5232.4 us  compute    4188.2 us
+r1 baseline-graph       application    4970.2 us  compute    3928.4 us
+r1 stage1-persistent    application    4964.3 us  compute    3927.6 us
+r1 stage2-tags          application    4248.5 us  compute    3217.0 us
+r1 stage3-layout        application    2132.9 us  compute    1093.7 us
+r1 stage4-tuned         application    1989.9 us  compute     946.8 us
+r1 bracket-end          application    4971.9 us  compute    3933.6 us
+r2 bracket-start        application    4974.9 us  compute    3934.0 us
+r2 baseline-graph       application    4973.6 us  compute    3932.7 us
+r2 stage1-persistent    application    4969.3 us  compute    3932.5 us
+r2 stage2-tags          application    4254.5 us  compute    3218.8 us
+r2 stage3-layout        application    2131.6 us  compute    1091.5 us
+r2 stage4-tuned         application    1988.4 us  compute     947.6 us
+r2 baseline-direct      application    5227.8 us  compute    4190.6 us
+r2 bracket-end          application    4974.6 us  compute    3933.2 us
+r3 bracket-start        application    4968.5 us  compute    3934.2 us
+r3 stage1-persistent    application    4969.9 us  compute    3932.2 us
+r3 stage2-tags          application    4253.5 us  compute    3216.6 us
+r3 stage3-layout        application    2130.8 us  compute    1090.9 us
+r3 stage4-tuned         application    1988.7 us  compute     948.7 us
+r3 baseline-direct      application    5227.3 us  compute    4189.4 us
+r3 baseline-graph       application    4970.3 us  compute    3934.7 us
+r3 bracket-end          application    4971.5 us  compute    3933.4 us
+PASS: rtx3090/loom_private_ablation/pagerank/20261109-063528-mono-f612efa6-bench.json
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank --action profile --launch direct
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.03 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank --action profile --launch direct
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.03 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-baseline-direct.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank --action profile --launch graph
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.03 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank --action profile --launch graph
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.03 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-baseline-graph.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage1-persistent /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage1 --action profile --launch graph
+pagerank: stage 1: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage1-persistent /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage1-persistent.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage1-persistent /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage1 --action profile --launch graph
+pagerank: stage 1: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage1-persistent.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage2-tags /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage2 --action profile --launch graph
+pagerank: stage 2: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage2-tags /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage2-tags.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage2-tags /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage2 --action profile --launch graph
+pagerank: stage 2: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage2-tags.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage3-layout /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage3 --action profile --launch graph
+pagerank: stage 3: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage3-layout /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage3-layout.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage3-layout /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage3 --action profile --launch graph
+pagerank: stage 3: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.04 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage3-layout.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage4-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank_optimized --action profile --launch graph
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels; sm_86 tuning: 164 blocks x 768 threads, streamed graph loads
+pagerank: setup 0.04 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage4-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage4-tuned.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage4-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank_optimized --action profile --launch graph
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels; sm_86 tuning: 164 blocks x 768 threads, streamed graph loads
+pagerank: setup 0.04 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/profiles/20261109-063528-mono-f612efa6-stage4-tuned.ncu-rep --csv --page raw
+PASS: rtx3090/loom_private_ablation/pagerank/20261109-063528-mono-f612efa6-profile.json
+r1 bracket-start        application   31849.4 us  compute   31695.1 us
+r1 baseline-direct      application   32783.6 us  compute   33083.4 us
+r1 baseline-graph       application   32015.7 us  compute   31991.8 us
+r1 stage1-tiles         application   15212.8 us  compute   15297.9 us
+r1 stage2-splits        application   14939.9 us  compute   14875.4 us
+r1 stage3-bound         application   10738.5 us  compute   10652.2 us
+r1 stage4-fma-score     application    8644.9 us  compute    8495.4 us
+r1 stage5-cheaper-math  application    4395.3 us  compute    4332.6 us
+r1 stage6-overlap       application    4342.4 us  compute    4345.0 us
+r1 stage7-tuned         application    4263.5 us  compute    4344.0 us
+r1 bracket-end          application   32269.2 us  compute   32237.3 us
+r2 bracket-start        application   32434.0 us  compute   32366.5 us
+r2 baseline-graph       application   32062.3 us  compute   32298.5 us
+r2 stage1-tiles         application   15371.0 us  compute   15420.7 us
+r2 stage2-splits        application   14989.8 us  compute   15086.4 us
+r2 stage3-bound         application   10860.5 us  compute   10654.5 us
+r2 stage4-fma-score     application    8733.6 us  compute    8557.6 us
+r2 stage5-cheaper-math  application    4411.2 us  compute    4335.4 us
+r2 stage6-overlap       application    4341.0 us  compute    4345.0 us
+r2 stage7-tuned         application    4341.4 us  compute    4339.9 us
+r2 baseline-direct      application   33214.9 us  compute   33146.4 us
+r2 bracket-end          application   32274.8 us  compute   32095.5 us
+r3 bracket-start        application   32163.6 us  compute   32221.4 us
+r3 stage1-tiles         application   15364.7 us  compute   15491.1 us
+r3 stage2-splits        application   14940.8 us  compute   15175.8 us
+r3 stage3-bound         application   10936.8 us  compute   10656.5 us
+r3 stage4-fma-score     application    8726.9 us  compute    8571.6 us
+r3 stage5-cheaper-math  application    4429.7 us  compute    4345.0 us
+r3 stage6-overlap       application    4338.0 us  compute    4344.9 us
+r3 stage7-tuned         application    4330.2 us  compute    4345.3 us
+r3 baseline-direct      application   33249.2 us  compute   33160.7 us
+r3 baseline-graph       application   32232.6 us  compute   32241.7 us
+r3 bracket-end          application   32458.5 us  compute   32301.6 us
+PASS: rtx3090/loom_private_ablation/attention/20261109-063528-mono-f612efa6-bench.json
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention --action profile --launch direct
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention --action profile --launch direct
+attention: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention --action profile --launch graph
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention --action profile --launch graph
+attention: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage1 --action profile --launch graph
+attention: stage 1 (stage1-tiles), shape rows8_warps8_tile1024, 1 context splits of 250112 keys
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage1 --action profile --launch graph
+attention: stage 1 (stage1-tiles), shape rows8_warps8_tile1024, 1 context splits of 250112 keys
+attention: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage2 --action profile --launch graph
+attention: stage 2 (stage2-splits), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage2 --action profile --launch graph
+attention: stage 2 (stage2-splits), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage3 --action profile --launch graph
+attention: stage 3 (stage3-bound), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage3 --action profile --launch graph
+attention: stage 3 (stage3-bound), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage4 --action profile --launch graph
+attention: stage 4 (stage4-fma-score), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage4 --action profile --launch graph
+attention: stage 4 (stage4-fma-score), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage5 --action profile --launch graph
+attention: stage 5 (stage5-cheaper-math), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage5 --action profile --launch graph
+attention: stage 5 (stage5-cheaper-math), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage6 --action profile --launch graph
+attention: stage 6 (stage6-overlap), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage6 --action profile --launch graph
+attention: stage 6 (stage6-overlap), shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention_optimized --action profile --launch graph
+attention: optimized shape rows8_warps8_tile1024, 8 context splits of 31488 keys
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention_optimized --action profile --launch graph
+attention: optimized shape rows8_warps8_tile1024, 8 context splits of 31488 keys
+attention: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-reference-hooks_reference /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_hooks_reference --action profile --launch graph
+attention: optimized shape rows8_warps8_tile1024, 12 context splits of 20992 keys
+attention: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-reference-hooks_reference /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-reference-hooks_reference.nsys-rep
+host stage6 vs hooks_reference: identical
+PASS: rtx3090/loom_private_ablation/attention/20261109-063528-mono-f612efa6-profile.json
+r1 bracket-start        application  149659.3 us  compute  150024.8 us
+r1 baseline-direct      application  150437.3 us  compute  151152.6 us
+r1 baseline-graph       application  151184.8 us  compute  151391.1 us
+r1 stage1-regtile       application  108339.7 us  compute  108220.0 us
+r1 stage2-cpasync       application   97518.6 us  compute   97421.0 us
+r1 stage3-fragments     application   94446.4 us  compute   94654.7 us
+r1 stage4-streamk       application   80585.8 us  compute   80586.4 us
+r1 stage5-tuned         application   80492.5 us  compute   80011.8 us
+r1 bracket-end          application  151335.7 us  compute  151421.1 us
+r2 bracket-start        application  151365.9 us  compute  151467.7 us
+r2 baseline-graph       application  151607.6 us  compute  151616.1 us
+r2 stage1-regtile       application  108372.3 us  compute  108167.1 us
+r2 stage2-cpasync       application   97639.6 us  compute   97286.7 us
+r2 stage3-fragments     application   94660.9 us  compute   94778.4 us
+r2 stage4-streamk       application   80633.6 us  compute   80669.5 us
+r2 stage5-tuned         application   80111.6 us  compute   80242.2 us
+r2 baseline-direct      application  151416.0 us  compute  151433.7 us
+r2 bracket-end          application  151452.5 us  compute  151489.7 us
+r3 bracket-start        application  151501.0 us  compute  151527.3 us
+r3 stage1-regtile       application  108391.3 us  compute  108282.2 us
+r3 stage2-cpasync       application   97320.4 us  compute   97301.3 us
+r3 stage3-fragments     application   94551.0 us  compute   94797.0 us
+r3 stage4-streamk       application   80704.0 us  compute   80218.2 us
+r3 stage5-tuned         application   80093.4 us  compute   80018.7 us
+r3 baseline-direct      application  151405.8 us  compute  151454.9 us
+r3 baseline-graph       application  151490.4 us  compute  151440.5 us
+r3 bracket-end          application  151584.1 us  compute  151502.9 us
+PASS: rtx3090/loom_private_ablation/decoder/20261109-063528-mono-f612efa6-bench.json
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder --action profile --launch direct
+decoder: setup 0.13 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder --action profile --launch direct
+decoder: setup 0.13 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-baseline-direct.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder --action profile --launch graph
+decoder: setup 0.13 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder --action profile --launch graph
+decoder: setup 0.13 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-baseline-graph.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage1-regtile /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage1 --action profile --launch graph
+decoder stage 1: tile 128x256x16, schedule dp, grid 256, 1 data-parallel waves, stream-K tiles 0
+decoder: setup 0.13 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage1-regtile /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage1-regtile.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage1-regtile /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage1 --action profile --launch graph
+decoder stage 1: tile 128x256x16, schedule dp, grid 256, 1 data-parallel waves, stream-K tiles 0
+decoder: setup 0.13 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage1-regtile.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage2-cpasync /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage2 --action profile --launch graph
+decoder stage 2: tile 128x256x16, schedule dp, grid 256, 1 data-parallel waves, stream-K tiles 0
+decoder: setup 0.13 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage2-cpasync /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage2-cpasync.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage2-cpasync /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage2 --action profile --launch graph
+decoder stage 2: tile 128x256x16, schedule dp, grid 256, 1 data-parallel waves, stream-K tiles 0
+decoder: setup 0.13 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage2-cpasync.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage3-fragments /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage3 --action profile --launch graph
+decoder stage 3: tile 128x256x16, schedule dp, grid 256, 1 data-parallel waves, stream-K tiles 0
+decoder: setup 0.13 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage3-fragments /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage3-fragments.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage3-fragments /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage3 --action profile --launch graph
+decoder stage 3: tile 128x256x16, schedule dp, grid 256, 1 data-parallel waves, stream-K tiles 0
+decoder: setup 0.13 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage3-fragments.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage4-streamk /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4 --action profile --launch graph
+decoder stage 4: tile 128x256x16, schedule streamk, grid 82, 2 data-parallel waves, stream-K tiles 92
+decoder: setup 0.13 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage4-streamk /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage4-streamk.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage4-streamk /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4 --action profile --launch graph
+decoder stage 4: tile 128x256x16, schedule streamk, grid 82, 2 data-parallel waves, stream-K tiles 92
+decoder: setup 0.13 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage4-streamk.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage5-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder_optimized --action profile --launch graph
+decoder: setup 0.13 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage5-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage5-tuned.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage5-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder_optimized --action profile --launch graph
+decoder: setup 0.13 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-stage5-tuned.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-reference-reference-dp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_optimized_hooks --action profile --launch graph
+decoder test tuning: sm_86, 82 SMs, tile 128x256x16, schedule dp, ctas 82, 1 blocks/SM, 256 tiles x 1024 stages, grid 256, 1 data-parallel waves, stream-K tiles 0, split tiles 0
+decoder: setup 0.13 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-reference-reference-dp /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-reference-reference-dp.nsys-rep
+host stage3 vs reference-dp: identical
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-reference-reference-streamk /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_optimized_hooks --action profile --launch graph
+decoder test tuning: sm_86, 82 SMs, tile 128x256x16, schedule streamk, ctas 82, 1 blocks/SM, 256 tiles x 1024 stages, grid 82, 2 data-parallel waves, stream-K tiles 92, split tiles 80
+decoder: setup 0.13 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-reference-reference-streamk /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/profiles/20261109-063528-mono-f612efa6-reference-reference-streamk.nsys-rep
+host stage4 vs reference-streamk: identical
+host stage4 vs optimized: identical
+PASS: rtx3090/loom_private_ablation/decoder/20261109-063528-mono-f612efa6-profile.json
+r1 bracket-start        application  508071.5 us  compute  498276.6 us
+r1 baseline-direct      application  511836.8 us  compute  498252.1 us
+r1 baseline-graph       application  511829.8 us  compute  498271.1 us
+r1 stage1-tiles         application   27480.6 us  compute   13936.8 us
+r1 stage2-binary32      application   17150.5 us  compute    3734.9 us
+r1 stage3-tensor-cores  application   14743.9 us  compute    1173.9 us
+r1 stage4-pipeline      application   11324.4 us  compute    1171.1 us
+r1 stage5-tuned         application   11326.6 us  compute    1170.0 us
+r1 bracket-end          application  511819.4 us  compute  498235.3 us
+r2 bracket-start        application  511805.4 us  compute  498247.9 us
+r2 baseline-graph       application  511819.0 us  compute  498280.8 us
+r2 stage1-tiles         application   27482.2 us  compute   13915.6 us
+r2 stage2-binary32      application   17157.4 us  compute    3705.6 us
+r2 stage3-tensor-cores  application   14739.1 us  compute    1169.1 us
+r2 stage4-pipeline      application   11341.3 us  compute    1168.3 us
+r2 stage5-tuned         application   11325.3 us  compute    1172.8 us
+r2 baseline-direct      application  511868.6 us  compute  498252.1 us
+r2 bracket-end          application  511844.4 us  compute  498252.0 us
+r3 bracket-start        application  511823.8 us  compute  498267.0 us
+r3 stage1-tiles         application   27485.0 us  compute   13912.4 us
+r3 stage2-binary32      application   17173.9 us  compute    3714.3 us
+r3 stage3-tensor-cores  application   14743.4 us  compute    1170.7 us
+r3 stage4-pipeline      application   11444.4 us  compute    1165.5 us
+r3 stage5-tuned         application   11328.1 us  compute    1167.4 us
+r3 baseline-direct      application  511853.8 us  compute  498257.0 us
+r3 baseline-graph       application  511833.0 us  compute  498252.3 us
+r3 bracket-end          application  511842.7 us  compute  498256.2 us
+PASS: rtx3090/loom_private_ablation/anomaly/20261109-063528-mono-f612efa6-bench.json
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/anomaly/build/anomaly --action profile --launch direct
+anomaly: setup 0.10 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/anomaly/build/anomaly --action profile --launch direct
+anomaly: setup 0.09 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-baseline-direct.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/anomaly/build/anomaly --action profile --launch graph
+anomaly: setup 0.09 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/anomaly/build/anomaly --action profile --launch graph
+anomaly: setup 0.10 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-baseline-graph.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage1-tiles /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage1 --action profile --launch graph
+anomaly: stage 1 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, dp4a dot products, binary64 requantization, unpipelined
+anomaly: setup 0.09 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage1-tiles /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage1-tiles.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage1-tiles /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage1 --action profile --launch graph
+anomaly: stage 1 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, dp4a dot products, binary64 requantization, unpipelined
+anomaly: setup 0.09 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage1-tiles.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage2-binary32 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage2 --action profile --launch graph
+anomaly: stage 2 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, dp4a dot products, binary32 fast-path requantization, unpipelined
+anomaly: setup 0.10 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage2-binary32 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage2-binary32.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage2-binary32 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage2 --action profile --launch graph
+anomaly: stage 2 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, dp4a dot products, binary32 fast-path requantization, unpipelined
+anomaly: setup 0.10 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage2-binary32.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage3-tensor-cores /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage3 --action profile --launch graph
+anomaly: stage 3 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, int8 tensor-core dot products, binary32 fast-path requantization, unpipelined
+anomaly: setup 0.09 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage3-tensor-cores /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage3-tensor-cores.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage3-tensor-cores /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage3 --action profile --launch graph
+anomaly: stage 3 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, int8 tensor-core dot products, binary32 fast-path requantization, unpipelined
+anomaly: setup 0.10 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage3-tensor-cores.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage4-pipeline /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage4 --action profile --launch graph
+anomaly: stage 4 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, 32 pipeline chunks
+anomaly: setup 0.10 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage4-pipeline /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage4-pipeline.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage4-pipeline /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_stage4 --action profile --launch graph
+anomaly: stage 4 configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, 32 pipeline chunks
+anomaly: setup 0.09 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage4-pipeline.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage5-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/anomaly/build/anomaly_optimized --action profile --launch graph
+anomaly: optimized configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, 32 pipeline chunks
+anomaly: setup 0.09 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage5-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage5-tuned.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage5-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/anomaly/build/anomaly_optimized --action profile --launch graph
+anomaly: optimized configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, 32 pipeline chunks
+anomaly: setup 0.10 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-stage5-tuned.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-reference-chunks32 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/build/anomaly_optimized_chunks32 --action profile --launch graph
+anomaly: optimized configuration for NVIDIA GeForce RTX 3090 (cc 8.6): 16 samples per block, 32 pipeline chunks
+anomaly: setup 0.09 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-reference-chunks32 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/anomaly/profiles/20261109-063528-mono-f612efa6-reference-chunks32.nsys-rep
+host stage4 vs chunks32: identical
+host stage4 vs optimized: identical
+PASS: rtx3090/loom_private_ablation/anomaly/20261109-063528-mono-f612efa6-profile.json
+r1 bracket-start        application     538.1 us  compute      16.2 us
+r1 baseline-direct      application     536.7 us  compute      16.6 us
+r1 baseline-graph       application     535.8 us  compute      16.1 us
+r1 stage1-pipeline      application     439.7 us  compute      16.2 us
+r1 stage2-copy2d        application     420.1 us  compute      16.0 us
+r1 stage3-vector        application     423.8 us  compute      15.6 us
+r1 stage4-streaming     application     419.3 us  compute      15.1 us
+r1 stage5-tuned         application     430.9 us  compute      15.1 us
+r1 bracket-end          application     532.2 us  compute      16.0 us
+r2 bracket-start        application     537.5 us  compute      15.9 us
+r2 baseline-graph       application     535.0 us  compute      15.9 us
+r2 stage1-pipeline      application     437.6 us  compute      15.8 us
+r2 stage2-copy2d        application     423.1 us  compute      15.9 us
+r2 stage3-vector        application     422.2 us  compute      15.6 us
+r2 stage4-streaming     application     421.1 us  compute      15.1 us
+r2 stage5-tuned         application     418.5 us  compute      15.1 us
+r2 baseline-direct      application     536.4 us  compute      16.3 us
+r2 bracket-end          application     535.9 us  compute      16.0 us
+r3 bracket-start        application     535.8 us  compute      16.0 us
+r3 stage1-pipeline      application     436.1 us  compute      15.9 us
+r3 stage2-copy2d        application     420.3 us  compute      15.9 us
+r3 stage3-vector        application     420.4 us  compute      15.6 us
+r3 stage4-streaming     application     421.6 us  compute      15.1 us
+r3 stage5-tuned         application     419.5 us  compute      15.1 us
+r3 baseline-direct      application     535.1 us  compute      16.4 us
+r3 baseline-graph       application     538.3 us  compute      16.0 us
+r3 bracket-end          application     535.5 us  compute      15.9 us
+PASS: rtx3090/loom_private_ablation/vecadd_memory/20261109-063528-mono-f612efa6-bench.json
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_memory/build/vecadd_memory --action profile --launch direct
+vecadd_memory: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_memory/build/vecadd_memory --action profile --launch direct
+vecadd_memory: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-baseline-direct.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_memory/build/vecadd_memory --action profile --launch graph
+vecadd_memory: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_memory/build/vecadd_memory --action profile --launch graph
+vecadd_memory: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-baseline-graph.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage1-pipeline /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage1 --action profile --launch graph
+vecadd_memory: stage 1: 8 chunks of 131072 elements, scalar (1 element per thread) kernel
+vecadd_memory: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage1-pipeline /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage1-pipeline.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage1-pipeline /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage1 --action profile --launch graph
+vecadd_memory: stage 1: 8 chunks of 131072 elements, scalar (1 element per thread) kernel
+vecadd_memory: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage1-pipeline.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage2-copy2d /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage2 --action profile --launch graph
+vecadd_memory: stage 2: 8 chunks of 131072 elements, scalar (1 element per thread) kernel
+vecadd_memory: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage2-copy2d /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage2-copy2d.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage2-copy2d /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage2 --action profile --launch graph
+vecadd_memory: stage 2: 8 chunks of 131072 elements, scalar (1 element per thread) kernel
+vecadd_memory: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage2-copy2d.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage3-vector /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage3 --action profile --launch graph
+vecadd_memory: stage 3: 8 chunks of 131072 elements, 1 vector per thread kernel
+vecadd_memory: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage3-vector /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage3-vector.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage3-vector /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage3 --action profile --launch graph
+vecadd_memory: stage 3: 8 chunks of 131072 elements, 1 vector per thread kernel
+vecadd_memory: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage3-vector.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage4-streaming /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage4 --action profile --launch graph
+vecadd_memory: stage 4: 8 chunks of 131072 elements, 1 vector per thread, streaming hints kernel
+vecadd_memory: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage4-streaming /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage4-streaming.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage4-streaming /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_stage4 --action profile --launch graph
+vecadd_memory: stage 4: 8 chunks of 131072 elements, 1 vector per thread, streaming hints kernel
+vecadd_memory: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage4-streaming.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage5-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_optimized --action profile --launch graph
+vecadd_memory: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage5-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage5-tuned.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage5-tuned /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_memory/build/vecadd_memory_optimized --action profile --launch graph
+vecadd_memory: setup 0.00 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-stage5-tuned.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-reference-reference_default /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/build/vecadd_memory_reference_tuning --action profile --launch graph
+vecadd_memory: setup 0.00 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-reference-reference_default /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_memory/profiles/20261109-063528-mono-f612efa6-reference-reference_default.nsys-rep
+host stage4 vs reference_default: identical
+host stage4 vs optimized: identical
+PASS: rtx3090/loom_private_ablation/vecadd_memory/20261109-063528-mono-f612efa6-profile.json
+r1 bracket-start        application    8309.4 us  compute     237.4 us
+r1 baseline-direct      application    8297.7 us  compute     237.9 us
+r1 baseline-graph       application    8319.5 us  compute     237.4 us
+r1 stage1-pipeline      application    6157.7 us  compute     237.4 us
+r1 bracket-end          application    8305.1 us  compute     237.6 us
+r2 bracket-start        application    8319.2 us  compute     237.5 us
+r2 baseline-graph       application    8304.6 us  compute     237.6 us
+r2 stage1-pipeline      application    6154.5 us  compute     237.7 us
+r2 baseline-direct      application    8308.0 us  compute     238.0 us
+r2 bracket-end          application    8305.7 us  compute     237.3 us
+r3 bracket-start        application    8316.5 us  compute     237.1 us
+r3 stage1-pipeline      application    6148.7 us  compute     237.4 us
+r3 baseline-direct      application    8343.9 us  compute     238.0 us
+r3 baseline-graph       application    8302.6 us  compute     237.2 us
+r3 bracket-end          application    8317.6 us  compute     237.3 us
+PASS: rtx3090/loom_private_ablation/vecadd_product/20261109-063528-mono-f612efa6-bench.json
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product --action profile --launch direct
+vecadd_product: setup 0.07 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-baseline-direct /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product --action profile --launch direct
+vecadd_product: setup 0.07 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-baseline-direct.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product --action profile --launch graph
+vecadd_product: setup 0.06 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-baseline-graph /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product --action profile --launch graph
+vecadd_product: setup 0.07 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-baseline-graph.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-stage1-pipeline /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_optimized --action profile --launch graph
+vecadd_product: setup 0.06 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-stage1-pipeline /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-stage1-pipeline.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-stage1-pipeline /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/vecadd_product/build/vecadd_product_optimized --action profile --launch graph
+vecadd_product: setup 0.06 s
+$ ncu --import /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/vecadd_product/profiles/20261109-063528-mono-f612efa6-stage1-pipeline.ncu-rep --csv --page raw
+PASS: rtx3090/loom_private_ablation/vecadd_product/20261109-063528-mono-f612efa6-profile.json

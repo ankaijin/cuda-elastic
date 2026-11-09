@@ -1,0 +1,115 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "attention",
+ "action": "profile",
+ "stamp": "20261109-063528-mono-f612efa6",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "716cf57d97baee49a4b3ea30514290a8ec6b0d7b",
+ "stages_sha256": "7d0c8605813d07d080267768a955e40f6aa5625f31f6c736166ea42e96130b4e",
+ "ncu": true,
+ "profiles": [
+  {
+   "case": "baseline-direct",
+   "nsys": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-direct-ncu-raw.csv"
+  },
+  {
+   "case": "baseline-graph",
+   "nsys": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-baseline-graph-ncu-raw.csv"
+  },
+  {
+   "case": "stage1-tiles",
+   "nsys": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage1-tiles-ncu-raw.csv"
+  },
+  {
+   "case": "stage2-splits",
+   "nsys": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage2-splits-ncu-raw.csv"
+  },
+  {
+   "case": "stage3-bound",
+   "nsys": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage3-bound-ncu-raw.csv"
+  },
+  {
+   "case": "stage4-fma-score",
+   "nsys": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage4-fma-score-ncu-raw.csv"
+  },
+  {
+   "case": "stage5-cheaper-math",
+   "nsys": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage5-cheaper-math-ncu-raw.csv"
+  },
+  {
+   "case": "stage6-overlap",
+   "nsys": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage6-overlap-ncu-raw.csv"
+  },
+  {
+   "case": "stage7-tuned",
+   "nsys": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-stage7-tuned-ncu-raw.csv"
+  },
+  {
+   "reference": "hooks_reference",
+   "nsys": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-reference-hooks_reference.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-reference-hooks_reference_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-reference-hooks_reference_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/attention/profiles/20261109-063528-mono-f612efa6-reference-hooks_reference_launches.json"
+  }
+ ],
+ "host_equal": [
+  {
+   "binary": "stage6",
+   "reference": "hooks_reference",
+   "why": "stage 6 is production with 12 splits: the production hooks build forced to 12 splits",
+   "launch": "graph",
+   "identical": true,
+   "difference": ""
+  }
+ ]
+}

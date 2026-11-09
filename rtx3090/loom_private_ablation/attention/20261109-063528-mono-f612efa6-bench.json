@@ -1,0 +1,504 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "attention",
+ "action": "bench",
+ "stamp": "20261109-063528-mono-f612efa6",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "716cf57d97baee49a4b3ea30514290a8ec6b0d7b",
+ "stages_sha256": "7d0c8605813d07d080267768a955e40f6aa5625f31f6c736166ea42e96130b4e",
+ "repeat": 3,
+ "order": "rotated",
+ "orders": [
+  [
+   "baseline-direct",
+   "baseline-graph",
+   "stage1-tiles",
+   "stage2-splits",
+   "stage3-bound",
+   "stage4-fma-score",
+   "stage5-cheaper-math",
+   "stage6-overlap",
+   "stage7-tuned"
+  ],
+  [
+   "baseline-graph",
+   "stage1-tiles",
+   "stage2-splits",
+   "stage3-bound",
+   "stage4-fma-score",
+   "stage5-cheaper-math",
+   "stage6-overlap",
+   "stage7-tuned",
+   "baseline-direct"
+  ],
+  [
+   "stage1-tiles",
+   "stage2-splits",
+   "stage3-bound",
+   "stage4-fma-score",
+   "stage5-cheaper-math",
+   "stage6-overlap",
+   "stage7-tuned",
+   "baseline-direct",
+   "baseline-graph"
+  ]
+ ],
+ "records": [
+  {
+   "case": "baseline-graph",
+   "role": "bracket-start",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-start-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-start-r1.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 31849.3805,
+    "compute": 31695.0531
+   }
+  },
+  {
+   "case": "baseline-direct",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r1.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 32783.606,
+    "compute": 33083.3893
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r1.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 32015.6555,
+    "compute": 31991.7572
+   }
+  },
+  {
+   "case": "stage1-tiles",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage1-tiles-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage1-tiles-r1.log",
+   "binary_sha256": "499a320a6b4e245fd5e3903442b7a2d4f7a314cc73bdc1e8114c6faa1ce3d59a",
+   "batch_per_iteration_us": {
+    "application": 15212.8357,
+    "compute": 15297.8943
+   }
+  },
+  {
+   "case": "stage2-splits",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage2-splits-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage2-splits-r1.log",
+   "binary_sha256": "d8aecb12fcd227a40b0e1c0bcaaf649c83ac2e440d54a69ebef8f4f62bbd70f8",
+   "batch_per_iteration_us": {
+    "application": 14939.8727,
+    "compute": 14875.4425
+   }
+  },
+  {
+   "case": "stage3-bound",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage3-bound-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage3-bound-r1.log",
+   "binary_sha256": "03325b2438fdbc7c40d6624109092580280caeb7f7808158d551624817265ee8",
+   "batch_per_iteration_us": {
+    "application": 10738.4941,
+    "compute": 10652.2049
+   }
+  },
+  {
+   "case": "stage4-fma-score",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage4-fma-score-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage4-fma-score-r1.log",
+   "binary_sha256": "e5d4b86e9b778d77479649b98cbb8754821a5c9855e0ff9714af79309262ba83",
+   "batch_per_iteration_us": {
+    "application": 8644.86847,
+    "compute": 8495.41092
+   }
+  },
+  {
+   "case": "stage5-cheaper-math",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage5-cheaper-math-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage5-cheaper-math-r1.log",
+   "binary_sha256": "76272ae9dcd30d1424a27e6c7f08f5ada8642d7f0a5f7e6794c22ee12d3826f0",
+   "batch_per_iteration_us": {
+    "application": 4395.28008,
+    "compute": 4332.64656
+   }
+  },
+  {
+   "case": "stage6-overlap",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage6-overlap-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage6-overlap-r1.log",
+   "binary_sha256": "d56a77778b7925a09bc33bf3565076a39b8e26111a45a9978643037b5d3bd3ff",
+   "batch_per_iteration_us": {
+    "application": 4342.38548,
+    "compute": 4344.98558
+   }
+  },
+  {
+   "case": "stage7-tuned",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage7-tuned-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage7-tuned-r1.log",
+   "binary_sha256": "de8adef01a41d6375bc0b8476077fd9ea942acfe512bb22c5af1bda7a999f6ff",
+   "batch_per_iteration_us": {
+    "application": 4263.52654,
+    "compute": 4343.95676
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "bracket-end",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-end-r1.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-end-r1.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 32269.1956,
+    "compute": 32237.3474
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "bracket-start",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-start-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-start-r2.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 32434.0332,
+    "compute": 32366.5405
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r2.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 32062.3413,
+    "compute": 32298.5474
+   }
+  },
+  {
+   "case": "stage1-tiles",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage1-tiles-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage1-tiles-r2.log",
+   "binary_sha256": "499a320a6b4e245fd5e3903442b7a2d4f7a314cc73bdc1e8114c6faa1ce3d59a",
+   "batch_per_iteration_us": {
+    "application": 15371.0281,
+    "compute": 15420.6726
+   }
+  },
+  {
+   "case": "stage2-splits",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage2-splits-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage2-splits-r2.log",
+   "binary_sha256": "d8aecb12fcd227a40b0e1c0bcaaf649c83ac2e440d54a69ebef8f4f62bbd70f8",
+   "batch_per_iteration_us": {
+    "application": 14989.7949,
+    "compute": 15086.438
+   }
+  },
+  {
+   "case": "stage3-bound",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage3-bound-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage3-bound-r2.log",
+   "binary_sha256": "03325b2438fdbc7c40d6624109092580280caeb7f7808158d551624817265ee8",
+   "batch_per_iteration_us": {
+    "application": 10860.4897,
+    "compute": 10654.464
+   }
+  },
+  {
+   "case": "stage4-fma-score",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage4-fma-score-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage4-fma-score-r2.log",
+   "binary_sha256": "e5d4b86e9b778d77479649b98cbb8754821a5c9855e0ff9714af79309262ba83",
+   "batch_per_iteration_us": {
+    "application": 8733.56018,
+    "compute": 8557.61948
+   }
+  },
+  {
+   "case": "stage5-cheaper-math",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage5-cheaper-math-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage5-cheaper-math-r2.log",
+   "binary_sha256": "76272ae9dcd30d1424a27e6c7f08f5ada8642d7f0a5f7e6794c22ee12d3826f0",
+   "batch_per_iteration_us": {
+    "application": 4411.16638,
+    "compute": 4335.35995
+   }
+  },
+  {
+   "case": "stage6-overlap",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage6-overlap-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage6-overlap-r2.log",
+   "binary_sha256": "d56a77778b7925a09bc33bf3565076a39b8e26111a45a9978643037b5d3bd3ff",
+   "batch_per_iteration_us": {
+    "application": 4341.00494,
+    "compute": 4345.0367
+   }
+  },
+  {
+   "case": "stage7-tuned",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage7-tuned-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage7-tuned-r2.log",
+   "binary_sha256": "de8adef01a41d6375bc0b8476077fd9ea942acfe512bb22c5af1bda7a999f6ff",
+   "batch_per_iteration_us": {
+    "application": 4341.44974,
+    "compute": 4339.86549
+   }
+  },
+  {
+   "case": "baseline-direct",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r2.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 33214.8773,
+    "compute": 33146.3684
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "bracket-end",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-end-r2.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-end-r2.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 32274.8322,
+    "compute": 32095.4895
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "bracket-start",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-start-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-start-r3.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 32163.6383,
+    "compute": 32221.3898
+   }
+  },
+  {
+   "case": "stage1-tiles",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage1-tiles-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage1-tiles-r3.log",
+   "binary_sha256": "499a320a6b4e245fd5e3903442b7a2d4f7a314cc73bdc1e8114c6faa1ce3d59a",
+   "batch_per_iteration_us": {
+    "application": 15364.6561,
+    "compute": 15491.1163
+   }
+  },
+  {
+   "case": "stage2-splits",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage2-splits-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage2-splits-r3.log",
+   "binary_sha256": "d8aecb12fcd227a40b0e1c0bcaaf649c83ac2e440d54a69ebef8f4f62bbd70f8",
+   "batch_per_iteration_us": {
+    "application": 14940.7715,
+    "compute": 15175.8163
+   }
+  },
+  {
+   "case": "stage3-bound",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage3-bound-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage3-bound-r3.log",
+   "binary_sha256": "03325b2438fdbc7c40d6624109092580280caeb7f7808158d551624817265ee8",
+   "batch_per_iteration_us": {
+    "application": 10936.8019,
+    "compute": 10656.4606
+   }
+  },
+  {
+   "case": "stage4-fma-score",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage4-fma-score-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage4-fma-score-r3.log",
+   "binary_sha256": "e5d4b86e9b778d77479649b98cbb8754821a5c9855e0ff9714af79309262ba83",
+   "batch_per_iteration_us": {
+    "application": 8726.93939,
+    "compute": 8571.59653
+   }
+  },
+  {
+   "case": "stage5-cheaper-math",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage5-cheaper-math-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage5-cheaper-math-r3.log",
+   "binary_sha256": "76272ae9dcd30d1424a27e6c7f08f5ada8642d7f0a5f7e6794c22ee12d3826f0",
+   "batch_per_iteration_us": {
+    "application": 4429.72145,
+    "compute": 4344.97108
+   }
+  },
+  {
+   "case": "stage6-overlap",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage6-overlap-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage6-overlap-r3.log",
+   "binary_sha256": "d56a77778b7925a09bc33bf3565076a39b8e26111a45a9978643037b5d3bd3ff",
+   "batch_per_iteration_us": {
+    "application": 4338.03368,
+    "compute": 4344.93103
+   }
+  },
+  {
+   "case": "stage7-tuned",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage7-tuned-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-stage7-tuned-r3.log",
+   "binary_sha256": "de8adef01a41d6375bc0b8476077fd9ea942acfe512bb22c5af1bda7a999f6ff",
+   "batch_per_iteration_us": {
+    "application": 4330.16968,
+    "compute": 4345.34416
+   }
+  },
+  {
+   "case": "baseline-direct",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r3.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 33249.1516,
+    "compute": 33160.6537
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r3.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 32232.6324,
+    "compute": 32241.6992
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "bracket-end",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-end-r3.json",
+   "log": "rtx3090/loom_private_ablation/attention/results/20261109-063528-mono-f612efa6-bench-bracket-end-r3.log",
+   "binary_sha256": "a0a102634a00766209c7fef504306f9c36e776f09a404f91fa554cb2ae2ace09",
+   "batch_per_iteration_us": {
+    "application": 32458.5022,
+    "compute": 32301.6205
+   }
+  }
+ ],
+ "ranges_us": {
+  "baseline-direct": {
+   "application": 465.54559999999765,
+   "compute": 77.26440000000002
+  },
+  "baseline-graph": {
+   "application": 216.97689999999784,
+   "compute": 306.79019999999946
+  },
+  "stage1-tiles": {
+   "application": 158.1923999999999,
+   "compute": 193.22199999999975
+  },
+  "stage2-splits": {
+   "application": 49.922200000000885,
+   "compute": 300.3738000000012
+  },
+  "stage3-bound": {
+   "application": 198.3078000000005,
+   "compute": 4.255699999999706
+  },
+  "stage4-fma-score": {
+   "application": 88.69171000000097,
+   "compute": 76.18561000000045
+  },
+  "stage5-cheaper-math": {
+   "application": 34.44136999999955,
+   "compute": 12.32452000000012
+  },
+  "stage6-overlap": {
+   "application": 4.351800000000367,
+   "compute": 0.10566999999991822
+  },
+  "stage7-tuned": {
+   "application": 77.92320000000018,
+   "compute": 5.478669999999511
+  }
+ },
+ "drift_us": [
+  {
+   "repetition": 1,
+   "application": 419.8150999999998,
+   "compute": 542.2942999999977
+  },
+  {
+   "repetition": 2,
+   "application": -159.20100000000093,
+   "compute": -271.0509999999995
+  },
+  {
+   "repetition": 3,
+   "application": 294.8639000000003,
+   "compute": 80.23070000000007
+  }
+ ]
+}

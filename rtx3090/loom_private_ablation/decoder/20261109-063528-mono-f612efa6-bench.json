@@ -1,0 +1,418 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "decoder",
+ "action": "bench",
+ "stamp": "20261109-063528-mono-f612efa6",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "716cf57d97baee49a4b3ea30514290a8ec6b0d7b",
+ "stages_sha256": "84162f7bcee4fce80849b596b01e135934d778617b288728c9e6a28c9c42bfcf",
+ "repeat": 3,
+ "order": "rotated",
+ "orders": [
+  [
+   "baseline-direct",
+   "baseline-graph",
+   "stage1-regtile",
+   "stage2-cpasync",
+   "stage3-fragments",
+   "stage4-streamk",
+   "stage5-tuned"
+  ],
+  [
+   "baseline-graph",
+   "stage1-regtile",
+   "stage2-cpasync",
+   "stage3-fragments",
+   "stage4-streamk",
+   "stage5-tuned",
+   "baseline-direct"
+  ],
+  [
+   "stage1-regtile",
+   "stage2-cpasync",
+   "stage3-fragments",
+   "stage4-streamk",
+   "stage5-tuned",
+   "baseline-direct",
+   "baseline-graph"
+  ]
+ ],
+ "records": [
+  {
+   "case": "baseline-graph",
+   "role": "bracket-start",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-start-r1.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-start-r1.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 149659.277,
+    "compute": 150024.792
+   }
+  },
+  {
+   "case": "baseline-direct",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r1.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r1.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 150437.317,
+    "compute": 151152.576
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r1.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r1.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 151184.827,
+    "compute": 151391.064
+   }
+  },
+  {
+   "case": "stage1-regtile",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage1-regtile-r1.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage1-regtile-r1.log",
+   "binary_sha256": "b95dc0e69ecf863346bce300f264f11829f015a02a57d40e32acba604642cd52",
+   "batch_per_iteration_us": {
+    "application": 108339.697,
+    "compute": 108220.007
+   }
+  },
+  {
+   "case": "stage2-cpasync",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage2-cpasync-r1.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage2-cpasync-r1.log",
+   "binary_sha256": "d4a704c1c57a6acf266e5afbd68c05a00548cc42f271dec647d744df37098aed",
+   "batch_per_iteration_us": {
+    "application": 97518.6096,
+    "compute": 97420.9534
+   }
+  },
+  {
+   "case": "stage3-fragments",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage3-fragments-r1.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage3-fragments-r1.log",
+   "binary_sha256": "8580add13a0113d4ad7a183200d837f868c42982c84d2c7f7603b6fc81624da5",
+   "batch_per_iteration_us": {
+    "application": 94446.4172,
+    "compute": 94654.6692
+   }
+  },
+  {
+   "case": "stage4-streamk",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage4-streamk-r1.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage4-streamk-r1.log",
+   "binary_sha256": "032d462ec0e9dcce79baba346fb86937ce063c06eb7cdc64c6c26341a53a9275",
+   "batch_per_iteration_us": {
+    "application": 80585.8276,
+    "compute": 80586.3953
+   }
+  },
+  {
+   "case": "stage5-tuned",
+   "role": "case",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage5-tuned-r1.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage5-tuned-r1.log",
+   "binary_sha256": "4da1086b4586f0be0eb0600fc47be9fc6a267e107fb8b91be72689deb2a9d708",
+   "batch_per_iteration_us": {
+    "application": 80492.4805,
+    "compute": 80011.8164
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "bracket-end",
+   "repetition": 1,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-end-r1.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-end-r1.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 151335.693,
+    "compute": 151421.069
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "bracket-start",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-start-r2.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-start-r2.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 151365.894,
+    "compute": 151467.664
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r2.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r2.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 151607.568,
+    "compute": 151616.052
+   }
+  },
+  {
+   "case": "stage1-regtile",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage1-regtile-r2.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage1-regtile-r2.log",
+   "binary_sha256": "b95dc0e69ecf863346bce300f264f11829f015a02a57d40e32acba604642cd52",
+   "batch_per_iteration_us": {
+    "application": 108372.278,
+    "compute": 108167.114
+   }
+  },
+  {
+   "case": "stage2-cpasync",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage2-cpasync-r2.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage2-cpasync-r2.log",
+   "binary_sha256": "d4a704c1c57a6acf266e5afbd68c05a00548cc42f271dec647d744df37098aed",
+   "batch_per_iteration_us": {
+    "application": 97639.6179,
+    "compute": 97286.6577
+   }
+  },
+  {
+   "case": "stage3-fragments",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage3-fragments-r2.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage3-fragments-r2.log",
+   "binary_sha256": "8580add13a0113d4ad7a183200d837f868c42982c84d2c7f7603b6fc81624da5",
+   "batch_per_iteration_us": {
+    "application": 94660.9009,
+    "compute": 94778.418
+   }
+  },
+  {
+   "case": "stage4-streamk",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage4-streamk-r2.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage4-streamk-r2.log",
+   "binary_sha256": "032d462ec0e9dcce79baba346fb86937ce063c06eb7cdc64c6c26341a53a9275",
+   "batch_per_iteration_us": {
+    "application": 80633.5693,
+    "compute": 80669.4763
+   }
+  },
+  {
+   "case": "stage5-tuned",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage5-tuned-r2.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage5-tuned-r2.log",
+   "binary_sha256": "4da1086b4586f0be0eb0600fc47be9fc6a267e107fb8b91be72689deb2a9d708",
+   "batch_per_iteration_us": {
+    "application": 80111.5662,
+    "compute": 80242.157
+   }
+  },
+  {
+   "case": "baseline-direct",
+   "role": "case",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r2.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r2.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 151416.028,
+    "compute": 151433.679
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "bracket-end",
+   "repetition": 2,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-end-r2.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-end-r2.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 151452.49,
+    "compute": 151489.746
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "bracket-start",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-start-r3.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-start-r3.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 151501.038,
+    "compute": 151527.319
+   }
+  },
+  {
+   "case": "stage1-regtile",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage1-regtile-r3.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage1-regtile-r3.log",
+   "binary_sha256": "b95dc0e69ecf863346bce300f264f11829f015a02a57d40e32acba604642cd52",
+   "batch_per_iteration_us": {
+    "application": 108391.345,
+    "compute": 108282.214
+   }
+  },
+  {
+   "case": "stage2-cpasync",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage2-cpasync-r3.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage2-cpasync-r3.log",
+   "binary_sha256": "d4a704c1c57a6acf266e5afbd68c05a00548cc42f271dec647d744df37098aed",
+   "batch_per_iteration_us": {
+    "application": 97320.4468,
+    "compute": 97301.3
+   }
+  },
+  {
+   "case": "stage3-fragments",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage3-fragments-r3.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage3-fragments-r3.log",
+   "binary_sha256": "8580add13a0113d4ad7a183200d837f868c42982c84d2c7f7603b6fc81624da5",
+   "batch_per_iteration_us": {
+    "application": 94551.0132,
+    "compute": 94796.9543
+   }
+  },
+  {
+   "case": "stage4-streamk",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage4-streamk-r3.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage4-streamk-r3.log",
+   "binary_sha256": "032d462ec0e9dcce79baba346fb86937ce063c06eb7cdc64c6c26341a53a9275",
+   "batch_per_iteration_us": {
+    "application": 80703.9734,
+    "compute": 80218.2129
+   }
+  },
+  {
+   "case": "stage5-tuned",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage5-tuned-r3.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-stage5-tuned-r3.log",
+   "binary_sha256": "4da1086b4586f0be0eb0600fc47be9fc6a267e107fb8b91be72689deb2a9d708",
+   "batch_per_iteration_us": {
+    "application": 80093.396,
+    "compute": 80018.7378
+   }
+  },
+  {
+   "case": "baseline-direct",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r3.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-direct-r3.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 151405.811,
+    "compute": 151454.871
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "case",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r3.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-baseline-graph-r3.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 151490.369,
+    "compute": 151440.54
+   }
+  },
+  {
+   "case": "baseline-graph",
+   "role": "bracket-end",
+   "repetition": 3,
+   "record": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-end-r3.json",
+   "log": "rtx3090/loom_private_ablation/decoder/results/20261109-063528-mono-f612efa6-bench-bracket-end-r3.log",
+   "binary_sha256": "93e8c2556a8ea1da561a4c95095dbb4c5e88f1f25c7a88efbc8f47ee9f54275b",
+   "batch_per_iteration_us": {
+    "application": 151584.094,
+    "compute": 151502.881
+   }
+  }
+ ],
+ "ranges_us": {
+  "baseline-direct": {
+   "application": 978.7109999999811,
+   "compute": 302.2950000000128
+  },
+  "baseline-graph": {
+   "application": 422.7410000000091,
+   "compute": 224.987999999983
+  },
+  "stage1-regtile": {
+   "application": 51.64800000000105,
+   "compute": 115.10000000000582
+  },
+  "stage2-cpasync": {
+   "application": 319.1710999999923,
+   "compute": 134.2957000000024
+  },
+  "stage3-fragments": {
+   "application": 214.48369999999704,
+   "compute": 142.2850999999937
+  },
+  "stage4-streamk": {
+   "application": 118.14579999999842,
+   "compute": 451.2633999999962
+  },
+  "stage5-tuned": {
+   "application": 399.08450000001176,
+   "compute": 230.34060000001045
+  }
+ },
+ "drift_us": [
+  {
+   "repetition": 1,
+   "application": 1676.4159999999974,
+   "compute": 1396.2770000000019
+  },
+  {
+   "repetition": 2,
+   "application": 86.59599999999045,
+   "compute": 22.08200000002398
+  },
+  {
+   "repetition": 3,
+   "application": 83.05600000001141,
+   "compute": -24.437999999994645
+  }
+ ]
+}
