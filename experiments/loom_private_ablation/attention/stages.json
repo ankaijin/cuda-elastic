@@ -1,0 +1,222 @@
+{
+  "application": "attention",
+  "title": "Multisensor attention",
+  "scope": "application",
+  "arithmetic_changes": [
+    {
+      "stage": 1,
+      "why": "32 per-lane chains, an xor butterfly and a merge division replace 256 strided partials and a shared-memory tree"
+    },
+    {
+      "stage": 2,
+      "why": "the chains are cut at 12 split boundaries; the splits are rescaled by expf(m_s - m) and summed in split order"
+    },
+    {
+      "stage": 3,
+      "why": "the shift is an integer bound instead of the row maximum, so every p and every sum rounds differently"
+    },
+    {
+      "stage": 5,
+      "why": "rounded log2(e)-scaled weights and bias give exponents with rounding error, ex2.approx replaces expf, products are fused, and the fourth lane is a difference of sums"
+    },
+    {
+      "stage": 7,
+      "gpus": ["rtx3090"],
+      "why": "8 splits instead of 12 move the split boundaries; on the RTX 4090 and 5090 the split count is unchanged"
+    }
+  ],
+  "binaries": {
+    "baseline": {
+      "suite_variant": "baseline"
+    },
+    "stage1": {
+      "stage_binary": "attention_stage1"
+    },
+    "stage2": {
+      "stage_binary": "attention_stage2"
+    },
+    "stage3": {
+      "stage_binary": "attention_stage3"
+    },
+    "stage4": {
+      "stage_binary": "attention_stage4"
+    },
+    "stage5": {
+      "stage_binary": "attention_stage5"
+    },
+    "stage6": {
+      "stage_binary": "attention_stage6"
+    },
+    "hooks_reference": {
+      "stage_binary": "attention_hooks_reference",
+      "timed": false,
+      "env": {
+        "LP_ATTENTION_SPLITS": "12"
+      }
+    },
+    "optimized": {
+      "suite_variant": "optimized"
+    }
+  },
+  "cases": [
+    {
+      "id": "baseline-direct",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "direct",
+      "label": "Baseline, Direct",
+      "adds": "Reference: production attention.cu with direct launches",
+      "detail": "Whole uploads, then project_audio, project_imu, attention_kernel with one 256-thread block per query row (two passes: the exact row maximum, then expf and the sums), and residual_statistics; then the downloads. Each of the 25,000 blocks reads the 4 MB key/value table from L2 twice, about 200 GB per invocation, so the kernel is L2-bandwidth-bound.",
+      "change": "4 kernels per invocation. Each query row's block reads the 4 MB key/value table from L2 twice (about 200 GB)."
+    },
+    {
+      "id": "baseline-graph",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "graph",
+      "label": "Baseline, Graph",
+      "adds": "Reference: the same work captured once as a CUDA Graph",
+      "detail": "Removes host launch overhead only; the GPU runs the same four kernels and copies.",
+      "change": "The same 4 kernels and 4 copies, replayed as one CUDA Graph."
+    },
+    {
+      "id": "stage1-tiles",
+      "stage": 1,
+      "binary": "stage1",
+      "launch": "graph",
+      "label": "+ 64-row blocks with shared K/V tiles",
+      "adds": "Block-level key/value reuse",
+      "detail": "Each block of 8 warps owns 64 query rows, 8 per warp, held in registers. Key/value tiles of 1,024 keys are double-buffered in shared memory with cp.async (the optimized variant's stream_keys), so a tile leaves L2 once per block and each shared-memory read serves 8 rows. The block still makes the baseline's two passes (exact row maximum, then expf) with the baseline's four-lane score and unfused sums; lane i sums keys i, i + 32, ..., then an xor butterfly. Splits: the fewest the 2^21-key chain bound allows, one at the large preset (391 blocks). The residual moves into the production merge kernel.",
+      "change": "64-row blocks share 1,024-key tiles staged in shared memory with cp.async. Two exact passes, one context split."
+    },
+    {
+      "id": "stage2-splits",
+      "stage": 2,
+      "binary": "stage2",
+      "launch": "graph",
+      "label": "+ Context splits",
+      "adds": "Context splits merged in fixed order",
+      "detail": "The optimized variant's split rule with its generic default of 12 splits: 391 row groups x 12 splits = 4,692 blocks instead of 391, which removes the partial last wave of stage 1. Each split shifts by its own exact maximum, and the merge rescales the splits by expf(m_s - m) in split order.",
+      "change": "Each row group's context is cut into 12 splits, merged in split order: 4,692 blocks instead of 391."
+    },
+    {
+      "id": "stage3-bound",
+      "stage": 3,
+      "binary": "stage3",
+      "launch": "graph",
+      "label": "+ One-pass bound shift",
+      "adds": "Upper-bound softmax shift with an exact fallback",
+      "detail": "project_imu (the production kernel) folds each split's max |x|, |y|, |z| with an integer atomicMax, after a memset of the bounds. Each row shifts by ceil(sum |h_l| max |k_l|), so the maximum pass is skipped; a block makes it only if some row's bound exceeds 20, which the contract's inputs never do. The score is still the baseline's half_score and the exponential still expf.",
+      "change": "One pass: each row shifts by an integer upper bound of its scores from per-split max |k|. Exact pass only above 20."
+    },
+    {
+      "id": "stage4-fma-score",
+      "stage": 4,
+      "binary": "stage4",
+      "launch": "graph",
+      "label": "+ Three-FMA score",
+      "adds": "Three-FMA score",
+      "detail": "Since q_w = x + y and k_w = a - b, s - shift = fma(h.x, a, fma(h.y, b, fma(h.z, c, -shift))) with the exact weights h = (x + y/2, -x/2, z/2), in both passes. Every product and partial sum is exact for the contract's inputs, so the scores, and the output digest, equal stage 3's.",
+      "change": "The score as three FMAs with exact weights and the shift as their bias: the same bits with fewer instructions."
+    },
+    {
+      "id": "stage5-cheaper-math",
+      "stage": 5,
+      "binary": "stage5",
+      "launch": "graph",
+      "label": "+ Cheaper math",
+      "adds": "ex2.approx exponential and fused value sums",
+      "detail": "The weights and the shift are pre-multiplied by log2(e) (rounded to float), and p = ex2.approx.ftz of the fused chain replaces expf. The weighted sums use fmaf(p, k, sum) for three lanes, and the fourth is sum p a - sum p b. About 8.5 instructions per score pair. Every kernel is now the production optimized variant's machine code; the application path is still the baseline's (whole uploads, then the compute path on one stream).",
+      "change": "Weights and shift pre-scaled by log2 e for ex2.approx; fused value sums, fourth lane Σpa − Σpb. The production kernels."
+    },
+    {
+      "id": "stage6-overlap",
+      "stage": 6,
+      "binary": "stage6",
+      "launch": "graph",
+      "label": "+ Overlapped chunked transfers",
+      "adds": "Chunked IMU upload overlapped on two side streams",
+      "detail": "The production application path with the generic 12 splits: the IMU goes up in one chunk per split, and each split's project_imu and attention launch start when their chunk's event fires, on two side streams forked from and joined to the harness stream through events. The output download overlaps the statistics kernel. The same bytes cross PCIe; the compute scope is unchanged. 27 kernels and 15 copies per invocation instead of 5 and 4.",
+      "change": "IMU uploaded in one chunk per split. Each split's projection and attention start on arrival, on two side streams."
+    },
+    {
+      "id": "stage7-tuned",
+      "stage": 7,
+      "binary": "optimized",
+      "launch": "graph",
+      "label": "+ Per-GPU tuning (= Optimized)",
+      "adds": "Per-GPU split count",
+      "detail": "The production optimized binary, which reads its split count from the compute capability. The RTX 3090 (sm_86) uses 8 splits: 3,128 blocks over 164 resident slots, about 19.1 waves, and 8 IMU chunks. The RTX 4090 and RTX 5090 use 12, the generic default, so on them this stage runs the same work as stage 6.",
+      "change": "This GPU's split count. 3090: 8 splits (3,128 blocks). 4090 and 5090: 12, the default, so no change."
+    }
+  ],
+  "sass_equal": [
+    {
+      "binary": "stage1",
+      "reference": "optimized",
+      "kernel": "22attention_merge_kernel",
+      "why": "the merge kernel is production's from stage 1"
+    },
+    {
+      "binary": "stage1",
+      "reference": "optimized",
+      "kernel": "17statistics_kernel",
+      "why": "the statistics kernel is production's from stage 1"
+    },
+    {
+      "binary": "stage3",
+      "reference": "optimized",
+      "kernel": "18project_imu_kernel",
+      "why": "stage 3 adds production's bound-folding projection"
+    },
+    {
+      "binary": "stage5",
+      "reference": "optimized",
+      "kernel": "24attention_partial_kernelILi8ELi8ELi1024E",
+      "why": "stage 5 completes the production attention kernel"
+    },
+    {
+      "binary": "stage6",
+      "reference": "optimized",
+      "kernel": "24attention_partial_kernelILi8ELi8ELi1024E",
+      "why": "stage 6 is production apart from the split count"
+    },
+    {
+      "binary": "stage6",
+      "reference": "optimized",
+      "kernel": "18project_imu_kernel",
+      "why": "stage 6 is production apart from the split count"
+    },
+    {
+      "binary": "stage6",
+      "reference": "optimized",
+      "kernel": "20project_audio_kernel",
+      "why": "stage 6 is production apart from the split count"
+    },
+    {
+      "binary": "stage6",
+      "reference": "optimized",
+      "kernel": "22attention_merge_kernel",
+      "why": "stage 6 is production apart from the split count"
+    },
+    {
+      "binary": "stage6",
+      "reference": "optimized",
+      "kernel": "17statistics_kernel",
+      "why": "stage 6 is production apart from the split count"
+    }
+  ],
+  "host_equal": [
+    {
+      "binary": "stage6",
+      "reference": "hooks_reference",
+      "why": "stage 6 is production with 12 splits: the production hooks build forced to 12 splits"
+    },
+    {
+      "binary": "stage6",
+      "reference": "optimized",
+      "gpus": ["rtx4090", "rtx5090"],
+      "why": "these GPUs' tuning entry is 12 splits, the generic default"
+    }
+  ]
+}
