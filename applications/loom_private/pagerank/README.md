@@ -208,6 +208,22 @@ upload. The kernel writes scores only in the last sweep, to `scores[nodes[p]]`.
 Earlier sweeps' scores are overwritten without being read, as in the
 sequential loop, and the contributions carry every sweep's state.
 
+**Map upload during the sweeps.** Only the last sweep reads `nodes`. So the
+application scope uploads offsets, sources and out-degrees on the harness
+stream, then forks a side stream that uploads `nodes` and, after it, a
+4-byte ready flag. The kernel launches right after the fork. Before the last
+sweep, thread 0 of each block waits for the flag with an acquire load, and the
+block barrier orders the map loads (L2 loads, `ld.global.cg`) after it. The
+copy engine runs independently of the resident grid, so the wait always ends;
+like every other wait it traps after 2^34 cycles. The side stream joins before
+the score download, so the captured graph holds the branch. The same bytes
+are uploaded. The compute scope has the map resident and passes no flag. On
+the RTX 3090 the 4 MiB map upload (about 173 µs) now ends about 160 µs into
+the 955 µs kernel instead of before it. A paired bench (7 rotated rounds of
+20 iterations, Graph) measured 1,821 µs end to end against 1,981 µs without
+the overlap (−8.0%); Direct gave −7.9%; kernel-only time was unchanged
+(+0.2%, within the spread). The RTX 4090 and RTX 5090 are not measured yet.
+
 **GPU-specific choices.** These are selected at setup from the device's compute
 capability ([`pagerank_optimized.cu`](pagerank_optimized.cu), `kTunings`):
 
@@ -255,6 +271,12 @@ sweep's last levels anyway.
     values look ready. It must exit 1 with mismatches.
   - `-DLP_PAGERANK_MUTANT_NO_RESET` skips the barrier counter reset. It must
     exit 1 or 70, never hang.
+- The same script checks the map upload's flag. A test build
+  (`-DLP_PAGERANK_TEST_DELAY_NODES`, also a tuning build) holds the map upload
+  back by 200 ms, so the last sweep starts before the map lands. It must pass
+  at 65536×20, 65536×1 (the wait directly after initialization) and the large
+  size. The same delay with `-DLP_PAGERANK_MUTANT_NO_NODES_WAIT`, which skips
+  the wait, must exit 1.
 
   Every run in the script has a timeout, and `make test` runs both GPU
   scripts under a timeout.

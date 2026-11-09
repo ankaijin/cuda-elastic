@@ -25,6 +25,13 @@
 // increasing order, so in level order, and every wait is for a position of a
 // lower level. The kernel is a cooperative launch, so all blocks are
 // co-resident, and the earliest unfinished position can always complete.
+//
+// Transfers. Only the last sweep reads the position-to-node map (it scatters
+// the scores), so in the application scope that upload runs on a side stream
+// while the earlier sweeps compute. A 4-byte flag copied after it on the same
+// stream marks its arrival; each block waits for the flag before the last
+// sweep. The copy engine works independently of the SMs, so the wait always
+// ends. The compute scope has the map resident and passes no flag.
 #include "lp_harness.cuh"
 
 #include "graph.h"
@@ -32,6 +39,10 @@
 #include "oracle.h"
 
 #include <cmath>
+#if defined(LP_PAGERANK_TEST_DELAY_NODES)
+#include <chrono>
+#include <thread>
+#endif
 
 namespace {
 
@@ -184,8 +195,9 @@ __device__ __forceinline__ float in_sum(int begin, int end, const int *sources,
 template <bool kStream>
 __global__ void __launch_bounds__(1024)
 gauss_seidel(const int *offsets, const int *sources, const int *out_degrees,
-             const int *nodes, unsigned *contrib, float *scores, unsigned *barrier,
-             int count, int iterations, float initial, float base, float damping) {
+             const int *nodes, const unsigned *nodes_ready, unsigned *contrib,
+             float *scores, unsigned *barrier, int count, int iterations,
+             float initial, float base, float damping) {
   const int stride = gridDim.x * blockDim.x;
   const int first = blockIdx.x * blockDim.x + threadIdx.x;
   // The initial contributions, in buffer 1, carry the tag of sweep -1; buffer
@@ -201,6 +213,27 @@ gauss_seidel(const int *offsets, const int *sources, const int *out_degrees,
     const unsigned *previous = contrib + (size_t)((sweep & 1) ^ 1) * count;
     const unsigned tag = sweep_tag(sweep);
     const bool last = sweep + 1 == iterations;
+#if !defined(LP_PAGERANK_MUTANT_NO_NODES_WAIT)
+    // Test-only mutant (tests/): the last sweep scatters without waiting for
+    // the map's upload. The tests delay that upload and require a failure.
+    if (last && nodes_ready) {
+      // Nonzero once the side stream's flag copy, which follows the map's
+      // copy, has landed. The acquire and the block barrier order the map
+      // loads below after it.
+      if (threadIdx.x == 0) {
+        const long long start = clock64();
+        unsigned ready;
+        do {
+          asm volatile("ld.acquire.gpu.global.u32 %0, [%1];"
+                       : "=r"(ready)
+                       : "l"(nodes_ready)
+                       : "memory");
+          check_spin(start);
+        } while (ready == 0);
+      }
+      __syncthreads();
+    }
+#endif
     for (int p = first; p < count; p += stride) {
       // The out-degree is loaded before the waits, not after them.
       const int degree = load_graph<kStream>(out_degrees + p);
@@ -212,14 +245,16 @@ gauss_seidel(const int *offsets, const int *sources, const int *out_degrees,
       store_relaxed(current + p, tag | __float_as_uint(score / (float)degree));
       // Only the last sweep's scores are output; earlier ones are overwritten
       // without being read, as in the sequential loop.
-      if (last) scores[__ldg(nodes + p)] = score;
+      // An L2 load: the map may have arrived during this launch.
+      if (last) scores[__ldcg(nodes + p)] = score;
     }
     if (!last) grid_barrier(barrier, ++epoch);
   }
 }
 
 using Kernel = void (*)(const int *, const int *, const int *, const int *,
-                       unsigned *, float *, unsigned *, int, int, float, float, float);
+                       const unsigned *, unsigned *, float *, unsigned *, int, int,
+                       float, float, float);
 
 // Launch shape per GPU (see README): threads per block, resident blocks per
 // SM of the persistent grid, and whether the graph arrays are streamed.
@@ -279,6 +314,11 @@ public:
     cudaFree(d_scores_);
     cudaFree(d_contrib_);
     cudaFree(d_barrier_);
+    cudaFree(d_nodes_ready_);
+    cudaFreeHost(h_ready_);
+    if (side_) cudaStreamDestroy(side_);
+    if (fork_) cudaEventDestroy(fork_);
+    if (join_) cudaEventDestroy(join_);
   }
 
   std::string identity() const override { return "loom-private/pagerank"; }
@@ -357,24 +397,53 @@ public:
     LP_CUDA(cudaMalloc(&d_scores_, sizeof(float) * (size_t)nodes_));
     LP_CUDA(cudaMalloc(&d_contrib_, 2 * sizeof(unsigned) * (size_t)nodes_));
     LP_CUDA(cudaMalloc(&d_barrier_, sizeof(unsigned)));
+    LP_CUDA(cudaMalloc(&d_nodes_ready_, sizeof(unsigned)));
+    LP_CUDA(cudaMallocHost(&h_ready_, sizeof(unsigned)));
+    *h_ready_ = 1;
+    LP_CUDA(cudaStreamCreateWithFlags(&side_, cudaStreamNonBlocking));
+    LP_CUDA(cudaEventCreateWithFlags(&fork_, cudaEventDisableTiming));
+    LP_CUDA(cudaEventCreateWithFlags(&join_, cudaEventDisableTiming));
   }
 
+  // The map upload and its flag fork onto the side stream after the arrays
+  // that the first sweep needs, so they queue behind those on the copy engine
+  // and run while the sweeps compute. The side stream joins before the score
+  // download, so a captured graph holds the branch and Direct launches keep
+  // the same order.
   void enqueue_application(cudaStream_t stream) override {
     const size_t node_bytes = sizeof(int) * (size_t)nodes_;
+    LP_CUDA(cudaMemsetAsync(d_nodes_ready_, 0, sizeof(unsigned), stream));
     LP_CUDA(cudaMemcpyAsync(d_offsets_, h_offsets_, node_bytes + sizeof(int),
                             cudaMemcpyHostToDevice, stream));
     LP_CUDA(cudaMemcpyAsync(d_sources_, h_sources_, sizeof(int) * (size_t)edges_,
                             cudaMemcpyHostToDevice, stream));
     LP_CUDA(cudaMemcpyAsync(d_out_degrees_, h_out_degrees_, node_bytes,
                             cudaMemcpyHostToDevice, stream));
-    LP_CUDA(cudaMemcpyAsync(d_nodes_, h_nodes_, node_bytes,
-                            cudaMemcpyHostToDevice, stream));
-    enqueue_compute(stream);
+    LP_CUDA(cudaEventRecord(fork_, stream));
+    LP_CUDA(cudaStreamWaitEvent(side_, fork_, 0));
+#if defined(LP_PAGERANK_TEST_DELAY_NODES)
+    // Test-only (tests/): hold the map upload back by 200 ms, far longer than
+    // the sweeps take, so the last sweep certainly starts before it lands.
+    LP_CUDA(cudaLaunchHostFunc(
+        side_, [](void *) { std::this_thread::sleep_for(std::chrono::milliseconds(200)); },
+        nullptr));
+#endif
+    LP_CUDA(cudaMemcpyAsync(d_nodes_, h_nodes_, node_bytes, cudaMemcpyHostToDevice,
+                            side_));
+    LP_CUDA(cudaMemcpyAsync(d_nodes_ready_, h_ready_, sizeof(unsigned),
+                            cudaMemcpyHostToDevice, side_));
+    LP_CUDA(cudaEventRecord(join_, side_));
+    launch(stream, d_nodes_ready_);
+    LP_CUDA(cudaStreamWaitEvent(stream, join_, 0));
     LP_CUDA(cudaMemcpyAsync(h_scores_, d_scores_, sizeof(float) * (size_t)nodes_,
                             cudaMemcpyDeviceToHost, stream));
   }
 
-  void enqueue_compute(cudaStream_t stream) override {
+  void enqueue_compute(cudaStream_t stream) override { launch(stream, nullptr); }
+
+  // nodes_ready: the flag the last sweep waits for, or null when the map is
+  // resident.
+  void launch(cudaStream_t stream, const unsigned *nodes_ready) {
     // Float constants exactly as the sequential definition forms them.
     const float initial = 1.0f / (float)nodes_;
     const float base = (1.0f - kDamping) / (float)nodes_;
@@ -394,7 +463,7 @@ public:
     config.numAttrs = 1;
     LP_CUDA(cudaLaunchKernelEx(&config, kernel_, (const int *)d_offsets_,
                                (const int *)d_sources_, (const int *)d_out_degrees_,
-                               (const int *)d_nodes_, d_contrib_, d_scores_,
+                               (const int *)d_nodes_, nodes_ready, d_contrib_, d_scores_,
                                d_barrier_, nodes_, iterations_, initial, base,
                                kDamping));
   }
@@ -418,6 +487,9 @@ public:
     LP_CUDA(cudaMemsetAsync(d_scores_, 0xFF, bytes, stream));
     LP_CUDA(cudaMemsetAsync(d_contrib_, 0xFF, 2 * bytes, stream));
     LP_CUDA(cudaMemsetAsync(d_barrier_, 0x40, sizeof(unsigned), stream));
+    // A flag poisoned to "arrived": an invocation that skips its reset does
+    // not wait for the map.
+    LP_CUDA(cudaMemsetAsync(d_nodes_ready_, 0xFF, sizeof(unsigned), stream));
     std::memset(h_scores_, 0xFF, bytes);
   }
 
@@ -468,7 +540,10 @@ private:
   int *d_offsets_ = nullptr, *d_sources_ = nullptr, *d_out_degrees_ = nullptr,
       *d_nodes_ = nullptr;
   float *d_scores_ = nullptr;
-  unsigned *d_contrib_ = nullptr, *d_barrier_ = nullptr;
+  unsigned *d_contrib_ = nullptr, *d_barrier_ = nullptr, *d_nodes_ready_ = nullptr;
+  unsigned *h_ready_ = nullptr; // pinned 1, copied to d_nodes_ready_
+  cudaStream_t side_ = nullptr;
+  cudaEvent_t fork_ = nullptr, join_ = nullptr;
 };
 
 std::unique_ptr<lp::Workload> make(lp::Options &options) {

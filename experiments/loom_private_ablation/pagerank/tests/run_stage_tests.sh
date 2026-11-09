@@ -2,7 +2,7 @@
 # GPU tests of the pagerank stages beyond the baseline's run_gpu_tests.sh,
 # run by `make test` under the GPU lock (this script does not lock).
 #   run_stage_tests.sh <build dir> <scratch dir>
-# <build dir> holds pagerank_stage{1,2,3} and their test-only _shapes builds,
+# <build dir> holds pagerank_stage{1,2,3,4} and their test-only _shapes builds,
 # in which LP_ABLATION_SHAPE=tiny forces a one-block, 64-thread grid.
 set -uo pipefail
 
@@ -32,7 +32,7 @@ expect() {
   fi
 }
 
-for s in 1 2 3; do
+for s in 1 2 3 4; do
   bin=$build/pagerank_stage$s
   shapes=$build/pagerank_stage${s}_shapes
   # The timed binary uses the default shape and names its stage.

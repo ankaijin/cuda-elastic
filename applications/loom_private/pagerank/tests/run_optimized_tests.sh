@@ -3,7 +3,7 @@
 # under the GPU lock (this script does not lock). Every run has a timeout;
 # the kernel's own spin limit traps long before it.
 #   run_optimized_tests.sh <tuning test binary> <tag mutant> <no-reset mutant>
-#                          <scratch dir>
+#                          <delayed-map binary> <no-map-wait mutant> <scratch dir>
 # The tuning test binary is the optimized source built with
 # -DLP_PAGERANK_TEST_TUNING, which lets LP_PAGERANK_TUNING force any entry of
 # its tuning table, so every GPU's choice runs on whichever GPU runs the tests.
@@ -12,7 +12,9 @@ set -uo pipefail
 bin=$1
 tag_mutant=$2
 reset_mutant=$3
-scratch=$4
+delayed=$4
+no_wait_mutant=$5
+scratch=$6
 mkdir -p "$scratch"
 failures=0
 limit=120
@@ -107,6 +109,20 @@ for size in "4096 6" "65536 20"; do
   set -- $size
   expect_failure no-reset-mutant-$1x$2 "1 70" "$reset_mutant" --set nodes=$1 --set iterations=$2
 done
+
+# The application scope uploads the position-to-node map on a side stream
+# during the sweeps. A test build holds that upload back by 200 ms, so the
+# last sweep starts before it lands: with the flag wait the check passes (one
+# sweep, so the wait follows initialization directly, and 20 sweeps); without
+# it the last sweep scatters through the zeroed map and the check fails.
+# The delayed build is also a tuning build, so `expect` can force a shape.
+tuning_bin=$bin
+bin=$delayed
+expect delayed-map-65536x20 0 sm_86 "65536 nodes" --set nodes=65536 --set iterations=20
+expect delayed-map-65536x1 0 sm_86 "65536 nodes" --set nodes=65536 --set iterations=1
+expect delayed-map-large 0 sm_86 "1048576 nodes" --set nodes=1048576 --set iterations=20
+bin=$tuning_bin
+expect_failure no-map-wait-mutant "1" "$no_wait_mutant" --set nodes=65536 --set iterations=20
 
 if [[ $failures -ne 0 ]]; then
   echo "optimized GPU tests FAILED ($failures)"

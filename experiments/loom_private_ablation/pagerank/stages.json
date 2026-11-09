@@ -1,7 +1,7 @@
 {
   "application": "pagerank",
   "title": "PageRank",
-  "scope": "compute",
+  "scope": "application",
   "arithmetic_changes": [],
   "binaries": {
     "baseline": {
@@ -16,8 +16,18 @@
     "stage3": {
       "stage_binary": "pagerank_stage3"
     },
+    "stage4": {
+      "stage_binary": "pagerank_stage4"
+    },
     "optimized": {
       "suite_variant": "optimized"
+    },
+    "reference-default": {
+      "stage_binary": "pagerank_optimized_tunings",
+      "timed": false,
+      "env": {
+        "LP_PAGERANK_TUNING": "default"
+      }
     }
   },
   "cases": [
@@ -68,12 +78,22 @@
       "launch": "graph",
       "label": "+ Level-ordered renumbering",
       "adds": "Level-ordered renumbering",
-      "detail": "Setup renumbers the nodes to positions in level order (layout.cpp). Offsets, out-degrees and contributions are indexed by position, so each sweep reads the graph arrays sequentially and stores contributions coalesced; the v < u bit is stored in each source entry. Scores are written only in the last sweep (scattered through the node list). This is pagerank_optimized.cu's kernel with its generic default shape; its machine code equals the production gauss_seidel<false>.",
-      "change": "Nodes renumbered in level order: sequential graph reads and coalesced stores. The production kernel with its default shape."
+      "detail": "Setup renumbers the nodes to positions in level order (layout.cpp). Offsets, out-degrees and contributions are indexed by position, so each sweep reads the graph arrays sequentially and stores contributions coalesced; the v < u bit is stored in each source entry. Scores are written only in the last sweep (scattered through the node list). This is pagerank_optimized.cu's kernel as it was before the map overlap, with its generic default shape and the four uploads in series.",
+      "change": "Nodes renumbered in level order: sequential graph reads and coalesced stores. The pre-overlap production kernel, default shape."
     },
     {
-      "id": "stage4-tuned",
+      "id": "stage4-map-overlap",
       "stage": 4,
+      "binary": "stage4",
+      "launch": "graph",
+      "label": "+ Overlapped map upload",
+      "adds": "Overlapped map upload",
+      "detail": "Only the last sweep reads the position-to-node map, so the application scope uploads offsets, sources and out-degrees, then forks a side stream that uploads the map (4 MiB) and a 4-byte ready flag while the sweeps run. Before the last sweep each block waits for the flag (acquire load, then a block barrier) and reads the map from L2. The side stream joins before the score download. The same bytes are uploaded; the compute scope is unchanged. This is pagerank_optimized.cu with its generic default shape; its machine code equals the production gauss_seidel<false>.",
+      "change": "The map upload (4 MiB, read only by the last sweep) runs on a side stream during the sweeps, behind a ready flag."
+    },
+    {
+      "id": "stage5-tuned",
+      "stage": 5,
       "binary": "optimized",
       "launch": "graph",
       "label": "+ Per-GPU tuning (= Optimized)",
@@ -84,10 +104,25 @@
   ],
   "sass_equal": [
     {
-      "binary": "stage3",
+      "binary": "stage4",
       "reference": "optimized",
       "kernel": "12gauss_seidelILb0E",
-      "why": "stage 3 is the production kernel with the default shape"
+      "why": "stage 4 is the production kernel with the default shape"
+    }
+  ],
+  "host_equal": [
+    {
+      "binary": "stage4",
+      "reference": "reference-default",
+      "why": "stage 4 is production with the default tuning entry"
+    },
+    {
+      "binary": "stage4",
+      "reference": "optimized",
+      "why": "the RTX 5090 tuning entry (512 x 2, read-only cache loads) equals the default",
+      "gpus": [
+        "rtx5090"
+      ]
     }
   ]
 }
