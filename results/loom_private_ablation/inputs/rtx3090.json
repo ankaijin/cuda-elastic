@@ -3,9 +3,9 @@
  "label": "RTX 3090 (sm_86, 24 GB)",
  "applications": {
   "pagerank": {
-   "check": "loom_private_ablation/pagerank/20261109-170800-mono-018c08ad-check.json",
-   "bench": "loom_private_ablation/pagerank/20261109-170800-mono-018c08ad-bench.json",
-   "profile": "loom_private_ablation/pagerank/20261109-170800-mono-018c08ad-profile.json"
+   "check": null,
+   "bench": null,
+   "profile": null
   },
   "attention": {
    "check": "loom_private_ablation/attention/20261109-170800-mono-018c08ad-check.json",
