@@ -1,0 +1,20 @@
+legacy freeze                            exit 0
+build suite baseline                     exit 0
+build suite optimized                    exit 0
+build stages                             exit 0
+stage tests                              exit 0
+large check baseline                     exit 0
+large check stage1                       exit 0
+large check stage2                       exit 0
+large check stage3                       exit 0
+large check stage4                       exit 0
+large check optimized                    exit 0
+large check reference-default            exit 0
+stage 0 baseline     digest 97eb70ad937006ab
+stage 1 stage1       digest 97eb70ad937006ab
+stage 2 stage2       digest 97eb70ad937006ab
+stage 3 stage3       digest 97eb70ad937006ab
+stage 4 stage4       digest 97eb70ad937006ab
+stage 5 optimized    digest 97eb70ad937006ab
+sass stage4 vs optimized (12gauss_seidelILb0E): 688 and 688 instructions, identical
+PASS: rtx3090/loom_private_ablation/pagerank/20261109-175321-mono-416c7530-check.json
