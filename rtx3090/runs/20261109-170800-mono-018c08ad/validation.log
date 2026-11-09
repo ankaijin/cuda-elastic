@@ -1,0 +1,126 @@
+legacy freeze                            exit 0
+build suite baseline                     exit 0
+build suite optimized                    exit 0
+build stages                             exit 0
+stage tests                              exit 0
+large check baseline                     exit 0
+large check stage1                       exit 0
+large check stage2                       exit 0
+large check stage3                       exit 0
+large check optimized                    exit 0
+stage 0 baseline     digest 97eb70ad937006ab
+stage 1 stage1       digest 97eb70ad937006ab
+stage 2 stage2       digest 97eb70ad937006ab
+stage 3 stage3       digest 97eb70ad937006ab
+stage 4 optimized    digest 97eb70ad937006ab
+sass stage3 vs optimized (12gauss_seidelILb0E): 664 and 664 instructions, identical
+PASS: rtx3090/loom_private_ablation/pagerank/20261109-170800-mono-018c08ad-check.json
+legacy freeze                            exit 0
+build suite baseline                     exit 0
+build suite optimized                    exit 0
+build stages                             exit 0
+stage tests                              exit 0
+large check baseline                     exit 0
+large check stage1                       exit 0
+large check stage2                       exit 0
+large check stage3                       exit 0
+large check stage4                       exit 0
+large check stage5                       exit 0
+large check stage6                       exit 0
+large check hooks_reference              exit 0
+large check optimized                    exit 0
+stage 0 baseline     digest 5d1575bb929d28d1
+stage 1 stage1       digest d206ff0baff82a3a (declared arithmetic change)
+stage 2 stage2       digest 63134db680e83c73 (declared arithmetic change)
+stage 3 stage3       digest c41971b817c0da05 (declared arithmetic change)
+stage 4 stage4       digest c41971b817c0da05
+stage 5 stage5       digest 9ca5f117f9ae05e7 (declared arithmetic change)
+stage 6 stage6       digest 9ca5f117f9ae05e7
+stage 7 optimized    digest 0cf8e37a97f08081 (declared arithmetic change)
+sass stage1 vs optimized (22attention_merge_kernel): 544 and 544 instructions, identical
+sass stage1 vs optimized (17statistics_kernel): 368 and 368 instructions, identical
+sass stage3 vs optimized (18project_imu_kernel): 120 and 120 instructions, identical
+sass stage5 vs optimized (24attention_partial_kernelILi8ELi8ELi1024E): 6000 and 6000 instructions, identical
+sass stage6 vs optimized (24attention_partial_kernelILi8ELi8ELi1024E): 6000 and 6000 instructions, identical
+sass stage6 vs optimized (18project_imu_kernel): 120 and 120 instructions, identical
+sass stage6 vs optimized (20project_audio_kernel): 32 and 32 instructions, identical
+sass stage6 vs optimized (22attention_merge_kernel): 544 and 544 instructions, identical
+sass stage6 vs optimized (17statistics_kernel): 368 and 368 instructions, identical
+PASS: rtx3090/loom_private_ablation/attention/20261109-170800-mono-018c08ad-check.json
+legacy freeze                            exit 0
+build suite baseline                     exit 0
+build suite optimized                    exit 0
+build stages                             exit 0
+stage tests                              exit 0
+large check baseline                     exit 0
+large check stage1                       exit 0
+large check stage2                       exit 0
+large check stage3                       exit 0
+large check stage4                       exit 0
+large check optimized                    exit 0
+large check reference-dp                 exit 0
+large check reference-streamk            exit 0
+stage 0 baseline     digest 4fcc3e102976547b
+stage 1 stage1       digest 4fcc3e102976547b
+stage 2 stage2       digest 4fcc3e102976547b
+stage 3 stage3       digest 4fcc3e102976547b
+stage 4 stage4       digest 4fcc3e102976547b
+stage 5 optimized    digest 4fcc3e102976547b
+sass stage3 vs optimized (17classifier_kernelINS_10TileConfigILi2ELi4ELi16ELi16ELi3ELi1EEEEE): 4352 and 4352 instructions, identical
+sass stage4 vs optimized (17classifier_kernelINS_10TileConfigILi2ELi4ELi16ELi16ELi3ELi1EEEEE): 4352 and 4352 instructions, identical
+sass stage1 vs optimized (14rmsnorm_kernel): 632 and 632 instructions, identical
+sass stage1 vs optimized (21softmax_argmax_kernel): 792 and 792 instructions, identical
+PASS: rtx3090/loom_private_ablation/decoder/20261109-170800-mono-018c08ad-check.json
+legacy freeze                            exit 0
+build suite baseline                     exit 0
+build suite optimized                    exit 0
+build stages                             exit 0
+stage tests                              exit 0
+large check baseline                     exit 0
+large check stage1                       exit 0
+large check stage2                       exit 0
+large check stage3                       exit 0
+large check stage4                       exit 0
+large check chunks32                     exit 0
+large check optimized                    exit 0
+stage 0 baseline     digest c3b71bd7273b080c
+stage 1 stage1       digest c3b71bd7273b080c
+stage 2 stage2       digest c3b71bd7273b080c
+stage 3 stage3       digest c3b71bd7273b080c
+stage 4 stage4       digest c3b71bd7273b080c
+stage 5 optimized    digest c3b71bd7273b080c
+sass stage3 vs optimized (22tiled_inference_kernelILi16E): 3136 and 3136 instructions, identical
+sass stage4 vs optimized (22tiled_inference_kernelILi16E): 3136 and 3136 instructions, identical
+PASS: rtx3090/loom_private_ablation/anomaly/20261109-170800-mono-018c08ad-check.json
+legacy freeze                            exit 0
+build suite baseline                     exit 0
+build suite optimized                    exit 0
+build stages                             exit 0
+stage tests                              exit 0
+large check baseline                     exit 0
+large check stage1                       exit 0
+large check stage2                       exit 0
+large check stage3                       exit 0
+large check stage4                       exit 0
+large check reference_default            exit 0
+large check optimized                    exit 0
+stage 0 baseline     digest 32d2e23d1f459f93
+stage 1 stage1       digest 32d2e23d1f459f93
+stage 2 stage2       digest 32d2e23d1f459f93
+stage 3 stage3       digest 32d2e23d1f459f93
+stage 4 stage4       digest 32d2e23d1f459f93
+stage 5 optimized    digest 32d2e23d1f459f93
+sass stage4 vs optimized (13vecadd_kernelILi1ELb1E): 256 and 256 instructions, identical
+sass stage1 vs baseline (13vecadd_kernelEPKi): 32 and 32 instructions, identical
+sass stage2 vs baseline (13vecadd_kernelEPKi): 32 and 32 instructions, identical
+PASS: rtx3090/loom_private_ablation/vecadd_memory/20261109-170800-mono-018c08ad-check.json
+legacy freeze                            exit 0
+build suite baseline                     exit 0
+build suite optimized                    exit 0
+build stages                             exit 0
+stage tests                              exit 0
+large check baseline                     exit 0
+large check optimized                    exit 0
+stage 0 baseline     digest 835827d0e01d0383
+stage 1 optimized    digest 835827d0e01d0383
+PASS: rtx3090/loom_private_ablation/vecadd_product/20261109-170800-mono-018c08ad-check.json

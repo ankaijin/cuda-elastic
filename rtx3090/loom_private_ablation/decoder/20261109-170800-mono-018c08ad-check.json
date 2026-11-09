@@ -1,0 +1,269 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "decoder",
+ "action": "check",
+ "stamp": "20261109-170800-mono-018c08ad",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "c649a4b7fb8a63b444f776ef1a414cd5df87d03d",
+ "stages_sha256": "84162f7bcee4fce80849b596b01e135934d778617b288728c9e6a28c9c42bfcf",
+ "steps": [
+  {
+   "step": "legacy freeze",
+   "exit_code": 0,
+   "command": "/usr/bin/python3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/tools/legacy_freeze.py verify"
+  },
+  {
+   "step": "build suite baseline",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder build VARIANT=baseline"
+  },
+  {
+   "step": "build suite optimized",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder build VARIANT=optimized"
+  },
+  {
+   "step": "build stages",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder build"
+  },
+  {
+   "step": "stage tests",
+   "exit_code": 0,
+   "command": "make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder test"
+  },
+  {
+   "step": "large check baseline",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-baseline.json"
+  },
+  {
+   "step": "large check stage1",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage1 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-stage1.json"
+  },
+  {
+   "step": "large check stage2",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage2 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-stage2.json"
+  },
+  {
+   "step": "large check stage3",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage3 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-stage3.json"
+  },
+  {
+   "step": "large check stage4",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_stage4 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-stage4.json"
+  },
+  {
+   "step": "large check optimized",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/decoder/build/decoder_optimized --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-optimized.json"
+  },
+  {
+   "step": "large check reference-dp",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_optimized_hooks --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-reference-dp.json"
+  },
+  {
+   "step": "large check reference-streamk",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/build/decoder_optimized_hooks --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-reference-streamk.json"
+  }
+ ],
+ "log": "rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check.log",
+ "nvcc": "Build cuda_13.3.r13.3/compiler.38244171_0",
+ "production_sources": {
+  "paths": [
+   "applications/loom_private/decoder",
+   "applications/loom_private/common",
+   "applications/loom_private/common.mk"
+  ],
+  "clean": true,
+  "status": []
+ },
+ "binaries": {
+  "baseline": {
+   "path": "rtx3090/loom_private/decoder/build/decoder",
+   "sha256": "c2f79d64a699f734918d68ad52426e2eb920b6fd4486d58ea88691eec9a9b46d",
+   "variant": "baseline",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder build VARIANT=baseline",
+   "check_record": "rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-baseline.json",
+   "output_digest": "4fcc3e102976547b"
+  },
+  "stage1": {
+   "path": "rtx3090/loom_private_ablation/decoder/build/decoder_stage1",
+   "sha256": "90dc20acd06fa13335bf7bebc902152ac1bcd4e8344d27ecad40b51eedfe8440",
+   "variant": "stage1-regtile",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder build",
+   "check_record": "rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-stage1.json",
+   "output_digest": "4fcc3e102976547b"
+  },
+  "stage2": {
+   "path": "rtx3090/loom_private_ablation/decoder/build/decoder_stage2",
+   "sha256": "d256aff0c9f23ce84c2b890892693ec0ddae01b28679525592fba11bee1309c7",
+   "variant": "stage2-cpasync",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder build",
+   "check_record": "rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-stage2.json",
+   "output_digest": "4fcc3e102976547b"
+  },
+  "stage3": {
+   "path": "rtx3090/loom_private_ablation/decoder/build/decoder_stage3",
+   "sha256": "f8870c84a0e50f6a18abd087ce2ba8215bcaea61dd9bb14ec923c5964de7d532",
+   "variant": "stage3-fragments",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder build",
+   "check_record": "rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-stage3.json",
+   "output_digest": "4fcc3e102976547b"
+  },
+  "stage4": {
+   "path": "rtx3090/loom_private_ablation/decoder/build/decoder_stage4",
+   "sha256": "dc944cd16dd555d96f50e746142af811ccb9307ed768ace9380fb8f4e82214e0",
+   "variant": "stage4-streamk",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder build",
+   "check_record": "rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-stage4.json",
+   "output_digest": "4fcc3e102976547b"
+  },
+  "optimized": {
+   "path": "rtx3090/loom_private/decoder/build/decoder_optimized",
+   "sha256": "a952acf0f491a98b3b01a45790f3c05fbe1037cad804a80cee42babd4b5b072a",
+   "variant": "optimized",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/decoder build VARIANT=optimized",
+   "check_record": "rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-optimized.json",
+   "output_digest": "4fcc3e102976547b"
+  },
+  "reference-dp": {
+   "path": "rtx3090/loom_private_ablation/decoder/build/decoder_optimized_hooks",
+   "sha256": "a2fd3503f5b672eeb9c01af95ee0124b18256a74773892524dcaa659bf39eeb7",
+   "variant": "optimized",
+   "timed": false,
+   "env": {
+    "DECODER_OPT_SCHEDULE": "dp",
+    "DECODER_OPT_TILE": "128x256x16"
+   },
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder build",
+   "check_record": "rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-reference-dp.json",
+   "output_digest": "4fcc3e102976547b"
+  },
+  "reference-streamk": {
+   "path": "rtx3090/loom_private_ablation/decoder/build/decoder_optimized_hooks",
+   "sha256": "a2fd3503f5b672eeb9c01af95ee0124b18256a74773892524dcaa659bf39eeb7",
+   "variant": "optimized",
+   "timed": false,
+   "env": {
+    "DECODER_OPT_TILE": "128x256x16"
+   },
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/decoder build",
+   "check_record": "rtx3090/loom_private_ablation/decoder/results/20261109-170800-mono-018c08ad-check-reference-streamk.json",
+   "output_digest": "4fcc3e102976547b"
+  }
+ },
+ "digest_rule": [
+  {
+   "stage": 0,
+   "binary": "baseline",
+   "digest": "4fcc3e102976547b",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 1,
+   "binary": "stage1",
+   "digest": "4fcc3e102976547b",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 2,
+   "binary": "stage2",
+   "digest": "4fcc3e102976547b",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 3,
+   "binary": "stage3",
+   "digest": "4fcc3e102976547b",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 4,
+   "binary": "stage4",
+   "digest": "4fcc3e102976547b",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 5,
+   "binary": "optimized",
+   "digest": "4fcc3e102976547b",
+   "declared_change": false,
+   "equal_to_previous": true
+  }
+ ],
+ "sass_equal": [
+  {
+   "binary": "stage3",
+   "reference": "optimized",
+   "kernel": "17classifier_kernelINS_10TileConfigILi2ELi4ELi16ELi16ELi3ELi1EEEEE",
+   "why": "stage 3 is the production classifier with the default tile",
+   "instructions": [
+    4352,
+    4352
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage4",
+   "reference": "optimized",
+   "kernel": "17classifier_kernelINS_10TileConfigILi2ELi4ELi16ELi16ELi3ELi1EEEEE",
+   "why": "stage 4 is the production classifier with the default tile",
+   "instructions": [
+    4352,
+    4352
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage1",
+   "reference": "optimized",
+   "kernel": "14rmsnorm_kernel",
+   "why": "every stage keeps the production rmsnorm",
+   "instructions": [
+    632,
+    632
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage1",
+   "reference": "optimized",
+   "kernel": "21softmax_argmax_kernel",
+   "why": "every stage keeps the production softmax+argmax",
+   "instructions": [
+    792,
+    792
+   ],
+   "identical": true
+  }
+ ]
+}

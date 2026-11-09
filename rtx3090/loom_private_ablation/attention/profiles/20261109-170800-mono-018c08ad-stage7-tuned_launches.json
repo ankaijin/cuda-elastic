@@ -1,0 +1,126 @@
+{
+ "kernel_fields": [
+  "name",
+  "grid_x",
+  "grid_y",
+  "grid_z",
+  "block_x",
+  "block_y",
+  "block_z",
+  "static_shared",
+  "dynamic_shared",
+  "count"
+ ],
+ "kernels": [
+  [
+   "attention_merge_kernel(const float2 *, const float4 *, const float4 *, int, int, float4 *, float4 *)",
+   98,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   1
+  ],
+  [
+   "project_audio_kernel(const float *, int, float4 *)",
+   98,
+   1,
+   1,
+   256,
+   1,
+   1,
+   0,
+   0,
+   1
+  ],
+  [
+   "project_imu_kernel(const float *, int, int, int, float4 *, unsigned int *)",
+   116,
+   1,
+   1,
+   256,
+   1,
+   1,
+   96,
+   0,
+   1
+  ],
+  [
+   "project_imu_kernel(const float *, int, int, int, float4 *, unsigned int *)",
+   123,
+   1,
+   1,
+   256,
+   1,
+   1,
+   96,
+   0,
+   7
+  ],
+  [
+   "statistics_kernel(const float *, const float *, int, float *)",
+   1,
+   1,
+   1,
+   1024,
+   1,
+   1,
+   16384,
+   0,
+   1
+  ],
+  [
+   "void attention_partial_kernel<(int)8, (int)8, (int)1024>(const float4 *, const float4 *, const unsigned int *, int, int, int, int, int, float2 *, float4 *)",
+   391,
+   1,
+   1,
+   256,
+   1,
+   1,
+   32768,
+   0,
+   8
+  ]
+ ],
+ "copies": [
+  [
+   "Device-to-Host",
+   16,
+   1
+  ],
+  [
+   "Device-to-Host",
+   400000,
+   1
+  ],
+  [
+   "Host-to-Device",
+   300000,
+   1
+  ],
+  [
+   "Host-to-Device",
+   355008,
+   1
+  ],
+  [
+   "Host-to-Device",
+   377856,
+   7
+  ]
+ ],
+ "memsets": [
+  [
+   96,
+   1
+  ]
+ ],
+ "totals": {
+  "kernels": 19,
+  "copies": 11,
+  "memsets": 1
+ }
+}

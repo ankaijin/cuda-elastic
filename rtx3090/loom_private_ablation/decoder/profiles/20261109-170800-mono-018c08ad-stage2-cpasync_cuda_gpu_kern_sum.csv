@@ -1,0 +1,4 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+98.0,90455296,4,22613824.0,22617031.5,22344999,22876234,244421.7,"void <unnamed>::classifier_kernel<<unnamed>::TileConfig<(int)2, (int)4, (int)16, (int)16, (int)3, (int)1>>(float *, const float *, const float *, float *, int *, int, int, int, <unnamed>::GemmPlan)"
+1.1,1017380,4,254345.0,254225.0,252577,256353,1550.5,"<unnamed>::rmsnorm_kernel(float *, const int *, const float *, const float *, int, int)"
+0.9,819908,4,204977.0,205345.0,202305,206913,2020.1,"<unnamed>::softmax_argmax_kernel(float *, const float *, int *, int *, int, int, int)"

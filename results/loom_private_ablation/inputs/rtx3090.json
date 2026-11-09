@@ -3,34 +3,34 @@
  "label": "RTX 3090 (sm_86, 24 GB)",
  "applications": {
   "pagerank": {
-   "check": "loom_private_ablation/pagerank/20261109-063528-mono-f612efa6-check.json",
-   "bench": "loom_private_ablation/pagerank/20261109-063528-mono-f612efa6-bench.json",
-   "profile": "loom_private_ablation/pagerank/20261109-063528-mono-f612efa6-profile.json"
+   "check": "loom_private_ablation/pagerank/20261109-170800-mono-018c08ad-check.json",
+   "bench": "loom_private_ablation/pagerank/20261109-170800-mono-018c08ad-bench.json",
+   "profile": "loom_private_ablation/pagerank/20261109-170800-mono-018c08ad-profile.json"
   },
   "attention": {
-   "check": "loom_private_ablation/attention/20261109-063528-mono-f612efa6-check.json",
-   "bench": "loom_private_ablation/attention/20261109-063528-mono-f612efa6-bench.json",
-   "profile": "loom_private_ablation/attention/20261109-063528-mono-f612efa6-profile.json"
+   "check": "loom_private_ablation/attention/20261109-170800-mono-018c08ad-check.json",
+   "bench": "loom_private_ablation/attention/20261109-170800-mono-018c08ad-bench.json",
+   "profile": "loom_private_ablation/attention/20261109-170800-mono-018c08ad-profile.json"
   },
   "decoder": {
-   "check": "loom_private_ablation/decoder/20261109-063528-mono-f612efa6-check.json",
-   "bench": "loom_private_ablation/decoder/20261109-063528-mono-f612efa6-bench.json",
-   "profile": "loom_private_ablation/decoder/20261109-063528-mono-f612efa6-profile.json"
+   "check": "loom_private_ablation/decoder/20261109-170800-mono-018c08ad-check.json",
+   "bench": "loom_private_ablation/decoder/20261109-170800-mono-018c08ad-bench.json",
+   "profile": "loom_private_ablation/decoder/20261109-170800-mono-018c08ad-profile.json"
   },
   "anomaly": {
-   "check": "loom_private_ablation/anomaly/20261109-063528-mono-f612efa6-check.json",
-   "bench": "loom_private_ablation/anomaly/20261109-063528-mono-f612efa6-bench.json",
-   "profile": "loom_private_ablation/anomaly/20261109-063528-mono-f612efa6-profile.json"
+   "check": "loom_private_ablation/anomaly/20261109-170800-mono-018c08ad-check.json",
+   "bench": "loom_private_ablation/anomaly/20261109-170800-mono-018c08ad-bench.json",
+   "profile": "loom_private_ablation/anomaly/20261109-170800-mono-018c08ad-profile.json"
   },
   "vecadd_memory": {
-   "check": "loom_private_ablation/vecadd_memory/20261109-063528-mono-f612efa6-check.json",
-   "bench": "loom_private_ablation/vecadd_memory/20261109-063528-mono-f612efa6-bench.json",
-   "profile": "loom_private_ablation/vecadd_memory/20261109-063528-mono-f612efa6-profile.json"
+   "check": "loom_private_ablation/vecadd_memory/20261109-170800-mono-018c08ad-check.json",
+   "bench": "loom_private_ablation/vecadd_memory/20261109-170800-mono-018c08ad-bench.json",
+   "profile": "loom_private_ablation/vecadd_memory/20261109-170800-mono-018c08ad-profile.json"
   },
   "vecadd_product": {
-   "check": "loom_private_ablation/vecadd_product/20261109-063528-mono-f612efa6-check.json",
-   "bench": "loom_private_ablation/vecadd_product/20261109-063528-mono-f612efa6-bench.json",
-   "profile": "loom_private_ablation/vecadd_product/20261109-063528-mono-f612efa6-profile.json"
+   "check": "loom_private_ablation/vecadd_product/20261109-170800-mono-018c08ad-check.json",
+   "bench": "loom_private_ablation/vecadd_product/20261109-170800-mono-018c08ad-bench.json",
+   "profile": "loom_private_ablation/vecadd_product/20261109-170800-mono-018c08ad-profile.json"
   }
  }
 }

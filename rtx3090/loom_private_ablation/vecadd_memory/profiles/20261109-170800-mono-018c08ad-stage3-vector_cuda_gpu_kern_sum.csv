@@ -1,0 +1,2 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+100.0,25536,8,3192.0,3120.0,2912,3808,315.7,"void <unnamed>::vecadd_kernel<(int)1, (bool)0>(const int *, const int *, int *, long long)"

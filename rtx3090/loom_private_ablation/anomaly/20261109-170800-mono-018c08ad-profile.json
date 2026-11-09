@@ -1,0 +1,126 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "anomaly",
+ "action": "profile",
+ "stamp": "20261109-170800-mono-018c08ad",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "c649a4b7fb8a63b444f776ef1a414cd5df87d03d",
+ "stages_sha256": "0a64a4241a9530ec10567eccd9a08807a8bd3aab9ed74fff7403130cf2768396",
+ "check_summary": "rtx3090/loom_private_ablation/anomaly/20261109-170800-mono-018c08ad-check.json",
+ "ncu": true,
+ "profiles": [
+  {
+   "case": "baseline-direct",
+   "binary": "baseline",
+   "binary_sha256": "14801f8ebc808a668a20ab8a63d95fe10dbfb76027884d3fa1cb0c9918219e22",
+   "nsys": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-direct.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-direct_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-direct_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-direct_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-direct.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-direct-ncu-raw.csv"
+  },
+  {
+   "case": "baseline-graph",
+   "binary": "baseline",
+   "binary_sha256": "14801f8ebc808a668a20ab8a63d95fe10dbfb76027884d3fa1cb0c9918219e22",
+   "nsys": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-graph.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-graph_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-graph_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-graph_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-graph.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-baseline-graph-ncu-raw.csv"
+  },
+  {
+   "case": "stage1-tiles",
+   "binary": "stage1",
+   "binary_sha256": "3126cba2a3b958b4baf471a652ba8f60a43a1a93599f8857d114b6bb1a8ae414",
+   "nsys": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage1-tiles.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage1-tiles_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage1-tiles_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage1-tiles_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage1-tiles.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage1-tiles-ncu-raw.csv"
+  },
+  {
+   "case": "stage2-binary32",
+   "binary": "stage2",
+   "binary_sha256": "5be01f0d5135b6aff17102de94a90e1a9f7f9c650dfa0aa01d416624a9d65d46",
+   "nsys": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage2-binary32.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage2-binary32_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage2-binary32_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage2-binary32_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage2-binary32.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage2-binary32-ncu-raw.csv"
+  },
+  {
+   "case": "stage3-tensor-cores",
+   "binary": "stage3",
+   "binary_sha256": "9eb6c38d37a83b3408c8b6cc7826749432cd17f5f4b44602db82dc82120226cb",
+   "nsys": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage3-tensor-cores.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage3-tensor-cores_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage3-tensor-cores_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage3-tensor-cores_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage3-tensor-cores.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage3-tensor-cores-ncu-raw.csv"
+  },
+  {
+   "case": "stage4-pipeline",
+   "binary": "stage4",
+   "binary_sha256": "bf2d33deb62ec44e9c864113cb1049e36eb5600a42ff6d026e04d55ba55fd336",
+   "nsys": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage4-pipeline.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage4-pipeline_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage4-pipeline_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage4-pipeline_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage4-pipeline.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage4-pipeline-ncu-raw.csv"
+  },
+  {
+   "case": "stage5-tuned",
+   "binary": "optimized",
+   "binary_sha256": "ed05c2be9e00233268eb70fd9714a3a54491efdc0ffae9492a362435ad55ef13",
+   "nsys": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage5-tuned.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage5-tuned_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage5-tuned_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage5-tuned_launches.json",
+   "ncu": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage5-tuned.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-stage5-tuned-ncu-raw.csv"
+  },
+  {
+   "reference": "chunks32",
+   "binary": "chunks32",
+   "binary_sha256": "e9102186c8f45df26d14190149f76bbfc073f9e88c4e50ad66a6f02b70700f8d",
+   "nsys": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-reference-chunks32.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-reference-chunks32_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-reference-chunks32_cuda_gpu_mem_time_sum.csv",
+   "launches": "rtx3090/loom_private_ablation/anomaly/profiles/20261109-170800-mono-018c08ad-reference-chunks32_launches.json"
+  }
+ ],
+ "host_equal": [
+  {
+   "binary": "stage4",
+   "reference": "chunks32",
+   "why": "stage 4 is production with the generic 32 chunks (production built with -DLP_ANOMALY_FORCE_CHUNKS=32)",
+   "launch": "graph",
+   "identical": true,
+   "difference": ""
+  },
+  {
+   "binary": "stage4",
+   "reference": "optimized",
+   "why": "production selects 32 chunks on the RTX 3090 and 4090",
+   "gpus": [
+    "rtx3090",
+    "rtx4090"
+   ],
+   "launch": "graph",
+   "identical": true,
+   "difference": ""
+  }
+ ]
+}

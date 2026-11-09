@@ -1,0 +1,350 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "attention",
+ "action": "check",
+ "stamp": "20261109-170800-mono-018c08ad",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "c649a4b7fb8a63b444f776ef1a414cd5df87d03d",
+ "stages_sha256": "7d0c8605813d07d080267768a955e40f6aa5625f31f6c736166ea42e96130b4e",
+ "steps": [
+  {
+   "step": "legacy freeze",
+   "exit_code": 0,
+   "command": "/usr/bin/python3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/tools/legacy_freeze.py verify"
+  },
+  {
+   "step": "build suite baseline",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention build VARIANT=baseline"
+  },
+  {
+   "step": "build suite optimized",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention build VARIANT=optimized"
+  },
+  {
+   "step": "build stages",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention build"
+  },
+  {
+   "step": "stage tests",
+   "exit_code": 0,
+   "command": "make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention test"
+  },
+  {
+   "step": "large check baseline",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-baseline.json"
+  },
+  {
+   "step": "large check stage1",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage1 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage1.json"
+  },
+  {
+   "step": "large check stage2",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage2 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage2.json"
+  },
+  {
+   "step": "large check stage3",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage3 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage3.json"
+  },
+  {
+   "step": "large check stage4",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage4 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage4.json"
+  },
+  {
+   "step": "large check stage5",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage5 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage5.json"
+  },
+  {
+   "step": "large check stage6",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_stage6 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage6.json"
+  },
+  {
+   "step": "large check hooks_reference",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/build/attention_hooks_reference --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-hooks_reference.json"
+  },
+  {
+   "step": "large check optimized",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/attention/build/attention_optimized --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-optimized.json"
+  }
+ ],
+ "log": "rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check.log",
+ "nvcc": "Build cuda_13.3.r13.3/compiler.38244171_0",
+ "production_sources": {
+  "paths": [
+   "applications/loom_private/attention",
+   "applications/loom_private/common",
+   "applications/loom_private/common.mk"
+  ],
+  "clean": true,
+  "status": []
+ },
+ "binaries": {
+  "baseline": {
+   "path": "rtx3090/loom_private/attention/build/attention",
+   "sha256": "010ecce9b8d4c091fc385ffc0ef632430a8049748d4d113cde70bdca681d62e8",
+   "variant": "baseline",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention build VARIANT=baseline",
+   "check_record": "rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-baseline.json",
+   "output_digest": "5d1575bb929d28d1"
+  },
+  "stage1": {
+   "path": "rtx3090/loom_private_ablation/attention/build/attention_stage1",
+   "sha256": "7a720ced916152aab5db25c46435c538a8c57cd70f0da8fb002701ad89d179f1",
+   "variant": "stage1-tiles",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention build",
+   "check_record": "rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage1.json",
+   "output_digest": "d206ff0baff82a3a"
+  },
+  "stage2": {
+   "path": "rtx3090/loom_private_ablation/attention/build/attention_stage2",
+   "sha256": "e591a6038543bffbb8fd880acd726bec6c9e801ecc482b07863d2c028c9e6d0c",
+   "variant": "stage2-splits",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention build",
+   "check_record": "rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage2.json",
+   "output_digest": "63134db680e83c73"
+  },
+  "stage3": {
+   "path": "rtx3090/loom_private_ablation/attention/build/attention_stage3",
+   "sha256": "7dce218e1224da8b28e69a4249916e163cb4c31834cf5857a556b66da8315789",
+   "variant": "stage3-bound",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention build",
+   "check_record": "rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage3.json",
+   "output_digest": "c41971b817c0da05"
+  },
+  "stage4": {
+   "path": "rtx3090/loom_private_ablation/attention/build/attention_stage4",
+   "sha256": "9e2bae625c9d00d0fe910ad34a6765b3965a825fe9e8afe490f9b8e9a9b3a675",
+   "variant": "stage4-fma-score",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention build",
+   "check_record": "rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage4.json",
+   "output_digest": "c41971b817c0da05"
+  },
+  "stage5": {
+   "path": "rtx3090/loom_private_ablation/attention/build/attention_stage5",
+   "sha256": "5af44225a5685ed1e4ba5f5a0732c7d72e17780469a2e8fe79803f17d5de7537",
+   "variant": "stage5-cheaper-math",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention build",
+   "check_record": "rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage5.json",
+   "output_digest": "9ca5f117f9ae05e7"
+  },
+  "stage6": {
+   "path": "rtx3090/loom_private_ablation/attention/build/attention_stage6",
+   "sha256": "f89faab723d2e6409c732516ca8608702c26c0917f7e5de0837e0f5398ca3bfe",
+   "variant": "stage6-overlap",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention build",
+   "check_record": "rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-stage6.json",
+   "output_digest": "9ca5f117f9ae05e7"
+  },
+  "hooks_reference": {
+   "path": "rtx3090/loom_private_ablation/attention/build/attention_hooks_reference",
+   "sha256": "e80e202c1a0a167edd0386d585110df7e821f64f5bba0dc270589129c8df9afb",
+   "variant": "optimized",
+   "timed": false,
+   "env": {
+    "LP_ATTENTION_SPLITS": "12"
+   },
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/attention build",
+   "check_record": "rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-hooks_reference.json",
+   "output_digest": "9ca5f117f9ae05e7"
+  },
+  "optimized": {
+   "path": "rtx3090/loom_private/attention/build/attention_optimized",
+   "sha256": "8ff30faf1e6bc008d399fbea88ac1c7823a59e5df0d189ac89e1577d7c90538d",
+   "variant": "optimized",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/attention build VARIANT=optimized",
+   "check_record": "rtx3090/loom_private_ablation/attention/results/20261109-170800-mono-018c08ad-check-optimized.json",
+   "output_digest": "0cf8e37a97f08081"
+  }
+ },
+ "digest_rule": [
+  {
+   "stage": 0,
+   "binary": "baseline",
+   "digest": "5d1575bb929d28d1",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 1,
+   "binary": "stage1",
+   "digest": "d206ff0baff82a3a",
+   "declared_change": true,
+   "equal_to_previous": false
+  },
+  {
+   "stage": 2,
+   "binary": "stage2",
+   "digest": "63134db680e83c73",
+   "declared_change": true,
+   "equal_to_previous": false
+  },
+  {
+   "stage": 3,
+   "binary": "stage3",
+   "digest": "c41971b817c0da05",
+   "declared_change": true,
+   "equal_to_previous": false
+  },
+  {
+   "stage": 4,
+   "binary": "stage4",
+   "digest": "c41971b817c0da05",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 5,
+   "binary": "stage5",
+   "digest": "9ca5f117f9ae05e7",
+   "declared_change": true,
+   "equal_to_previous": false
+  },
+  {
+   "stage": 6,
+   "binary": "stage6",
+   "digest": "9ca5f117f9ae05e7",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 7,
+   "binary": "optimized",
+   "digest": "0cf8e37a97f08081",
+   "declared_change": true,
+   "equal_to_previous": false
+  }
+ ],
+ "sass_equal": [
+  {
+   "binary": "stage1",
+   "reference": "optimized",
+   "kernel": "22attention_merge_kernel",
+   "why": "the merge kernel is production's from stage 1",
+   "instructions": [
+    544,
+    544
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage1",
+   "reference": "optimized",
+   "kernel": "17statistics_kernel",
+   "why": "the statistics kernel is production's from stage 1",
+   "instructions": [
+    368,
+    368
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage3",
+   "reference": "optimized",
+   "kernel": "18project_imu_kernel",
+   "why": "stage 3 adds production's bound-folding projection",
+   "instructions": [
+    120,
+    120
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage5",
+   "reference": "optimized",
+   "kernel": "24attention_partial_kernelILi8ELi8ELi1024E",
+   "why": "stage 5 completes the production attention kernel",
+   "instructions": [
+    6000,
+    6000
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage6",
+   "reference": "optimized",
+   "kernel": "24attention_partial_kernelILi8ELi8ELi1024E",
+   "why": "stage 6 is production apart from the split count",
+   "instructions": [
+    6000,
+    6000
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage6",
+   "reference": "optimized",
+   "kernel": "18project_imu_kernel",
+   "why": "stage 6 is production apart from the split count",
+   "instructions": [
+    120,
+    120
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage6",
+   "reference": "optimized",
+   "kernel": "20project_audio_kernel",
+   "why": "stage 6 is production apart from the split count",
+   "instructions": [
+    32,
+    32
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage6",
+   "reference": "optimized",
+   "kernel": "22attention_merge_kernel",
+   "why": "stage 6 is production apart from the split count",
+   "instructions": [
+    544,
+    544
+   ],
+   "identical": true
+  },
+  {
+   "binary": "stage6",
+   "reference": "optimized",
+   "kernel": "17statistics_kernel",
+   "why": "stage 6 is production apart from the split count",
+   "instructions": [
+    368,
+    368
+   ],
+   "identical": true
+  }
+ ]
+}

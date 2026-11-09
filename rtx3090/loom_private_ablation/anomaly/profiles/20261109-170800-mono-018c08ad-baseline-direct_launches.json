@@ -1,0 +1,46 @@
+{
+ "kernel_fields": [
+  "name",
+  "grid_x",
+  "grid_y",
+  "grid_z",
+  "block_x",
+  "block_y",
+  "block_z",
+  "static_shared",
+  "dynamic_shared",
+  "count"
+ ],
+ "kernels": [
+  [
+   "inference_kernel(const float *, const signed char *, const int *, ModelParams, signed char *)",
+   104858,
+   1,
+   1,
+   256,
+   1,
+   1,
+   1280,
+   0,
+   1
+  ]
+ ],
+ "copies": [
+  [
+   "Device-to-Host",
+   67109120,
+   1
+  ],
+  [
+   "Host-to-Device",
+   268436480,
+   1
+  ]
+ ],
+ "memsets": [],
+ "totals": {
+  "kernels": 1,
+  "copies": 2,
+  "memsets": 0
+ }
+}

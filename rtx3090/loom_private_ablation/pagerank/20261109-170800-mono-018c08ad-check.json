@@ -1,0 +1,179 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "pagerank",
+ "action": "check",
+ "stamp": "20261109-170800-mono-018c08ad",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "c649a4b7fb8a63b444f776ef1a414cd5df87d03d",
+ "stages_sha256": "2bcd819a3c62965b392da4c97e2e1e8e3218ce31ea425aa27458e580ba684138",
+ "steps": [
+  {
+   "step": "legacy freeze",
+   "exit_code": 0,
+   "command": "/usr/bin/python3 /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/tools/legacy_freeze.py verify"
+  },
+  {
+   "step": "build suite baseline",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank build VARIANT=baseline"
+  },
+  {
+   "step": "build suite optimized",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank build VARIANT=optimized"
+  },
+  {
+   "step": "build stages",
+   "exit_code": 0,
+   "command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank build"
+  },
+  {
+   "step": "stage tests",
+   "exit_code": 0,
+   "command": "make -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank test"
+  },
+  {
+   "step": "large check baseline",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check-baseline.json"
+  },
+  {
+   "step": "large check stage1",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage1 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check-stage1.json"
+  },
+  {
+   "step": "large check stage2",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage2 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check-stage2.json"
+  },
+  {
+   "step": "large check stage3",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage3 --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check-stage3.json"
+  },
+  {
+   "step": "large check optimized",
+   "exit_code": 0,
+   "command": "flock /tmp/cuda-elastic-gpu.lock /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private/pagerank/build/pagerank_optimized --preset large --action check --launch both --json-out /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check-optimized.json"
+  }
+ ],
+ "log": "rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check.log",
+ "nvcc": "Build cuda_13.3.r13.3/compiler.38244171_0",
+ "production_sources": {
+  "paths": [
+   "applications/loom_private/pagerank",
+   "applications/loom_private/common",
+   "applications/loom_private/common.mk"
+  ],
+  "clean": true,
+  "status": []
+ },
+ "binaries": {
+  "baseline": {
+   "path": "rtx3090/loom_private/pagerank/build/pagerank",
+   "sha256": "ca480f5ded390705dec59a2d781f0dcdb24b1253bec7c74525be7ee7c3da8682",
+   "variant": "baseline",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank build VARIANT=baseline",
+   "check_record": "rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check-baseline.json",
+   "output_digest": "97eb70ad937006ab"
+  },
+  "stage1": {
+   "path": "rtx3090/loom_private_ablation/pagerank/build/pagerank_stage1",
+   "sha256": "bf3f3cfc7f9b4759b96f2cdba7a08120718db1b4faf71aae226eba34fe865fbf",
+   "variant": "stage1-persistent",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank build",
+   "check_record": "rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check-stage1.json",
+   "output_digest": "97eb70ad937006ab"
+  },
+  "stage2": {
+   "path": "rtx3090/loom_private_ablation/pagerank/build/pagerank_stage2",
+   "sha256": "456f6da7861e3f13e89b10de6122360673e960cacf341a61f69ea317ac240e51",
+   "variant": "stage2-tags",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank build",
+   "check_record": "rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check-stage2.json",
+   "output_digest": "97eb70ad937006ab"
+  },
+  "stage3": {
+   "path": "rtx3090/loom_private_ablation/pagerank/build/pagerank_stage3",
+   "sha256": "c1e9894e7860522c13564750811e45ed5d0010f44fe32d275d4a2728fc72676c",
+   "variant": "stage3-layout",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/experiments/loom_private_ablation/pagerank build",
+   "check_record": "rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check-stage3.json",
+   "output_digest": "97eb70ad937006ab"
+  },
+  "optimized": {
+   "path": "rtx3090/loom_private/pagerank/build/pagerank_optimized",
+   "sha256": "6bd3fcfc2e97952bc4022b310fd1d22f3bcc0908f91aea007970808e3c8c0b7e",
+   "variant": "optimized",
+   "timed": true,
+   "env": {},
+   "build_command": "make -B -C /home/ankai/cuda/.claude/worktrees/loom-private-optimizations-da5ada/applications/loom_private/pagerank build VARIANT=optimized",
+   "check_record": "rtx3090/loom_private_ablation/pagerank/results/20261109-170800-mono-018c08ad-check-optimized.json",
+   "output_digest": "97eb70ad937006ab"
+  }
+ },
+ "digest_rule": [
+  {
+   "stage": 0,
+   "binary": "baseline",
+   "digest": "97eb70ad937006ab",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 1,
+   "binary": "stage1",
+   "digest": "97eb70ad937006ab",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 2,
+   "binary": "stage2",
+   "digest": "97eb70ad937006ab",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 3,
+   "binary": "stage3",
+   "digest": "97eb70ad937006ab",
+   "declared_change": false,
+   "equal_to_previous": true
+  },
+  {
+   "stage": 4,
+   "binary": "optimized",
+   "digest": "97eb70ad937006ab",
+   "declared_change": false,
+   "equal_to_previous": true
+  }
+ ],
+ "sass_equal": [
+  {
+   "binary": "stage3",
+   "reference": "optimized",
+   "kernel": "12gauss_seidelILb0E",
+   "why": "stage 3 is the production kernel with the default shape",
+   "instructions": [
+    664,
+    664
+   ],
+   "identical": true
+  }
+ ]
+}
