@@ -22,7 +22,11 @@ The results are in `results/loom_private_ablation/opt_results.xlsx`.
   the suite's optimized binary. Both are built from the unchanged production
   sources by the suite's own Makefile. The check records their hashes, build
   commands, and the nvcc version, and refuses to run if the production sources
-  have changes. Bench and profile use exactly the binaries the check built.
+  have changes. Bench and profile run only the binaries the check validated:
+  before each run they compare the binary's hash with the check summary (of
+  the same stamp, else the newest), after it they confirm the hash did not
+  change, and both summaries record every hash. The report rejects a run whose
+  bench or profile hashes are not in the selected check.
 - Every stage in between is the previous stage with one more optimization. It
   implements the same contract and passes the same large check and the
   application's full existing test suite. Stage sources link the application's
@@ -41,6 +45,11 @@ The results are in `results/loom_private_ablation/opt_results.xlsx`.
   built by the stage Makefile and never timed. Where this GPU's tuning equals
   the setting, a second entry with `"gpus"` compares with the plain production
   binary.
+- A step between equivalent settings (its two stages pass a `host_equal`
+  comparison on this GPU, as when this GPU's tuning entry equals the default)
+  is not an optimization. The report keeps its time difference, greyed, as
+  variation between two runs of one configuration, and gives it no share; the
+  note row says what the other shares add up to.
 - `scope` (`compute` or `application`) names the timing scope whose savings the
   report's step columns use.
 - Timing uses the suite's protocol unchanged: the harness's `--action bench`

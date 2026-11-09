@@ -2,8 +2,10 @@
 # GPU tests of the pagerank stages beyond the baseline's run_gpu_tests.sh,
 # run by `make test` under the GPU lock (this script does not lock).
 #   run_stage_tests.sh <build dir> <scratch dir>
-# <build dir> holds pagerank_stage{1,2,3} and their test-only _shapes builds,
-# in which LP_ABLATION_SHAPE=tiny forces a one-block, 64-thread grid.
+# <build dir> holds pagerank_stage{1,2,3} and their test-only builds: _shapes,
+# in which LP_ABLATION_SHAPE=tiny forces a one-block, 64-thread grid, and the
+# readiness-protocol mutants of production's run_optimized_tests.sh
+# (_tag_mutant for stages 2 and 3, _no_reset_mutant for every stage).
 set -uo pipefail
 
 build=$1
@@ -55,6 +57,49 @@ for s in 1 2 3; do
   for n in 1 2 3 4 5; do
     expect stage$s-large-x$n 0 "1048576 nodes" \
       "$bin" --set nodes=1048576 --set iterations=$n --launch direct
+  done
+done
+
+# expect_failure <name> <allowed exit codes> <command...>: the run must end,
+# within the timeout, with one of the allowed codes.
+expect_failure() {
+  local name=$1 allowed=$2
+  shift 2
+  local log="$scratch/$name.log"
+  timeout $limit "$@" >"$log" 2>&1
+  local got=$?
+  if [[ " $allowed " == *" $got "* ]]; then
+    echo "PASS $name (exit $got)"
+  else
+    echo "FAIL $name: exit $got, expected one of: $allowed"
+    sed 's/^/    /' "$log"
+    failures=$((failures + 1))
+  fi
+}
+
+# Production's readiness-protocol mutants, on the same sizes. A tag that
+# alternates every sweep accepts the value from two sweeps earlier: the check
+# rejects it (stages 2 and 3, which have tags).
+for s in 2 3; do
+  for size in "4096 6" "65536 20"; do
+    set -- $size
+    expect_failure stage$s-tag-mutant-$1x$2 "1" "$build/pagerank_stage${s}_tag_mutant" \
+      --set nodes=$1 --set iterations=$2
+  done
+  if grep -q 'mismatch at node' "$scratch/stage$s-tag-mutant-4096x6.log"; then
+    echo "PASS stage$s-tag-mutant-reports-mismatches"
+  else
+    echo "FAIL stage$s-tag-mutant-reports-mismatches"; failures=$((failures + 1))
+  fi
+done
+# Without the barrier counter reset the barriers pass at once and the sweeps
+# overlap: the check rejects the scores (exit 1) or a wait exceeds the spin
+# limit (exit 70), and the run never hangs (a timeout's 124 fails the test).
+for s in 1 2 3; do
+  for size in "4096 6" "65536 20"; do
+    set -- $size
+    expect_failure stage$s-no-reset-mutant-$1x$2 "1 70" \
+      "$build/pagerank_stage${s}_no_reset_mutant" --set nodes=$1 --set iterations=$2
   done
 done
 

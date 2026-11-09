@@ -8,6 +8,7 @@ import re
 import sqlite3
 import tempfile
 import unittest
+from unittest import mock
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -54,7 +55,8 @@ def expected(cases, scope):
             continue
         prev = chain[chain.index(c) - 1]
         saved = prev[scope] - c[scope]
-        share = saved / total if total > 0 and abs(total) > noise_total else None
+        share = saved / total if total > 0 and abs(total) > noise_total \
+            and not c.get("equivalent_to_previous") else None
         rows.append((prev[scope] / c[scope], saved, share,
                      abs(saved) <= max(prev[f"{scope}_range"], c[f"{scope}_range"])))
     return rows
@@ -150,6 +152,35 @@ class StepArithmeticTests(unittest.TestCase):
         self.assertAlmostEqual(metrics["rows"][2]["step"]["share"], 0.5)
 
 
+    def test_equivalent_step_keeps_its_difference_but_gets_no_share(self):
+        cases = [case(0, "direct", 120, 110), case(0, "graph", 100, 90),
+                 case(1, "graph", 60, 50), case(2, "graph", 50, 40)]
+        cases[3]["equivalent_to_previous"] = True
+        metrics = self.check(cases, "compute")
+        step = metrics["rows"][3]["step"]
+        self.assertTrue(step["equivalent"])
+        self.assertAlmostEqual(step["saved"], 10)
+        self.assertFalse(step["within_noise"])
+        self.assertIsNone(step["share"])
+        self.assertAlmostEqual(metrics["rows"][2]["step"]["share"], 0.8)
+
+
+class RowHeightTests(unittest.TestCase):
+    def test_wrapped_lines(self):
+        self.assertEqual(report.wrapped_lines("", 10), 1)
+        self.assertEqual(report.wrapped_lines("abc def", 10), 1)
+        self.assertEqual(report.wrapped_lines("abcde fghij", 10), 2)
+        self.assertEqual(report.wrapped_lines("a\nb", 10), 2)
+        self.assertEqual(report.wrapped_lines("x" * 25, 10), 3)
+
+    def test_fitted_height_grows_with_text_and_keeps_the_minimum(self):
+        self.assertEqual(report.fitted_height([("short", 60, False)], 30), 30)
+        long = " ".join(["word"] * 200)
+        lines = report.wrapped_lines(long, 59)
+        self.assertGreaterEqual(report.fitted_height([(long, 60, False)], 30),
+                                report.LINE_POINTS * lines)
+
+
 class LayoutTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -227,6 +258,37 @@ class LayoutTests(unittest.TestCase):
         self.assertTrue(ws.cell(10, 10).font.i)      # stage 1: 2 us saved, 10 us range
         self.assertFalse(ws.cell(11, 10).font.i)
 
+    def test_equivalent_step_is_grey_without_share(self):
+        cases = [case(0, "direct", 120, 110), case(0, "graph", 100, 90),
+                 case(1, "graph", 60, 50), case(2, "graph", 50, 40, binary="optimized",
+                                                label="+ Per-GPU tuning (= Optimized)")]
+        config = stages("Decoder", "compute", cases)
+        table = data(cases, config)
+        table["cases"][3]["equivalent_to_previous"] = True
+        tables = {"rtx3090": table}
+        tables.update({f: pending(cases, config) for f in ("rtx4090", "rtx5090")})
+        ws = report.render([("decoder", config, tables)]).active
+        self.assertEqual(ws.cell(11, 10).value, 10)
+        self.assertTrue(ws.cell(11, 10).font.i)
+        self.assertIn("Equivalent settings", ws.cell(11, 10).comment.text)
+        self.assertEqual(ws.cell(11, 11).value, report.UNDEFINED)
+        self.assertEqual(ws.cell(10, 11).value, 0.8)
+        note = ws.cell(12, 1).value
+        self.assertIn("variation between equivalent settings", note)
+        self.assertIn("other shares add up to 80.0%", note)
+
+    def test_long_text_rows_are_tall_enough(self):
+        ws = self.book.worksheets[0]
+        for row in range(1, ws.max_row + 1):
+            text = ws.cell(row, 1).value
+            if isinstance(text, str) and ws.row_dimensions[row].height:
+                merged = any(r.min_row == row and r.max_col == len(report.WIDTHS)
+                             for r in ws.merged_cells.ranges)
+                if merged:
+                    lines = report.wrapped_lines(text, sum(report.WIDTHS) - 1)
+                    self.assertGreaterEqual(ws.row_dimensions[row].height,
+                                            report.LINE_POINTS * lines, row)
+
 
 class RealWorkbookTests(unittest.TestCase):
     def test_apps_match_the_loom_private_order(self):
@@ -262,9 +324,16 @@ class RealWorkbookTests(unittest.TestCase):
                     continue
                 metrics = report.step_metrics(loaded["cases"], report.scope_of(config))
                 if metrics["shares_defined"]:
+                    # Equivalent-setting steps get no share; their difference
+                    # fills the rest of the total.
                     with self.subTest(app=app, gpu=folder):
-                        self.assertAlmostEqual(sum(m["step"]["share"] for m in metrics["rows"]
-                                                   if m["step"]), 1.0)
+                        steps = [m["step"] for m in metrics["rows"] if m["step"]]
+                        self.assertAlmostEqual(
+                            sum(s["share"] for s in steps if not s["equivalent"])
+                            + sum(s["saved"] / metrics["total"] for s in steps
+                                  if s["equivalent"]), 1.0)
+                        self.assertTrue(all(s["share"] is None for s in steps
+                                            if s["equivalent"]))
 
 
 class RunnerTests(unittest.TestCase):
@@ -274,6 +343,37 @@ class RunnerTests(unittest.TestCase):
                         {"id": "s2", "stage": 2, "binary": "s2", "launch": "graph"},
                         {"id": "s3", "stage": 3, "binary": "opt", "launch": "graph"}],
               "arithmetic_changes": [{"stage": 1}, {"stage": 3, "gpus": ["rtx3090"]}]}
+
+    def test_checked_run_refuses_unchecked_or_changed_binaries(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(runner, "REPO", Path(tmp).resolve()):
+            binary = Path(tmp) / "bin"
+            binary.write_bytes(b"checked")
+            good = runner.sha256(binary)
+            ran = []
+            self.assertEqual(runner.checked_run(binary, {"b": good}, "b",
+                                                lambda: ran.append(1)), good)
+            self.assertEqual(ran, [1])
+            with self.assertRaises(SystemExit):
+                runner.checked_run(binary, {"b": "0" * 64}, "b", lambda: ran.append(2))
+            with self.assertRaises(SystemExit):
+                runner.checked_run(binary, {}, "b", lambda: ran.append(3))
+            self.assertEqual(ran, [1])
+            with self.assertRaises(SystemExit):
+                runner.checked_run(binary, {"b": good}, "b",
+                                   lambda: binary.write_bytes(b"changed"))
+
+    def test_checked_binaries_prefers_the_same_stamp(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(runner, "REPO", Path(tmp).resolve()):
+            out = Path(tmp)
+            for stamp, digest in (("20990101-a", "1"), ("20990102-b", "2")):
+                (out / f"{stamp}-check.json").write_text(json.dumps(
+                    {"binaries": {"x": {"sha256": digest}}}))
+            self.assertEqual(runner.checked_binaries(out, "20990101-a")[1], {"x": "1"})
+            self.assertEqual(runner.checked_binaries(out, "20990103-c")[1], {"x": "2"})
+            with self.assertRaises(SystemExit):
+                runner.checked_binaries(out / "none", "20990101-a")
 
     def test_bench_order_rotates(self):
         cases = self.config["cases"]

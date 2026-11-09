@@ -42,6 +42,10 @@ bitwise identical to the oracle and to the baseline (digest
 
 ## Tests (`make test`)
 
+- Production's host tests, [`test_host.cpp`](../../../applications/loom_private/pagerank/tests/test_host.cpp)
+  (graph generator and level schedule) and [`test_layout.cpp`](../../../applications/loom_private/pagerank/tests/test_layout.cpp)
+  (the level-ordered layout stage 3 uses), built as production's Makefile
+  builds them.
 - The baseline's [`run_gpu_tests.sh`](../../../applications/loom_private/pagerank/tests/run_gpu_tests.sh)
   on every stage and its Jacobi mutant (`-DLP_PAGERANK_MUTANT_JACOBI`), which
   must fail the check.
@@ -51,4 +55,11 @@ bitwise identical to the oracle and to the baseline (digest
     threads, at 4, 16, 32, 4,096 and 65,536 nodes, which includes waits on
     another lane of the same warp;
   - 1 to 5 sweeps on the large graph, which covers the readiness tag's cycle;
-  - a check that the timed binary ignores the shape variable.
+  - a check that the timed binary ignores the shape variable;
+  - the readiness-protocol mutants of production's
+    [`run_optimized_tests.sh`](../../../applications/loom_private/pagerank/tests/run_optimized_tests.sh),
+    on the same sizes (4,096 x 6 and 65,536 x 20): a tag that alternates every
+    sweep (`-DLP_PAGERANK_MUTANT_TAG`, stages 2 and 3), which must fail the
+    check with mismatches, and a skipped barrier reset
+    (`-DLP_PAGERANK_MUTANT_NO_RESET`, every stage), which must fail the check
+    or trap, never hang.

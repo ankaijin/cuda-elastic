@@ -24,7 +24,11 @@ other stage must reproduce the previous stage's digest exactly. Binaries with
 test hooks, run with "env"); their digest must equal the stage they are
 compared with.
 
-bench never builds. Repetition r times every case once in a rotated order (the
+bench and profile never build. They run only binaries the check validated:
+before each run they hash the binary and compare it with the check summary of
+the same stamp (else the newest check summary), and after the run they hash it
+again. Both record the hash of every binary they ran and the check summary
+they compared against. Repetition r times every case once in a rotated order (the
 case list starting at offset (r - 1) mod n), and times the Graph baseline once
 more before and after that rotation; the two bracket measurements give the
 repetition's drift and are not used as case timings. Each measurement uses the
@@ -141,6 +145,34 @@ def binary_path(app, folder, spec):
         name = app if spec["suite_variant"] == "baseline" else f"{app}_optimized"
         return REPO / folder / "loom_private" / app / "build" / name
     return REPO / folder / "loom_private_ablation" / app / "build" / spec["stage_binary"]
+
+
+def checked_binaries(out, stamp):
+    """(summary path, {binary: sha256}) of the check that bench and profile
+    must match: the check of this stamp, else the newest one."""
+    path = out / f"{stamp}-check.json"
+    if not path.is_file():
+        found = sorted(out.glob("*-check.json"))
+        if not found:
+            raise SystemExit(f"run.py: no check summary in {rel(out)}; run the check first")
+        path = found[-1]
+    data = json.loads(path.read_text())
+    return rel(path), {key: b["sha256"] for key, b in data["binaries"].items()}
+
+
+def checked_run(path, expected, key, run):
+    """Runs run() on the binary at path only if its hash is the checked one,
+    and confirms the binary did not change during the run; returns the hash."""
+    if not path.is_file():
+        raise SystemExit(f"run.py: {rel(path)} is missing; run the check first")
+    before = sha256(path)
+    if key not in expected or before != expected[key]:
+        raise SystemExit(f"run.py: {rel(path)} is not the binary the check validated; "
+                         "run the check again")
+    run()
+    if sha256(path) != before:
+        raise SystemExit(f"run.py: {rel(path)} changed while it ran")
+    return before
 
 
 def logged(command, log, env=None):
@@ -287,26 +319,27 @@ def bench_order(cases, repetition):
 def bench(app, config, folder, stamp, out, repeat):
     graph = next(c for c in config["cases"] if c["stage"] == 0 and c["launch"] == "graph")
     records, orders, drift = [], [], []
+    check_summary, expected = checked_binaries(out, stamp)
 
     def measure(case, r, role):
         path = binary_path(app, folder, config["binaries"][case["binary"]])
-        if not path.is_file():
-            raise SystemExit(f"run.py: {rel(path)} is missing; run the check first")
         tag = case["id"] if role == "case" else role
         name = f"{stamp}-bench-{tag}-r{r}"
         record, log = out / "results" / f"{name}.json", out / "results" / f"{name}.log"
         record.unlink(missing_ok=True)
         log.unlink(missing_ok=True)
-        code = logged(["flock", LOCK, path, "--preset", "large", "--action", "bench",
-                       "--launch", case["launch"], "--json-out", record], log)
-        if code or not record.is_file():
+        result = {}
+        digest = checked_run(path, expected, case["binary"], lambda: result.update(
+            code=logged(["flock", LOCK, path, "--preset", "large", "--action", "bench",
+                         "--launch", case["launch"], "--json-out", record], log)))
+        if result["code"] or not record.is_file():
             raise SystemExit(f"run.py: bench {tag} r{r} failed; see {rel(log)}")
         data = json.loads(record.read_text())
         times = {s: data["timing"][s]["batch_per_iteration_us"] for s in SCOPES}
         print(f"r{r} {tag:20s} application {times['application']:9.1f} us  "
               f"compute {times['compute']:9.1f} us", flush=True)
         entry = {"case": case["id"], "role": role, "repetition": r, "record": rel(record),
-                 "log": rel(log), "binary_sha256": sha256(path),
+                 "log": rel(log), "binary_sha256": digest,
                  "batch_per_iteration_us": times}
         records.append(entry)
         return times
@@ -326,7 +359,8 @@ def bench(app, config, folder, stamp, out, repeat):
                   if e["case"] == case["id"] and e["role"] == "case"]
         ranges[case["id"]] = {s: max(v[s] for v in values) - min(v[s] for v in values)
                               for s in SCOPES}
-    return {"repeat": repeat, "order": "rotated", "orders": orders, "records": records,
+    return {"check_summary": check_summary, "repeat": repeat, "order": "rotated",
+            "orders": orders, "records": records,
             "ranges_us": ranges, "drift_us": drift}
 
 
@@ -378,14 +412,16 @@ def structure_difference(a, b):
 def profile(app, config, folder, stamp, out, ncu):
     tool = load_profile_tool()
     reports, structures = [], {}
+    check_summary, expected = checked_binaries(out, stamp)
 
     def capture(key, launch, prefix, with_ncu):
         spec = config["binaries"][key]
         path = binary_path(app, folder, spec)
-        if not path.is_file():
-            raise SystemExit(f"run.py: {rel(path)} is missing; run the check first")
-        for command in tool.commands(path, launch, prefix, with_ncu):
-            tool.run(command, stdout=subprocess.DEVNULL, env=binary_env(spec))
+
+        def run():
+            for command in tool.commands(path, launch, prefix, with_ncu):
+                tool.run(command, stdout=subprocess.DEVNULL, env=binary_env(spec))
+        digest = checked_run(path, expected, key, run)
         database = tool.named(prefix, ".sqlite")
         if not database.is_file():
             tool.run(["nsys", "export", "--type", "sqlite", "--force-overwrite", "true",
@@ -395,7 +431,8 @@ def profile(app, config, folder, stamp, out, ncu):
         database.unlink(missing_ok=True)
         launches_path = tool.named(prefix, "_launches.json")
         launches_path.write_text(json.dumps(launches, indent=1) + "\n")
-        entry = {"nsys": rel(tool.named(prefix, ".nsys-rep")),
+        entry = {"binary": key, "binary_sha256": digest,
+                 "nsys": rel(tool.named(prefix, ".nsys-rep")),
                  "nsys_kernels": rel(tool.named(prefix, "_cuda_gpu_kern_sum.csv")),
                  "nsys_memcpy": rel(tool.named(prefix, "_cuda_gpu_mem_time_sum.csv")),
                  "launches": rel(launches_path)}
@@ -434,7 +471,8 @@ def profile(app, config, folder, stamp, out, ncu):
               f"{'identical' if not difference else 'DIFFERENT: ' + difference}", flush=True)
         if difference:
             raise SystemExit("run.py: launch structures differ; see stages.json host_equal")
-    return {"ncu": ncu, "profiles": reports, "host_equal": checks}
+    return {"check_summary": check_summary, "ncu": ncu, "profiles": reports,
+            "host_equal": checks}
 
 
 def main():

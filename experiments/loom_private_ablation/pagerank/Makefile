@@ -1,8 +1,12 @@
 # Cumulative optimization stages of loom-private/pagerank (README.md).
 #
 #   make build   stage binaries 1-3 for this GPU
-#   make test    the baseline's GPU tests on every stage and its Jacobi
-#                mutant, then tests/run_stage_tests.sh
+#   make test    production's host tests (graph and layout), the baseline's
+#                GPU tests on every stage and its Jacobi mutant, then
+#                tests/run_stage_tests.sh: shapes, sweep counts, and the
+#                readiness-protocol mutants of the optimized variant's tests
+#                (a stale-accepting tag in stages 2 and 3, a skipped barrier
+#                reset in every stage)
 #
 # The baseline (stage 0) and the optimized variant (stage 4) are the suite's
 # own binaries, built by applications/loom_private/pagerank/Makefile; run.py
@@ -46,6 +50,12 @@ flags = $(NVCCFLAGS) $(LP_REQUIRED_NVCCFLAGS) -I$(LP_ROOT)/common -I$(APP_DIR) \
 STAGES := $(foreach s,$(STAGE_NAMES),$(BUILD)/pagerank_stage$(s))
 MUTANTS := $(foreach s,$(STAGE_NAMES),$(BUILD)/pagerank_stage$(s)_jacobi_mutant)
 SHAPES := $(foreach s,$(STAGE_NAMES),$(BUILD)/pagerank_stage$(s)_shapes)
+# Only stages 2 and 3 have readiness tags; every stage resets its barrier.
+TAG_MUTANTS := $(foreach s,2 3,$(BUILD)/pagerank_stage$(s)_tag_mutant)
+RESET_MUTANTS := $(foreach s,$(STAGE_NAMES),$(BUILD)/pagerank_stage$(s)_no_reset_mutant)
+# Production's host tests, built from its sources as its Makefile builds them.
+HOST_TEST := $(BUILD)/test_host
+LAYOUT_TEST := $(BUILD)/test_layout
 
 .PHONY: build test clean
 build: $(STAGES)
@@ -63,7 +73,30 @@ $(BUILD)/pagerank_stage%_shapes: $(DEPS)
 	@mkdir -p $(BUILD)
 	$(NVCC) $(call flags,$*) -DLP_ABLATION_TEST_SHAPE $(SRCS) -o $@
 
-test: $(STAGES) $(MUTANTS) $(SHAPES)
+$(BUILD)/pagerank_stage%_tag_mutant: $(DEPS)
+	@mkdir -p $(BUILD)
+	$(NVCC) $(call flags,$*) -DLP_PAGERANK_MUTANT_TAG $(SRCS) -o $@
+
+$(BUILD)/pagerank_stage%_no_reset_mutant: $(DEPS)
+	@mkdir -p $(BUILD)
+	$(NVCC) $(call flags,$*) -DLP_PAGERANK_MUTANT_NO_RESET $(SRCS) -o $@
+
+$(HOST_TEST): $(APP_DIR)/tests/test_host.cpp $(APP_DIR)/graph.cpp $(APP_DIR)/oracle.cpp \
+              $(APP_DIR)/graph.h $(APP_DIR)/oracle.h
+	@mkdir -p $(BUILD)
+	$(CXX) -O2 -std=c++17 -ffp-contract=off -Wall -Wextra \
+	  $(APP_DIR)/tests/test_host.cpp $(APP_DIR)/graph.cpp $(APP_DIR)/oracle.cpp -o $@
+
+$(LAYOUT_TEST): $(APP_DIR)/tests/test_layout.cpp $(APP_DIR)/layout.cpp $(APP_DIR)/graph.cpp \
+                $(APP_DIR)/oracle.cpp $(APP_DIR)/layout.h $(APP_DIR)/graph.h $(APP_DIR)/oracle.h
+	@mkdir -p $(BUILD)
+	$(CXX) -O2 -std=c++17 -ffp-contract=off -Wall -Wextra \
+	  $(APP_DIR)/tests/test_layout.cpp $(APP_DIR)/layout.cpp $(APP_DIR)/graph.cpp \
+	  $(APP_DIR)/oracle.cpp -o $@
+
+test: $(STAGES) $(MUTANTS) $(SHAPES) $(TAG_MUTANTS) $(RESET_MUTANTS) $(HOST_TEST) $(LAYOUT_TEST)
+	$(HOST_TEST)
+	$(LAYOUT_TEST)
 	@for s in $(STAGE_NAMES); do \
 	  echo "== stage $$s: baseline GPU tests"; \
 	  $(LOCK) $(GPU_TEST_TIMEOUT) $(APP_DIR)/tests/run_gpu_tests.sh \

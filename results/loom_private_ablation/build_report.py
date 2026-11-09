@@ -14,8 +14,8 @@ Paths are relative to the GPU folder; null means pending. The selected
 summaries must come from one source revision. The stages.json they used (read
 from git at that revision, and matching the hash they record) must define the
 same cases, binaries, launches, and checks as the current one; only
-descriptions and the reporting scope may differ. The bench binaries must be the
-ones the check validated.
+descriptions and the reporting scope may differ. Every binary the bench timed
+and the profile captured must be one the check validated (by hash).
 
 The workbook has one sheet per application, in the loom_private workbook's
 order. Each sheet holds one table per GPU, in the order RTX 3090, RTX 4090,
@@ -25,8 +25,12 @@ measurements of the Graph baseline only give the drift). The step columns use
 the application's "scope" from stages.json. A step is flagged as within noise
 when its saving is at most the larger repetition range (max - min) of its two
 stages; shares are undefined when the Graph->Optimized saving is not positive
-or is itself within noise. The kernel launch count comes from the run's nsys
-trace of one invocation.
+or is itself within noise. A step between equivalent settings (the profile
+found the two stages' launch structures identical on this GPU, through a
+"host_equal" pair, as for a tuning entry that equals the default) is not an
+optimization: its time difference stays visible as variation, greyed, and it
+gets no share. The kernel launch count comes from the run's nsys trace of one
+invocation. Row heights follow the wrapped text, so no cell is clipped.
 """
 
 import csv
@@ -50,6 +54,9 @@ FIELD = "batch_per_iteration_us"
 PENDING = "pending"
 UNDEFINED = "—"
 CHANGE_LIMIT = 130
+# Row height estimate: Calibri 11 fits about one character per unit of column
+# width (fewer when bold), 15 points per line.
+LINE_POINTS = 15
 
 
 def read_json(path):
@@ -131,12 +138,20 @@ def load_app(folder, app, selection):
             raise ValueError(f"{folder} {app}: stages.json now defines different cases "
                              "than the selected run")
     check, bench, profile = (loaded.get(k) for k in ("check", "bench", "profile"))
-    if bench and check:
+    if check:
         validated = {b["sha256"] for b in check["binaries"].values()}
-        stray = {r["case"] for r in bench["records"] if r["binary_sha256"] not in validated}
-        if stray:
-            raise ValueError(f"{folder} {app}: bench binaries of {sorted(stray)} were not "
-                             "validated by the selected check")
+        if bench:
+            stray = {r["case"] for r in bench["records"] if r["binary_sha256"] not in validated}
+            if stray:
+                raise ValueError(f"{folder} {app}: bench binaries of {sorted(stray)} were not "
+                                 "validated by the selected check")
+        if profile:
+            stray = {p.get("case") or p.get("reference") for p in profile["profiles"]
+                     if p.get("binary_sha256") not in validated}
+            if stray:
+                raise ValueError(f"{folder} {app}: profiled binaries of {sorted(stray)} were "
+                                 "not validated by the selected check (or the profile does "
+                                 "not record their hashes)")
     cases = []
     for case in stages["cases"]:
         row = dict(case)
@@ -159,6 +174,15 @@ def load_app(folder, app, selection):
                 row["launches"] = sum(int(r["Instances"]) for r in csv.DictReader(stream))
             row["nsys"] = entry["nsys"]
         cases.append(row)
+    equivalent = {frozenset((h["binary"], h["reference"]))
+                  for h in (profile or {}).get("host_equal", []) if h["identical"]}
+    previous = None
+    for row in cases:
+        row["equivalent_to_previous"] = bool(
+            previous and previous["binary"] != row["binary"]
+            and frozenset((previous["binary"], row["binary"])) in equivalent)
+        if row["stage"] >= 1 or row["launch"] == "graph":
+            previous = row
     return {"stages": stages, "cases": cases, "check": check, "bench": bench,
             "profile": profile}
 
@@ -167,7 +191,9 @@ def step_metrics(cases, scope):
     """Per case (in order): speedups vs the Graph baseline, and the step
     columns in `scope` against the previous stage. Stage 1's previous stage is
     the Graph baseline; both baseline rows have no step. Shares are None when
-    undefined (the total saving is not positive or is within noise)."""
+    undefined (the total saving is not positive or is within noise) and for a
+    step between equivalent settings (case["equivalent_to_previous"]), whose
+    difference is variation rather than an optimization's saving."""
     last = max(c["stage"] for c in cases)
     graph = next(c for c in cases if c["stage"] == 0 and c["launch"] == "graph")
     final = next(c for c in cases if c["stage"] == last)
@@ -180,8 +206,10 @@ def step_metrics(cases, scope):
              "compute_vs_graph": graph["compute"] / case["compute"], "step": None}
         if previous is not None:
             saved = previous[scope] - case[scope]
+            equivalent = case.get("equivalent_to_previous", False)
             m["step"] = {"speedup": previous[scope] / case[scope], "saved": saved,
-                         "share": saved / total if shares else None,
+                         "share": saved / total if shares and not equivalent else None,
+                         "equivalent": equivalent,
                          "within_noise": abs(saved) <= max(previous[f"{scope}_range"],
                                                            case[f"{scope}_range"])}
         out.append(m)
@@ -189,6 +217,30 @@ def step_metrics(cases, scope):
             previous = case
     return {"rows": out, "total": total, "shares_defined": shares,
             "total_within_noise": total_noise}
+
+
+def wrapped_lines(text, chars):
+    """Lines that text takes when word-wrapped at `chars` characters."""
+    lines = 0
+    for paragraph in str(text).split("\n"):
+        lines += 1
+        used = 0
+        for word in paragraph.split():
+            if used and used + 1 + len(word) > chars:
+                lines += 1
+                used = 0
+            used += (1 if used else 0) + len(word)
+            while used > chars:  # a word longer than the line breaks anywhere
+                lines += 1
+                used -= chars
+    return lines
+
+
+def fitted_height(cells, minimum):
+    """Row height (points) that shows every (text, width, bold) cell in full."""
+    lines = max(wrapped_lines(text, max(1, int(width * (0.9 if bold else 1.0)) - 1))
+                for text, width, bold in cells)
+    return max(minimum, LINE_POINTS * lines + 4)
 
 
 def load_inputs():
@@ -278,6 +330,17 @@ def note_line(data, scope, metrics):
     if not metrics["shares_defined"]:
         text += (" Shares are undefined because the Graph→Optimized saving is not positive or "
                  "is within noise.")
+    for case, m in zip(cases, metrics["rows"]):
+        step = m["step"]
+        if step and step["equivalent"]:
+            text += (f" Stage {case['stage']} runs the same configuration as the stage before it "
+                     f"on this GPU (identical launch structure in the profile): its "
+                     f"{step['saved']:+,.1f} us is variation between equivalent settings, not a "
+                     f"tuning gain, and gets no share")
+            if metrics["shares_defined"]:
+                text += (f" (the other shares add up to "
+                         f"{1 - step['saved'] / metrics['total']:.1%})")
+            text += "."
     return text
 
 
@@ -318,7 +381,7 @@ def render(sheets, labels=None):
         c.alignment = wrap
         if font:
             c.font = font
-        ws.row_dimensions[row].height = height
+        ws.row_dimensions[row].height = fitted_height([(text, sum(WIDTHS), False)], height)
         return c
 
     def cell(ws, row, col, value, fmt=None, fill=None, source=None, faint=False):
@@ -355,7 +418,8 @@ def render(sheets, labels=None):
             c = ws.cell(row, i, header)
             c.font, c.fill, c.border = header_font, header_fill, box
             c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-        ws.row_dimensions[row].height = 44
+        ws.row_dimensions[row].height = fitted_height(
+            [(h, w, True) for h, w in zip(headers(scope), WIDTHS)], 44)
         for index, case in enumerate(cases):
             row += 1
             f = fills[case["launch"]] if case["stage"] == 0 else \
@@ -378,9 +442,16 @@ def render(sheets, labels=None):
                     for col in (9, 10, 11):
                         cell(ws, row, col, UNDEFINED, fill=f)
                 else:
-                    faint = step["within_noise"]
+                    faint = step["within_noise"] or step["equivalent"]
                     cell(ws, row, 9, step["speedup"], '0.00"x"', f, faint=faint)
-                    cell(ws, row, 10, round(step["saved"], 1), "#,##0.0", f, faint=faint)
+                    saved = cell(ws, row, 10, round(step["saved"], 1), "#,##0.0", f,
+                                 faint=faint)
+                    if step["equivalent"]:
+                        saved.comment = Comment(
+                            "Equivalent settings on this GPU: this stage launches exactly "
+                            "like the previous one (host_equal in the profile). The "
+                            "difference is variation between two runs of one configuration, "
+                            "not a tuning gain, and gets no share.", "build_report")
                     if step["share"] is None:
                         cell(ws, row, 11, UNDEFINED, fill=f, faint=faint)
                     else:
@@ -389,7 +460,8 @@ def render(sheets, labels=None):
                 for col in range(5, 12):
                     cell(ws, row, col, PENDING, fill=f)
             cell(ws, row, 12, case.get("launches", PENDING), "#,##0", f, case.get("nsys"))
-            ws.row_dimensions[row].height = 30
+            ws.row_dimensions[row].height = fitted_height(
+                [(case["label"], WIDTHS[1], True), (case["change"], WIDTHS[2], False)], 30)
         row += 1
         if bench:
             text_row(ws, row, note_line(data, scope, metrics), 44, grey)

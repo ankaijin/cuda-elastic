@@ -160,7 +160,14 @@ persistent_levels(const int *in_offsets, const int *in_sources, const int *out_d
 // Readiness tag of the contributions a sweep stores: the sign bit, set for
 // sweeps 2, 3, 6, 7, ... (see pagerank_optimized.cu).
 __device__ __forceinline__ unsigned sweep_tag(int sweep) {
+#if defined(LP_PAGERANK_MUTANT_TAG)
+  // Test-only mutant (tests/), as in pagerank_optimized.cu: a tag that
+  // alternates every sweep, so the value left from two sweeps earlier looks
+  // ready. The tests require it to fail the oracle.
+  return (unsigned)(sweep & 1) << 31;
+#else
   return (unsigned)(sweep >> 1 & 1) << 31;
+#endif
 }
 
 constexpr int kAhead = 3;
@@ -487,7 +494,12 @@ public:
   void enqueue_compute(cudaStream_t stream) override {
     const float initial = 1.0f / (float)nodes_;
     const float base = (1.0f - kDamping) / (float)nodes_;
+#if !defined(LP_PAGERANK_MUTANT_NO_RESET)
+    // Test-only mutant (tests/), as in pagerank_optimized.cu: without this
+    // reset the barriers do not separate the sweeps. The tests require it to
+    // fail, without hanging.
     LP_CUDA(cudaMemsetAsync(d_barrier_, 0, sizeof(unsigned), stream));
+#endif
     cudaLaunchAttribute cooperative{};
     cooperative.id = cudaLaunchAttributeCooperative;
     cooperative.val.cooperative = 1;
