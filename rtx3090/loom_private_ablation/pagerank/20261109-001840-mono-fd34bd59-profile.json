@@ -1,0 +1,65 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "pagerank",
+ "action": "profile",
+ "stamp": "20261109-001840-mono-fd34bd59",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "fab0c3b3c6fe1c0251319a76f607aded0ac7a98c",
+ "stages_sha256": "481c6d23ba6141d4373ee21e50f56b3672180b3c12176d6bd0e2b3fe1273c90b",
+ "ncu": true,
+ "profiles": [
+  {
+   "case": "baseline-direct",
+   "nsys": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-baseline-direct.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-baseline-direct_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-baseline-direct_cuda_gpu_mem_time_sum.csv",
+   "ncu": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-baseline-direct.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-baseline-direct-ncu-raw.csv"
+  },
+  {
+   "case": "baseline-graph",
+   "nsys": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-baseline-graph.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-baseline-graph_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-baseline-graph_cuda_gpu_mem_time_sum.csv",
+   "ncu": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-baseline-graph.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-baseline-graph-ncu-raw.csv"
+  },
+  {
+   "case": "stage1-persistent",
+   "nsys": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage1-persistent.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage1-persistent_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage1-persistent_cuda_gpu_mem_time_sum.csv",
+   "ncu": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage1-persistent.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage1-persistent-ncu-raw.csv"
+  },
+  {
+   "case": "stage2-tags",
+   "nsys": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage2-tags.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage2-tags_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage2-tags_cuda_gpu_mem_time_sum.csv",
+   "ncu": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage2-tags.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage2-tags-ncu-raw.csv"
+  },
+  {
+   "case": "stage3-layout",
+   "nsys": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage3-layout.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage3-layout_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage3-layout_cuda_gpu_mem_time_sum.csv",
+   "ncu": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage3-layout.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage3-layout-ncu-raw.csv"
+  },
+  {
+   "case": "stage4-tuned",
+   "nsys": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage4-tuned.nsys-rep",
+   "nsys_kernels": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage4-tuned_cuda_gpu_kern_sum.csv",
+   "nsys_memcpy": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage4-tuned_cuda_gpu_mem_time_sum.csv",
+   "ncu": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage4-tuned.ncu-rep",
+   "ncu_raw": "rtx3090/loom_private_ablation/pagerank/profiles/20261109-001840-mono-fd34bd59-stage4-tuned-ncu-raw.csv"
+  }
+ ]
+}

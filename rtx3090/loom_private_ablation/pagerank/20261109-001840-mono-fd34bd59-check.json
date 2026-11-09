@@ -1,0 +1,103 @@
+{
+ "schema": "loom_private_ablation.summary/1",
+ "application": "pagerank",
+ "action": "check",
+ "stamp": "20261109-001840-mono-fd34bd59",
+ "gpu_folder": "rtx3090",
+ "device": {
+  "name": "NVIDIA GeForce RTX 3090",
+  "uuid": "GPU-94e819d6-3c70-abcf-e8df-7e6f85eeac4b",
+  "driver": "610.43.02"
+ },
+ "source_commit": "fab0c3b3c6fe1c0251319a76f607aded0ac7a98c",
+ "stages_sha256": "481c6d23ba6141d4373ee21e50f56b3672180b3c12176d6bd0e2b3fe1273c90b",
+ "steps": [
+  {
+   "step": "build suite baseline",
+   "exit_code": 0
+  },
+  {
+   "step": "build suite optimized",
+   "exit_code": 0
+  },
+  {
+   "step": "build stages",
+   "exit_code": 0
+  },
+  {
+   "step": "stage tests",
+   "exit_code": 0
+  },
+  {
+   "step": "large check baseline",
+   "exit_code": 0
+  },
+  {
+   "step": "large check stage1",
+   "exit_code": 0
+  },
+  {
+   "step": "large check stage2",
+   "exit_code": 0
+  },
+  {
+   "step": "large check stage3",
+   "exit_code": 0
+  },
+  {
+   "step": "large check optimized",
+   "exit_code": 0
+  }
+ ],
+ "log": "rtx3090/loom_private_ablation/pagerank/results/20261109-001840-mono-fd34bd59-check.log",
+ "binaries": {
+  "baseline": {
+   "path": "rtx3090/loom_private/pagerank/build/pagerank",
+   "sha256": "10bbf91c33e5a3fa39c36a0c4bc9110ca743bdcd0d7ab5907e906d81a3755cff",
+   "variant": "baseline",
+   "check_record": "rtx3090/loom_private_ablation/pagerank/results/20261109-001840-mono-fd34bd59-check-baseline.json",
+   "output_digest": "97eb70ad937006ab"
+  },
+  "stage1": {
+   "path": "rtx3090/loom_private_ablation/pagerank/build/pagerank_stage1",
+   "sha256": "037fa4c1b41d1ff05df30520d68e97bc5f01463a380275d210269774c06a204c",
+   "variant": "stage1-persistent",
+   "check_record": "rtx3090/loom_private_ablation/pagerank/results/20261109-001840-mono-fd34bd59-check-stage1.json",
+   "output_digest": "97eb70ad937006ab"
+  },
+  "stage2": {
+   "path": "rtx3090/loom_private_ablation/pagerank/build/pagerank_stage2",
+   "sha256": "a7c585efb5703a36f460911087b38e0e784666c3a57c5e5d6c4f354b9a4ce6dc",
+   "variant": "stage2-tags",
+   "check_record": "rtx3090/loom_private_ablation/pagerank/results/20261109-001840-mono-fd34bd59-check-stage2.json",
+   "output_digest": "97eb70ad937006ab"
+  },
+  "stage3": {
+   "path": "rtx3090/loom_private_ablation/pagerank/build/pagerank_stage3",
+   "sha256": "c94139e7814ad386f2df5c6a494c92ed26fbc2ea882f0b9b0e8ee1c2f7ad3f47",
+   "variant": "stage3-layout",
+   "check_record": "rtx3090/loom_private_ablation/pagerank/results/20261109-001840-mono-fd34bd59-check-stage3.json",
+   "output_digest": "97eb70ad937006ab"
+  },
+  "optimized": {
+   "path": "rtx3090/loom_private/pagerank/build/pagerank_optimized",
+   "sha256": "5b59d669f26a1c94ca79a6e63434b06932142f5e35f8f7f96994a49ae124a26e",
+   "variant": "optimized",
+   "check_record": "rtx3090/loom_private_ablation/pagerank/results/20261109-001840-mono-fd34bd59-check-optimized.json",
+   "output_digest": "97eb70ad937006ab"
+  }
+ },
+ "sass_equal": [
+  {
+   "binary": "stage3",
+   "reference": "optimized",
+   "kernel": "12gauss_seidelILb0E",
+   "why": "stage 3 is the production kernel with the default shape",
+   "instructions": [
+    664,
+    664
+   ],
+   "identical": true
+  }
+ ]
+}

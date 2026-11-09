@@ -113,6 +113,10 @@ Change this reporting scope only when the user requests it. Run `python3 -m unit
 
 The loom_private workbook also shows the BF16 classifier on its RTX 5090 summary and Nsys sheets, next to the llama2c decoder, and lists its run on Environment. `EXPERIMENT_ROWS` in `results/loom_private/build_report.py` names it, and the rows use the selections in `results/blackwell_experiments/inputs/rtx5090.json`, which must conclude `improved` and include a confirmation bench. The rows show the paired speedup over the FP32 control and the accuracy loss, and are labeled as experiments rather than versions of the contract. The other experiments stay out of the workbook.
 
+## loom_private optimization stages
+
+`experiments/loom_private_ablation/` splits each optimized loom_private variant into its individual optimizations. It adds them to the baseline one at a time and times and profiles every cumulative stage with the suite's protocol (`run.py <app>` checks; `--action bench` and `--action profile` measure; run it under `results/record_run.py`). Stage 0 and the last stage are the suite's own baseline and optimized binaries. Raw evidence goes to `<gpu>/loom_private_ablation/<app>/`. `results/loom_private_ablation/inputs/<gpu>.json` selects runs, and `python3 results/loom_private_ablation/build_report.py` writes `results/loom_private_ablation/opt_results.xlsx`. PageRank on the RTX 3090 is the first application. See `experiments/loom_private_ablation/README.md`.
+
 ## Next experiments from the existing workbook
 
 - **Mono:** investigate optimized small-shape regressions. PageRank's batch per-iteration time is 602.149 us versus Graph's 159.400 us; VWW is 12.097 us versus 8.075 us. Check setup/dispatch costs and consider a size-specific strategy if justified. Repeat anomaly's small-shape single-iteration result: Graph 20.272 us versus Direct 13.616 us. Preserve large-shape baselines, and refresh mono at the same source revision used in new GPU comparisons.
