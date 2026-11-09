@@ -26,7 +26,9 @@ The results are in `results/loom_private_ablation/opt_results.xlsx`.
   before each run they compare the binary's hash with the check summary (of
   the same stamp, else the newest), after it they confirm the hash did not
   change, and both summaries record every hash. The report rejects a run whose
-  bench or profile hashes are not in the selected check.
+  bench or profile hashes are not in the selected check. A profile recorded
+  before these hash checks is accepted only when the recorder's hashes after
+  validation match the check, and its run line says so.
 - Every stage in between is the previous stage with one more optimization. It
   implements the same contract and passes the same large check and the
   application's full existing test suite. Stage sources link the application's

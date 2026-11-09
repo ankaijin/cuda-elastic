@@ -1,0 +1,90 @@
+r1 bracket-start        application    5064.7 us  compute    3930.8 us
+r1 baseline-direct      application    5222.2 us  compute    4181.2 us
+r1 baseline-graph       application    4964.2 us  compute    3928.9 us
+r1 stage1-persistent    application    4965.0 us  compute    3926.9 us
+r1 stage2-tags          application    4249.0 us  compute    3216.7 us
+r1 stage3-layout        application    2131.1 us  compute    1087.0 us
+r1 stage4-map-overlap   application    1967.8 us  compute    1096.0 us
+r1 stage5-tuned         application    1821.6 us  compute     948.2 us
+r1 bracket-end          application    4971.3 us  compute    3928.7 us
+r2 bracket-start        application    4965.2 us  compute    3928.1 us
+r2 baseline-graph       application    4966.0 us  compute    3928.5 us
+r2 stage1-persistent    application    4966.4 us  compute    3926.9 us
+r2 stage2-tags          application    4249.5 us  compute    3217.0 us
+r2 stage3-layout        application    2129.9 us  compute    1091.1 us
+r2 stage4-map-overlap   application    1971.8 us  compute    1100.5 us
+r2 stage5-tuned         application    1828.9 us  compute     948.7 us
+r2 baseline-direct      application    5221.8 us  compute    4178.0 us
+r2 bracket-end          application    4972.6 us  compute    3928.0 us
+r3 bracket-start        application    4973.8 us  compute    3927.8 us
+r3 stage1-persistent    application    4968.0 us  compute    3928.7 us
+r3 stage2-tags          application    4254.8 us  compute    3218.5 us
+r3 stage3-layout        application    2127.5 us  compute    1093.3 us
+r3 stage4-map-overlap   application    1972.6 us  compute    1097.8 us
+r3 stage5-tuned         application    1826.9 us  compute     952.6 us
+r3 baseline-direct      application    5241.1 us  compute    4197.5 us
+r3 baseline-graph       application    4972.3 us  compute    3934.0 us
+r3 bracket-end          application    4970.4 us  compute    3933.9 us
+PASS: rtx3090/loom_private_ablation/pagerank/20261109-175321-mono-416c7530-bench.json
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-baseline-direct /home/ankai/cuda/rtx3090/loom_private/pagerank/build/pagerank --action profile --launch direct
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.03 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-baseline-direct /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-baseline-direct.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-baseline-direct /home/ankai/cuda/rtx3090/loom_private/pagerank/build/pagerank --action profile --launch direct
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.03 s
+$ ncu --import /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-baseline-direct.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-baseline-graph /home/ankai/cuda/rtx3090/loom_private/pagerank/build/pagerank --action profile --launch graph
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.03 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-baseline-graph /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-baseline-graph.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-baseline-graph /home/ankai/cuda/rtx3090/loom_private/pagerank/build/pagerank --action profile --launch graph
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels
+pagerank: setup 0.02 s
+$ ncu --import /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-baseline-graph.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage1-persistent /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage1 --action profile --launch graph
+pagerank: stage 1: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage1-persistent /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage1-persistent.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage1-persistent /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage1 --action profile --launch graph
+pagerank: stage 1: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+$ ncu --import /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage1-persistent.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage2-tags /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage2 --action profile --launch graph
+pagerank: stage 2: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.02 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage2-tags /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage2-tags.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage2-tags /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage2 --action profile --launch graph
+pagerank: stage 2: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+$ ncu --import /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage2-tags.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage3-layout /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage3 --action profile --launch graph
+pagerank: stage 3: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.04 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage3-layout /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage3-layout.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage3-layout /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage3 --action profile --launch graph
+pagerank: stage 3: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+$ ncu --import /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage3-layout.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage4-map-overlap /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage4 --action profile --launch graph
+pagerank: stage 4: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.03 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage4-map-overlap /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage4-map-overlap.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage4-map-overlap /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/build/pagerank_stage4 --action profile --launch graph
+pagerank: stage 4: 1048576 nodes, 2097151 edges, 16 dependency levels; default shape: 164 blocks x 512 threads
+pagerank: setup 0.04 s
+$ ncu --import /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage4-map-overlap.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage5-tuned /home/ankai/cuda/rtx3090/loom_private/pagerank/build/pagerank_optimized --action profile --launch graph
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels; sm_86 tuning: 164 blocks x 768 threads, streamed graph loads
+pagerank: setup 0.04 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage5-tuned /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage5-tuned.nsys-rep
+$ flock /tmp/cuda-elastic-gpu.lock ncu --set basic --graph-profiling node --profile-from-start off --target-processes application-only --force-overwrite --export /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage5-tuned /home/ankai/cuda/rtx3090/loom_private/pagerank/build/pagerank_optimized --action profile --launch graph
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels; sm_86 tuning: 164 blocks x 768 threads, streamed graph loads
+pagerank: setup 0.03 s
+$ ncu --import /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-stage5-tuned.ncu-rep --csv --page raw
+$ flock /tmp/cuda-elastic-gpu.lock nsys profile --trace cuda --cuda-graph-trace node --capture-range cudaProfilerApi --capture-range-end stop --force-overwrite true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-reference-reference-default /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/build/pagerank_optimized_tunings --action profile --launch graph
+pagerank: 1048576 nodes, 2097151 edges, 16 dependency levels; default tuning: 164 blocks x 512 threads
+pagerank: setup 0.04 s
+$ nsys stats --report cuda_gpu_kern_sum,cuda_gpu_mem_time_sum --format csv --force-export true --output /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-reference-reference-default /home/ankai/cuda/rtx3090/loom_private_ablation/pagerank/profiles/20261109-175321-mono-416c7530-reference-reference-default.nsys-rep
+host stage4 vs reference-default: identical
+PASS: rtx3090/loom_private_ablation/pagerank/20261109-175321-mono-416c7530-profile.json

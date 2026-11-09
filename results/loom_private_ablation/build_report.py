@@ -15,7 +15,11 @@ summaries must come from one source revision. The stages.json they used (read
 from git at that revision, and matching the hash they record) must define the
 same cases, binaries, launches, and checks as the current one; only
 descriptions and the reporting scope may differ. Every binary the bench timed
-and the profile captured must be one the check validated (by hash).
+and the profile captured must be one the check validated (by hash). A profile
+summary written before run.py hashed profiled binaries (it has no
+"check_summary") is accepted only when the recorder's binary hashes after
+validation (<gpu>/runs/<stamp>/metadata.json) match the check for every
+binary, and its run line says that the profile itself did not hash them.
 
 The workbook has one sheet per application, in the loom_private workbook's
 order. Each sheet holds one table per GPU, in the order RTX 3090, RTX 4090,
@@ -145,7 +149,16 @@ def load_app(folder, app, selection):
             if stray:
                 raise ValueError(f"{folder} {app}: bench binaries of {sorted(stray)} were not "
                                  "validated by the selected check")
-        if profile:
+        if profile and "check_summary" not in profile:
+            meta, _ = metadata(folder, profile["stamp"])
+            recorded = (meta or {}).get("binary_sha256", {})
+            unmatched = sorted(k for k, b in check["binaries"].items()
+                               if recorded.get(b["path"]) != b["sha256"])
+            if unmatched:
+                raise ValueError(f"{folder} {app}: the profile predates hash checks and the "
+                                 f"run's recorded hashes do not match the check for "
+                                 f"{unmatched}")
+        elif profile:
             stray = {p.get("case") or p.get("reference") for p in profile["profiles"]
                      if p.get("binary_sha256") not in validated}
             if stray:
@@ -310,6 +323,9 @@ def run_line(folder, data):
             for h in (profile or {}).get("host_equal", []) if h["identical"]]
     if host:
         text += " Host-side launch structure: " + "; ".join(host) + "."
+    if profile and "check_summary" not in profile:
+        text += (" The profile predates per-binary hash checks: the recorder's hashes after "
+                 "validation match the check, but the profile did not hash what it ran.")
     return text, meta_path
 
 

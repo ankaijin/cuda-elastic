@@ -336,6 +336,23 @@ class RealWorkbookTests(unittest.TestCase):
                                             if s["equivalent"]))
 
 
+    def test_profiles_without_hashes_are_labelled(self):
+        inputs = report.load_inputs()
+        for app in report.APPS:
+            selection = inputs.get("rtx3090", {}).get("applications", {}).get(app)
+            loaded = report.load_app("rtx3090", app, selection)
+            if not loaded["bench"]:
+                continue
+            with self.subTest(app=app):
+                text, _ = report.run_line("rtx3090", loaded)
+                legacy = "check_summary" not in loaded["profile"]
+                self.assertEqual("predates per-binary hash checks" in text, legacy)
+                if not legacy:
+                    validated = {b["sha256"] for b in loaded["check"]["binaries"].values()}
+                    self.assertTrue(all(e["binary_sha256"] in validated
+                                        for e in loaded["profile"]["profiles"]))
+
+
 class RunnerTests(unittest.TestCase):
     config = {"cases": [{"id": "d", "stage": 0, "binary": "base", "launch": "direct"},
                         {"id": "g", "stage": 0, "binary": "base", "launch": "graph"},
