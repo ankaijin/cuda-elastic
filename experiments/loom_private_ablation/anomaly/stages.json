@@ -1,0 +1,129 @@
+{
+  "application": "anomaly",
+  "title": "Anomaly detection",
+  "scope": "application",
+  "arithmetic_changes": [],
+  "binaries": {
+    "baseline": {
+      "suite_variant": "baseline"
+    },
+    "stage1": {
+      "stage_binary": "anomaly_stage1"
+    },
+    "stage2": {
+      "stage_binary": "anomaly_stage2"
+    },
+    "stage3": {
+      "stage_binary": "anomaly_stage3"
+    },
+    "stage4": {
+      "stage_binary": "anomaly_stage4"
+    },
+    "chunks32": {
+      "stage_binary": "anomaly_optimized_chunks32",
+      "timed": false
+    },
+    "optimized": {
+      "suite_variant": "optimized"
+    }
+  },
+  "cases": [
+    {
+      "id": "baseline-direct",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "direct",
+      "label": "Baseline, Direct",
+      "adds": "Reference: production anomaly.cu with direct launches",
+      "detail": "One upload of the 268 MB of float32 inputs, one inference_kernel launch of 104,858 blocks of 256 threads, and one 67 MB download. Each block infers one sample through all ten layers with the activations in shared memory; one warp computes each output row and a shuffle tree sums it. Lane 0 alone requantizes every output with the contract's binary64 sequence, so each FP64 instruction does one useful result, and the FP64 pipe is the bottleneck (85% busy on the RTX 3090).",
+      "change": "Upload, one kernel of 104,858 blocks (a block per sample; lane 0 requantizes each output in FP64), download."
+    },
+    {
+      "id": "baseline-graph",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "graph",
+      "label": "Baseline, Graph",
+      "adds": "Reference: the same upload, kernel and download captured once as a CUDA Graph",
+      "detail": "The same three operations replayed as one graph. There is a single launch, so there is almost no launch overhead to remove.",
+      "change": "The same upload, kernel and download, replayed as one CUDA Graph."
+    },
+    {
+      "id": "stage1-tiles",
+      "stage": 1,
+      "binary": "stage1",
+      "launch": "graph",
+      "label": "+ 16-sample tiles (dp4a)",
+      "adds": "Tiles of 16 samples per block",
+      "detail": "A block of 256 threads infers 16 samples: 6,554 blocks. It is the production tile kernel (padded weights, shared-memory buffers, layer-1 input streaming, the zero-point correction applied after the dot product, the epilogue) with SIMT dp4a dot products instead of the mma. Each lane computes the same eight accumulators as in the mma layout, so it inherits a geometry tuned for the tensor cores; launch bounds keep the production residency (64 registers, 4 blocks per SM). All 32 lanes requantize with the baseline's binary64 routine, so each FP64 instruction does 32 results instead of 1. Still unpipelined: one upload, one launch, one download.",
+      "change": "A block infers 16 samples with dp4a; all 32 lanes requantize in FP64, so each FP64 instruction does 32 results, not 1."
+    },
+    {
+      "id": "stage2-binary32",
+      "stage": 2,
+      "binary": "stage2",
+      "launch": "graph",
+      "label": "+ Proven binary32 requantization",
+      "adds": "Binary32 fast paths for requantization and input quantization",
+      "detail": "requant.cuh's fast paths, unchanged: a code computed in binary32 (one fma for an output, one multiply for an input) is accepted only when it lies farther from every half-integer than a margin that covers the binary32 and binary64 errors, so it equals the contract's binary64 code; otherwise the baseline routine runs. The production test checks every accepted code exhaustively. The kernel is otherwise stage 1's.",
+      "change": "Binary32 requantization that proves each code equal to FP64's; the FP64 routine runs only as a fallback."
+    },
+    {
+      "id": "stage3-tensor-cores",
+      "stage": 3,
+      "binary": "stage3",
+      "launch": "graph",
+      "label": "+ Int8 tensor cores",
+      "adds": "Int8 tensor cores (mma.sync m16n8k32)",
+      "detail": "Each 64-wide K step of a warp's unit becomes two mma.sync.m16n8k32.s8 per n-tile, fed by one 16-byte load per activation row and per weight row. This is production tiled_inference_kernel<16> copied unchanged: its machine code equals the optimized binary's. The host side is still unpipelined.",
+      "change": "mma.sync m16n8k32 int8 tensor cores replace dp4a. The production kernel; its machine code equals the optimized binary's."
+    },
+    {
+      "id": "stage4-pipeline",
+      "stage": 4,
+      "binary": "stage4",
+      "launch": "graph",
+      "label": "+ Chunked multi-stream pipeline",
+      "adds": "Chunked multi-stream pipeline",
+      "detail": "The production host pipeline with its generic default of 32 chunks of whole tiles on every GPU: chunk c is uploaded on a side stream, inferred on the harness stream after its upload, and downloaded on a second side stream after its kernel, with fork and join events. Uploads, kernels and downloads of different chunks overlap, and the PCIe upload of the float32 inputs becomes the bound. Its launches and copies equal production built with 32 chunks.",
+      "change": "Uploads, kernels and downloads of 32 chunks overlap on three streams; the PCIe upload becomes the bound."
+    },
+    {
+      "id": "stage5-tuned",
+      "stage": 5,
+      "binary": "optimized",
+      "launch": "graph",
+      "label": "+ Per-GPU tuning (= Optimized)",
+      "adds": "Per-GPU pipeline chunk count",
+      "detail": "The production optimized binary. It selects 16 chunks on cc 12 and later, else 32. On the RTX 3090 and 4090 this is stage 4's 32 (no change). On the RTX 5090 an upload runs about 15% slower while a download runs (PCIe 5), so fewer, larger chunks overlap fewer downloads with the uploads.",
+      "change": "This GPU's chunk count. 3090 and 4090: 32 (= default, no change); 5090: 16 (an upload slows ~15% during a download)."
+    }
+  ],
+  "sass_equal": [
+    {
+      "binary": "stage3",
+      "reference": "optimized",
+      "kernel": "22tiled_inference_kernelILi16E",
+      "why": "stage 3 is the production kernel"
+    },
+    {
+      "binary": "stage4",
+      "reference": "optimized",
+      "kernel": "22tiled_inference_kernelILi16E",
+      "why": "stage 4 changes only host code"
+    }
+  ],
+  "host_equal": [
+    {
+      "binary": "stage4",
+      "reference": "chunks32",
+      "why": "stage 4 is production with the generic 32 chunks (production built with -DLP_ANOMALY_FORCE_CHUNKS=32)"
+    },
+    {
+      "binary": "stage4",
+      "reference": "optimized",
+      "why": "production selects 32 chunks on the RTX 3090 and 4090",
+      "gpus": ["rtx3090", "rtx4090"]
+    }
+  ]
+}
