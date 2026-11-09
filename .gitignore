@@ -28,3 +28,6 @@ __pycache__/
 
 # Feature experiment builds (experiments/blackwell)
 /*/blackwell_experiments/*/build/
+
+# loom_private optimization stage builds (experiments/loom_private_ablation)
+/*/loom_private_ablation/*/build/
