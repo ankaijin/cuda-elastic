@@ -2,52 +2,90 @@
   "application": "pagerank",
   "title": "PageRank",
   "binaries": {
-    "baseline": {"suite_variant": "baseline"},
-    "stage1": {"stage_binary": "pagerank_stage1"},
-    "stage2": {"stage_binary": "pagerank_stage2"},
-    "stage3": {"stage_binary": "pagerank_stage3"},
-    "optimized": {"suite_variant": "optimized"}
+    "baseline": {
+      "suite_variant": "baseline"
+    },
+    "stage1": {
+      "stage_binary": "pagerank_stage1"
+    },
+    "stage2": {
+      "stage_binary": "pagerank_stage2"
+    },
+    "stage3": {
+      "stage_binary": "pagerank_stage3"
+    },
+    "optimized": {
+      "suite_variant": "optimized"
+    }
   },
   "cases": [
     {
-      "id": "baseline-direct", "stage": 0, "binary": "baseline", "launch": "direct",
+      "id": "baseline-direct",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "direct",
       "label": "Baseline, Direct",
       "adds": "Reference: production pagerank.cu with direct launches",
-      "detail": "One initialization launch, then one update_level launch per dependency level per sweep: 1 + 16 x 20 = 321 launches per invocation, each issued from the host."
+      "detail": "One initialization launch, then one update_level launch per dependency level per sweep: 1 + 16 x 20 = 321 launches per invocation, each issued from the host.",
+      "change": "321 launches per invocation (1 init + 16 levels × 20 sweeps), each issued from the host."
     },
     {
-      "id": "baseline-graph", "stage": 0, "binary": "baseline", "launch": "graph",
+      "id": "baseline-graph",
+      "stage": 0,
+      "binary": "baseline",
+      "launch": "graph",
       "label": "Baseline, Graph",
       "adds": "Reference: the same 321 launches captured once as a CUDA Graph",
-      "detail": "Removes host launch overhead, but the GPU still runs 321 dependent kernels, most of the late levels with a few hundred nodes or fewer."
+      "detail": "Removes host launch overhead, but the GPU still runs 321 dependent kernels, most of the late levels with a few hundred nodes or fewer.",
+      "change": "The same 321 launches, replayed as one CUDA Graph."
     },
     {
-      "id": "stage1-persistent", "stage": 1, "binary": "stage1", "launch": "graph",
+      "id": "stage1-persistent",
+      "stage": 1,
+      "binary": "stage1",
+      "launch": "graph",
       "label": "+ Persistent cooperative kernel",
       "adds": "Persistent cooperative kernel",
-      "detail": "One cooperative launch (plus a barrier-counter memset) runs initialization and all 20 sweeps. A software grid-wide barrier after every dependency level replaces the 320 update launches, so the dependency order is unchanged: 320 grid barriers per invocation. Original node numbering and the baseline's arrays. Contributions are read from L2 (__ldcg) because other blocks write them during the launch. Generic shape: 164 blocks x 512 threads (2 per SM), graph loads through the read-only cache."
+      "detail": "One cooperative launch (plus a barrier-counter memset) runs initialization and all 20 sweeps. A software grid-wide barrier after every dependency level replaces the 320 update launches, so the dependency order is unchanged: 320 grid barriers per invocation. Original node numbering and the baseline's arrays. Contributions are read from L2 (__ldcg) because other blocks write them during the launch. Generic shape: 164 blocks x 512 threads (2 per SM), graph loads through the read-only cache.",
+      "change": "One cooperative launch runs every sweep. A grid barrier after each level replaces that level's launch (320 barriers)."
     },
     {
-      "id": "stage2-tags", "stage": 2, "binary": "stage2", "launch": "graph",
+      "id": "stage2-tags",
+      "stage": 2,
+      "binary": "stage2",
+      "launch": "graph",
       "label": "+ Per-node readiness tags",
       "adds": "Per-node readiness tags",
-      "detail": "Removes the 15 level barriers inside each sweep. Each contribution's sign bit tags the sweep that wrote it; a node reading a source v < u spins until v's slot carries the current sweep's tag. Each thread walks the level list in order, so every wait is on an earlier position. Only the 19 barriers between sweeps remain. The first three source loads are issued before any wait. Still the original numbering: graph and contribution accesses are scattered."
+      "detail": "Removes the 15 level barriers inside each sweep. Each contribution's sign bit tags the sweep that wrote it; a node reading a source v < u spins until v's slot carries the current sweep's tag. Each thread walks the level list in order, so every wait is on an earlier position. Only the 19 barriers between sweeps remain. The first three source loads are issued before any wait. Still the original numbering: graph and contribution accesses are scattered.",
+      "change": "A node waits only for the sources it reads (sweep tag in the sign bit). Barriers remain only between sweeps (19)."
     },
     {
-      "id": "stage3-layout", "stage": 3, "binary": "stage3", "launch": "graph",
+      "id": "stage3-layout",
+      "stage": 3,
+      "binary": "stage3",
+      "launch": "graph",
       "label": "+ Level-ordered renumbering",
       "adds": "Level-ordered renumbering",
-      "detail": "Setup renumbers the nodes to positions in level order (layout.cpp). Offsets, out-degrees and contributions are indexed by position, so each sweep reads the graph arrays sequentially and stores contributions coalesced; the v < u bit is stored in each source entry. Scores are written only in the last sweep (scattered through the node list). This is pagerank_optimized.cu's kernel with its generic default shape; its machine code equals the production gauss_seidel<false>."
+      "detail": "Setup renumbers the nodes to positions in level order (layout.cpp). Offsets, out-degrees and contributions are indexed by position, so each sweep reads the graph arrays sequentially and stores contributions coalesced; the v < u bit is stored in each source entry. Scores are written only in the last sweep (scattered through the node list). This is pagerank_optimized.cu's kernel with its generic default shape; its machine code equals the production gauss_seidel<false>.",
+      "change": "Nodes renumbered in level order: sequential graph reads and coalesced stores. The production kernel with its default shape."
     },
     {
-      "id": "stage4-tuned", "stage": 4, "binary": "optimized", "launch": "graph",
+      "id": "stage4-tuned",
+      "stage": 4,
+      "binary": "optimized",
+      "launch": "graph",
       "label": "+ Per-GPU tuning (= Optimized)",
       "adds": "Per-GPU tuning",
-      "detail": "The production optimized binary, which selects the RTX 3090 entry of its tuning table: 768 threads x 2 blocks per SM (full occupancy, 164 blocks) and evict-first streaming loads (ld.global.cs) for the graph arrays, which keeps more of the contributions in the 6 MB L2."
+      "detail": "The production optimized binary, which selects the RTX 3090 entry of its tuning table: 768 threads x 2 blocks per SM (full occupancy, 164 blocks) and evict-first streaming loads (ld.global.cs) for the graph arrays, which keeps more of the contributions in the 6 MB L2.",
+      "change": "This GPU's tuning entry. 3090: 768 threads × 2/SM and streaming loads; 4090: 512 × 3; 5090: 512 × 2."
     }
   ],
   "sass_equal": [
-    {"binary": "stage3", "reference": "optimized", "kernel": "12gauss_seidelILb0E",
-     "why": "stage 3 is the production kernel with the default shape"}
+    {
+      "binary": "stage3",
+      "reference": "optimized",
+      "kernel": "12gauss_seidelILb0E",
+      "why": "stage 3 is the production kernel with the default shape"
+    }
   ]
 }
