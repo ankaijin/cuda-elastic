@@ -32,7 +32,7 @@ Includes copying inputs to the GPU and results back. The decoder keeps its weigh
 
 ## Kernel-only time (µs)
 
-The same work without the copies.
+The same work without the copies. Times still run from the first kernel to the last, so they include the GPU's idle time between dependent kernels. A CUDA Graph shortens those gaps, which is why Graph beats Direct for PageRank: it makes 321 launches per invocation.
 
 | Workload | RTX 3090 Direct | RTX 3090 Graph | RTX 3090 Optimized | RTX 4090 Direct | RTX 4090 Graph | RTX 4090 Optimized | RTX 5090 Direct | RTX 5090 Graph | RTX 5090 Optimized |
 |---|--:|--:|--:|--:|--:|--:|--:|--:|--:|

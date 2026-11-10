@@ -613,7 +613,11 @@ def markdown(gpus):
          "Includes copying inputs to the GPU and results back. The decoder keeps its weights on "
          "the GPU, and the anomaly model is loaded once, before timing. Each workload's "
          "`contract.json` defines the scope exactly.", "application"),
-        ("Kernel-only time (µs)", "The same work without the copies.", "compute"),
+        ("Kernel-only time (µs)",
+         "The same work without the copies. Times still run from the first kernel to the last, "
+         "so they include the GPU's idle time between dependent kernels. A CUDA Graph shortens "
+         "those gaps, which is why Graph beats Direct for PageRank: it makes 321 launches per "
+         "invocation.", "compute"),
     ]
     for title, note, scope in scopes:
         lines += ["", f"## {title}", "", note, "",

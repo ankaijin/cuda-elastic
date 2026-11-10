@@ -71,6 +71,8 @@ with provenance, run it under `results/record_run.py`. See
     tokens.
   - The anomaly model is loaded and uploaded once, outside the timed interval.
 - **Kernel only** (compute scope): the same kernels without the copies.
+  It still includes the idle time between dependent kernels, which a CUDA
+  Graph shortens.
 
 Setup, graph capture, warmups, the CPU reference, and output checking are
 never timed. Each `contract.json` defines the scopes exactly.
